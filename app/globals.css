@@ -1,0 +1,43 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fff0f5;
+  --foreground: #4c0519;
+  --primary: #ff1493;
+  --primary-foreground: #ffffff;
+  --secondary: #e6e6fa;
+  --secondary-foreground: #4b0082;
+  --tertiary: #89cff0;
+  --muted: #fff5f7;
+  --muted-foreground: #be185d;
+  --accent: #ffcde5;
+  --accent-foreground: #4c0519;
+  --card: #ffffff;
+  --card-foreground: #1f2937;
+  --destructive: #ff1493;
+  --border: #ffb6c1;
+  --input: #ffd1dc;
+  --ring: #ff69b4;
+  --radius: 1.25rem;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.sparkle-bg {
+  background-image: radial-gradient(#ff69b4 1px, transparent 1px);
+  background-size: 16px 16px;
+  opacity: 0.2;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
