@@ -67,7 +67,7 @@ export default async function SharePage({ params }: { params: { id: string } }) 
           <img src={strip.image_url} alt="Shared photo strip" className="w-full h-auto rounded-2xl" />
         </div>
 
-        <ShareActions imageUrl={strip.image_url} />
+        <ShareActions imageUrl={strip.image_url} id={strip.id} />
       </main>
 
       <footer className="relative z-10 w-full py-8 border-t border-border bg-background/40 mt-auto text-center">

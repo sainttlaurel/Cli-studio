@@ -1,95 +1,118 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { nanoid } from 'nanoid';
-import { Download, FileText, Copy, Loader2 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Download, FileText, Copy, Loader2, RotateCcw, Share2 } from 'lucide-react';
 import { useBoothStore } from '@/lib/store';
 import { compositeStrip } from '@/lib/compositor';
 import { THEME_HEX } from '@/lib/theme-colors';
-import { supabase } from '@/lib/supabase';
+import { uploadStrip } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 
 type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
+type ShareNavigator = Navigator & {
+  share?: (data: ShareData) => Promise<void>;
+  canShare?: (data?: ShareData) => boolean;
+};
 
 export function ExportPanel() {
   const { frames, filter, adjustments, theme, caption } = useBoothStore();
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [attempt, setAttempt] = useState(0);
+
+  const run = useCallback(async () => {
+    try {
+      setError(null);
+      setStatus('rendering');
+      const renderedBlob = await compositeStrip({
+        frames,
+        filter,
+        brightness: adjustments.brightness,
+        contrast: adjustments.contrast,
+        themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
+        caption,
+      });
+      setBlob(renderedBlob);
+      setBlobUrl(URL.createObjectURL(renderedBlob));
+
+      setStatus('uploading');
+      const result = await uploadStrip({
+        file: renderedBlob,
+        sessionId: getSessionId(),
+        theme,
+        filter,
+        caption,
+      });
+
+      setShareUrl(`${window.location.origin}/s/${result.id}`);
+      setStatus('done');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      setError(err instanceof Error ? err.message : 'Something went wrong exporting your strip.');
+      setStatus('error');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [frames, filter, adjustments.brightness, adjustments.contrast, theme, caption]);
 
   useEffect(() => {
-    let cancelled = false;
-    let localBlobUrl: string | null = null;
-
-    async function run() {
-      try {
-        setStatus('rendering');
-        const blob = await compositeStrip({
-          frames,
-          filter,
-          brightness: adjustments.brightness,
-          contrast: adjustments.contrast,
-          themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
-          caption,
-        });
-        if (cancelled) return;
-        localBlobUrl = URL.createObjectURL(blob);
-        setBlobUrl(localBlobUrl);
-
-        setStatus('uploading');
-        const id = nanoid(8);
-        const sessionId = getSessionId();
-        const path = `${sessionId}/${id}.png`;
-
-        const { error: uploadError } = await supabase.storage.from('strips').upload(path, blob, {
-          contentType: 'image/png',
-          upsert: false,
-        });
-        if (uploadError) throw uploadError;
-
-        const { data: publicUrlData } = supabase.storage.from('strips').getPublicUrl(path);
-        const imageUrl = publicUrlData.publicUrl;
-
-        const { error: insertError } = await supabase.from('strips').insert({
-          id,
-          session_id: sessionId,
-          image_url: imageUrl,
-          theme,
-          filter,
-          caption: caption || null,
-        });
-        if (insertError) throw insertError;
-
-        if (cancelled) return;
-        setShareUrl(`${window.location.origin}/s/${id}`);
-        setStatus('done');
-      } catch (err) {
-        if (!cancelled) {
-          // eslint-disable-next-line no-console
-          console.error(err);
-          setError(err instanceof Error ? err.message : 'Something went wrong exporting your strip.');
-          setStatus('error');
-        }
-      }
-    }
-
-    if (frames.length > 0) run();
-
-    return () => {
-      cancelled = true;
-      if (localBlobUrl) URL.revokeObjectURL(localBlobUrl);
-    };
-    // Runs once on mount for this export session.
+    if (frames.length === 0) return;
+    run();
+    // Re-runs when "Try Again" bumps `attempt`. `run` intentionally
+    // omitted from deps — it's stable enough for this per-export-session flow.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attempt]);
+
+  useEffect(() => {
+    return () => {
+      if (blobUrl) URL.revokeObjectURL(blobUrl);
+    };
+  }, [blobUrl]);
+
+  const retry = () => {
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    setBlob(null);
+    setBlobUrl(null);
+    setShareUrl(null);
+    setAttempt((a) => a + 1);
+  };
 
   const copyLink = async () => {
     if (!shareUrl) return;
     await navigator.clipboard.writeText(shareUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const nativeShare = async () => {
+    if (!shareUrl) return;
+    const nav = navigator as ShareNavigator;
+    const shareData: ShareData = {
+      title: 'My ClickStudio strip',
+      text: 'Check out my photo strip! ✨',
+      url: shareUrl,
+    };
+
+    if (blob) {
+      const file = new File([blob], 'clickstudio-strip.png', { type: 'image/png' });
+      if (nav.canShare?.({ files: [file] })) {
+        shareData.files = [file];
+      }
+    }
+
+    try {
+      if (nav.share) {
+        await nav.share(shareData);
+      } else {
+        await copyLink();
+      }
+    } catch {
+      // User cancelled the share sheet — nothing to surface.
+    }
   };
 
   const qrSrc = shareUrl
@@ -110,7 +133,16 @@ export function ExportPanel() {
             <span>{status === 'rendering' ? 'Compositing your strip...' : 'Uploading to the cloud...'}</span>
           </div>
         ) : status === 'error' ? (
-          <p className="text-sm text-destructive">{error}</p>
+          <div className="flex flex-col items-center gap-3 py-4 text-center">
+            <p className="text-sm text-destructive">{error}</p>
+            <button
+              onClick={retry}
+              className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1.5"
+            >
+              <RotateCcw size={14} />
+              <span>Try Again</span>
+            </button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <a
@@ -143,9 +175,9 @@ export function ExportPanel() {
             </div>
           </div>
           <div className="sm:col-span-8 flex flex-col gap-3">
-            <h3 className="text-sm font-heading font-bold text-foreground">Scan to Share Instantly</h3>
+            <h3 className="text-sm font-heading font-bold text-foreground">Scan or Share Instantly</h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Scan with a phone camera to open the interactive reveal page.
+              Scan with a phone camera, or use the share sheet to send it straight to your apps.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <input
@@ -156,10 +188,17 @@ export function ExportPanel() {
               />
               <button
                 onClick={copyLink}
-                className="px-4 py-2 bg-secondary-foreground hover:bg-secondary-foreground/90 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+                className="px-3 py-2 bg-secondary-foreground hover:bg-secondary-foreground/90 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
               >
                 <Copy size={14} />
                 <span>{copied ? 'Copied!' : 'Copy'}</span>
+              </button>
+              <button
+                onClick={nativeShare}
+                className="px-3 py-2 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+              >
+                <Share2 size={14} />
+                <span>Share</span>
               </button>
             </div>
           </div>
