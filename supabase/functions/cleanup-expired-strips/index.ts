@@ -1,3 +1,4 @@
+ // @ts-nocheck
 // supabase/functions/cleanup-expired-strips/index.ts
 //
 // Deletes strips older than 30 days — both the DB row AND the Storage

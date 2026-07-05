@@ -1,3 +1,4 @@
+ // @ts-nocheck
 // supabase/functions/upload-strip/index.ts
 //
 // Server-side, rate-limited replacement for the old client-side upload.

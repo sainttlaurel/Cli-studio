@@ -42,7 +42,7 @@ your Supabase project before it's live — see `README.md` section 3.
 
 ---
 
-## v1.2 — Editor Quality-of-Life (Planned)
+## v1.2 — Editor Quality-of-Life (Done)
 
 Cheap, high-impact upgrades to the existing editor, no new data model needed.
 

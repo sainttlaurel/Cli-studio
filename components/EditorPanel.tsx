@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { Sparkles, Sliders, Layout, Heart, Type } from 'lucide-react';
-import { useBoothStore } from '@/lib/store';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Sparkles, Sliders, Layout, Heart, Type, Undo2, Redo2 } from 'lucide-react';
+import { useBoothStore, useBoothTemporal } from '@/lib/store';
 import type { FilterKey, ThemeKey } from '@/lib/store';
+import { buildFilterCss } from '@/lib/filters';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'cherry', label: 'Cherry Blossom' },
@@ -13,10 +14,10 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'none', label: 'Natural' },
 ];
 
-const THEMES: { key: ThemeKey; label: string; swatch: string }[] = [
-  { key: 'pink', label: 'Y2K Pink', swatch: '#FF1493' },
-  { key: 'lavender', label: 'Lavender Dream', swatch: '#4B0082' },
-  { key: 'blue', label: 'Baby Blue', swatch: '#89CFF0' },
+const THEMES: { key: ThemeKey; label: string; border: string }[] = [
+  { key: 'pink', label: 'Y2K Pink', border: 'border-primary' },
+  { key: 'lavender', label: 'Lavender Dream', border: 'border-secondary-foreground' },
+  { key: 'blue', label: 'Baby Blue', border: 'border-tertiary' },
 ];
 
 const TABS = [
@@ -31,29 +32,107 @@ type TabKey = (typeof TABS)[number]['key'];
 
 export function EditorPanel() {
   const [tab, setTab] = useState<TabKey>('filters');
-  const { filter, setFilter, adjustments, setAdjustments, theme, setTheme, caption, setCaption } =
-    useBoothStore();
+  const {
+    frames,
+    filter,
+    setFilter,
+    adjustments,
+    setAdjustments,
+    theme,
+    setTheme,
+    caption,
+    setCaption,
+  } = useBoothStore();
+  const { undo, redo, canUndo, canRedo } = useBoothTemporal();
+
+  // --- Ctrl/Cmd+Z to undo, Ctrl+Y or Ctrl/Cmd+Shift+Z to redo ---
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      const isMac = navigator.platform.toUpperCase().includes('MAC');
+      const mod = isMac ? e.metaKey : e.ctrlKey;
+      if (!mod) return;
+      const key = e.key.toLowerCase();
+      if (key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        undo();
+      } else if (key === 'y' || (key === 'z' && e.shiftKey)) {
+        e.preventDefault();
+        redo();
+      }
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [undo, redo]);
+
+  // --- Sliding underline under the active tab ---
+  const tabRefs = useRef<Partial<Record<TabKey, HTMLButtonElement>>>({});
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+
+  useLayoutEffect(() => {
+    const el = tabRefs.current[tab];
+    if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+  }, [tab]);
+
+  useEffect(() => {
+    function recalc() {
+      const el = tabRefs.current[tab];
+      if (el) setIndicator({ left: el.offsetLeft, width: el.offsetWidth });
+    }
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
+  }, [tab]);
+
+  const thumbnailSrc = frames[0];
 
   return (
     <div className="bg-background rounded-3xl border border-border/80 shadow-lg overflow-hidden flex flex-col h-full">
-      <div className="flex border-b border-border bg-muted/50 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border bg-background">
+        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
+          Editor
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => undo()}
+            disabled={!canUndo}
+            title="Undo (Ctrl+Z)"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          >
+            <Undo2 size={16} />
+          </button>
+          <button
+            onClick={() => redo()}
+            disabled={!canRedo}
+            title="Redo (Ctrl+Y)"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/5 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+          >
+            <Redo2 size={16} />
+          </button>
+        </div>
+      </div>
+
+      <div className="relative flex border-b border-border bg-muted/50 overflow-x-auto scrollbar-none">
         {TABS.map(({ key, label, icon: Icon }) => (
           <button
             key={key}
+            ref={(el) => {
+              tabRefs.current[key] = el ?? undefined;
+            }}
             onClick={() => setTab(key)}
-            className={`flex-1 py-4 px-3 border-b-2 text-sm font-heading font-bold flex flex-col items-center gap-1 whitespace-nowrap transition-colors ${
-              tab === key
-                ? 'border-primary text-primary'
-                : 'border-transparent text-muted-foreground hover:text-primary'
+            className={`flex-1 py-4 px-3 text-sm font-heading font-bold flex flex-col items-center gap-1 whitespace-nowrap transition-colors ${
+              tab === key ? 'text-primary' : 'text-muted-foreground hover:text-primary'
             }`}
           >
             <Icon size={18} />
             <span>{label}</span>
           </button>
         ))}
+        <div
+          className="absolute bottom-0 h-[3px] bg-primary rounded-full transition-all duration-200 ease-out"
+          style={{ left: indicator.left, width: indicator.width }}
+        />
       </div>
 
-      <div className="p-6 flex-1 flex flex-col gap-6 min-h-[280px]">
+      <div key={tab} className="p-6 flex-1 flex flex-col gap-6 min-h-[280px] animate-fade-in">
         {tab === 'filters' && (
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -71,7 +150,17 @@ export function EditorPanel() {
                       : 'bg-background border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="aspect-video bg-muted rounded-lg mb-1.5" />
+                  <div className="aspect-video bg-muted rounded-lg mb-1.5 overflow-hidden">
+                    {thumbnailSrc ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={thumbnailSrc}
+                        alt={f.label}
+                        className="w-full h-full object-cover"
+                        style={{ filter: buildFilterCss(f.key, 0, 0) }}
+                      />
+                    ) : null}
+                  </div>
                   <span className={`text-xs font-bold ${filter === f.key ? 'text-primary' : 'text-foreground/80'}`}>
                     {f.label}
                   </span>
@@ -135,7 +224,11 @@ export function EditorPanel() {
                     theme === t.key ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="w-full aspect-square rounded-lg mb-2" style={{ backgroundColor: t.swatch }} />
+                  <div
+                    className={`w-full aspect-square rounded-lg mb-2 bg-background border-4 ${t.border}/30 shadow-sm flex items-center justify-center`}
+                  >
+                    <div className="w-2/3 h-2/3 rounded-sm bg-muted border border-dashed border-border" />
+                  </div>
                   <span className="text-xs font-bold text-foreground/80">{t.label}</span>
                 </button>
               ))}

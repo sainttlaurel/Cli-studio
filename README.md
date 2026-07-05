@@ -70,7 +70,9 @@ components/               CameraCapture, StripPreview, EditorPanel, ExportPanel,
 lib/
   store.ts                Zustand store holding captured frames + edits (sessionStorage-backed)
   filters.ts               CSS filter presets shared by live preview + canvas export
-  compositor.ts             canvas compositor that renders the final PNG
+  compositor.ts             canvas compositor that renders the final PNG; also exposes
+                            renderStripCanvas() and getStripDimensions(), shared with lib/print.ts
+  print.ts                  print-page compositor (300dpi, size presets) + window.print() trigger
   supabase.ts               Supabase client
   session.ts                anonymous per-browser session id
 supabase/schema.sql        table + RLS + storage bucket setup
@@ -88,10 +90,6 @@ foundation to build on:
 - **Templates gallery** (the "37 templates" browser from the mockup) is
   simplified to 3 frame-color themes. Easy to expand into a real template
   picker backed by a `templates` table if you want more variety.
-- **30-day auto-delete** — the footer copy promises it, but actually
-  removing files from Storage needs a scheduled Edge Function (a SQL
-  `pg_cron` job can clean the `strips` table rows; a commented-out example
-  is in `schema.sql`, with a note on why Storage cleanup needs its own job).
 - **QR codes** are generated via the free `api.qrserver.com` endpoint to
   avoid an extra dependency — swap in a local QR library (e.g. `qrcode`) if
   you'd rather not depend on a third-party service.
@@ -99,3 +97,9 @@ foundation to build on:
   aren't wired up — most of those platforms don't support arbitrary web
   share intents, so this would use the native `navigator.share()` API on
   supported devices as a first pass.
+- **Print export** (`lib/print.ts`) opens the browser's native print
+  dialog rather than generating a PDF directly — "Save as PDF" from that
+  dialog covers the PDF use case without adding a library like `jspdf`.
+  `@page` size support varies by browser (particularly Safari), so it's
+  worth a manual print-preview check across Chrome/Firefox/Safari,
+  desktop and iOS, before relying on it for real print jobs.

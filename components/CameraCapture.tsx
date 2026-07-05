@@ -1,8 +1,9 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Camera, Upload, RefreshCw, Grid3x3 } from 'lucide-react';
+import { Camera, Upload, RefreshCw, Grid3x3, Volume2, VolumeX } from 'lucide-react';
 import { useBoothStore } from '@/lib/store';
+import { playCountdownTick, playShutter } from '@/lib/sound';
 
 const TIMER_OPTIONS = [
   { label: '3s', value: 3 },
@@ -18,7 +19,7 @@ export function CameraCapture() {
   const [timerSeconds, setTimerSeconds] = useState(3);
   const [showGrid, setShowGrid] = useState(false);
 
-  const { frames, addFrame, mirror, toggleMirror } = useBoothStore();
+  const { frames, addFrame, mirror, toggleMirror, soundEnabled, toggleSound } = useBoothStore();
 
   useEffect(() => {
     let stream: MediaStream | null = null;
@@ -65,22 +66,25 @@ export function CameraCapture() {
   const triggerCapture = useCallback(() => {
     if (frames.length >= 4) return;
     if (timerSeconds === 0) {
+      if (soundEnabled) playShutter();
       capture();
       return;
     }
     setCountdown(timerSeconds);
-  }, [capture, frames.length, timerSeconds]);
+  }, [capture, frames.length, timerSeconds, soundEnabled]);
 
   useEffect(() => {
     if (countdown === null) return;
     if (countdown === 0) {
+      if (soundEnabled) playShutter();
       capture();
       setCountdown(null);
       return;
     }
+    if (soundEnabled) playCountdownTick();
     const t = setTimeout(() => setCountdown((c) => (c ?? 1) - 1), 1000);
     return () => clearTimeout(t);
-  }, [countdown, capture]);
+  }, [countdown, capture, soundEnabled]);
 
   const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -138,6 +142,13 @@ export function CameraCapture() {
             title="Mirror Camera"
           >
             <RefreshCw size={16} />
+          </button>
+          <button
+            onClick={toggleSound}
+            className="p-2 bg-primary/50 hover:bg-primary/70 text-primary-foreground rounded-lg backdrop-blur transition-all"
+            title={soundEnabled ? 'Mute Sounds' : 'Unmute Sounds'}
+          >
+            {soundEnabled ? <Volume2 size={16} /> : <VolumeX size={16} />}
           </button>
         </div>
 

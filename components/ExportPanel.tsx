@@ -1,18 +1,23 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Download, FileText, Copy, Loader2, RotateCcw, Share2 } from 'lucide-react';
+import { Download, FileText, Copy, Loader2, RotateCcw, Share2, Printer } from 'lucide-react';
 import { useBoothStore } from '@/lib/store';
 import { compositeStrip } from '@/lib/compositor';
+import { compositePrintPage, printPageImage, PRINT_SIZES } from '@/lib/print';
+import type { PrintSizeKey } from '@/lib/print';
 import { THEME_HEX } from '@/lib/theme-colors';
 import { uploadStrip } from '@/lib/api';
 import { getSessionId } from '@/lib/session';
 
 type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
+type PrintStatus = 'idle' | 'rendering' | 'error';
 type ShareNavigator = Navigator & {
   share?: (data: ShareData) => Promise<void>;
   canShare?: (data?: ShareData) => boolean;
 };
+
+const PRINT_SIZE_ORDER: PrintSizeKey[] = ['2x6', '4x6', 'a4', 'letter'];
 
 export function ExportPanel() {
   const { frames, filter, adjustments, theme, caption } = useBoothStore();
@@ -23,6 +28,10 @@ export function ExportPanel() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [attempt, setAttempt] = useState(0);
+
+  const [printSize, setPrintSize] = useState<PrintSizeKey>('2x6');
+  const [printStatus, setPrintStatus] = useState<PrintStatus>('idle');
+  const [printError, setPrintError] = useState<string | null>(null);
 
   const run = useCallback(async () => {
     try {
@@ -115,6 +124,33 @@ export function ExportPanel() {
     }
   };
 
+  const handlePrint = async () => {
+    let pageUrl: string | null = null;
+    try {
+      setPrintError(null);
+      setPrintStatus('rendering');
+      const pageBlob = await compositePrintPage({
+        frames,
+        filter,
+        brightness: adjustments.brightness,
+        contrast: adjustments.contrast,
+        themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
+        caption,
+        printSize,
+      });
+      pageUrl = URL.createObjectURL(pageBlob);
+      await printPageImage(pageUrl, printSize);
+      setPrintStatus('idle');
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(err);
+      setPrintError(err instanceof Error ? err.message : 'Something went wrong preparing the print page.');
+      setPrintStatus('error');
+    } finally {
+      if (pageUrl) URL.revokeObjectURL(pageUrl);
+    }
+  };
+
   const qrSrc = shareUrl
     ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`
     : null;
@@ -162,6 +198,64 @@ export function ExportPanel() {
             </a>
           </div>
         )}
+      </div>
+
+      <div className="bg-background p-6 rounded-3xl border border-border/80 shadow-lg flex flex-col gap-4">
+        <h2 className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
+          <Printer className="text-primary" size={18} />
+          <span>Print-Ready Copy</span>
+        </h2>
+
+        <div>
+          <span className="text-xs font-semibold text-muted-foreground block mb-2">Choose a size</span>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {PRINT_SIZE_ORDER.map((key) => {
+              const spec = PRINT_SIZES[key];
+              return (
+                <button
+                  key={key}
+                  onClick={() => setPrintSize(key)}
+                  disabled={printStatus === 'rendering'}
+                  className={`px-2 py-2.5 text-xs font-bold rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                    printSize === key
+                      ? 'bg-primary/5 border-primary text-primary'
+                      : 'bg-background border-border text-foreground/70 hover:border-primary/50'
+                  }`}
+                >
+                  {spec.label}
+                </button>
+              );
+            })}
+          </div>
+          {PRINT_SIZES[printSize].copies > 1 && (
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Prints two copies side by side, so you can share one and keep one. ✂️
+            </p>
+          )}
+        </div>
+
+        {printStatus === 'error' && <p className="text-sm text-destructive">{printError}</p>}
+
+        <button
+          onClick={handlePrint}
+          disabled={printStatus === 'rendering' || frames.length === 0}
+          className="w-full py-3 px-4 bg-secondary-foreground hover:bg-secondary-foreground/90 disabled:opacity-50 text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
+        >
+          {printStatus === 'rendering' ? (
+            <>
+              <Loader2 className="animate-spin" size={18} />
+              <span>Preparing print page...</span>
+            </>
+          ) : (
+            <>
+              <Printer size={18} />
+              <span>Print or Save as PDF</span>
+            </>
+          )}
+        </button>
+        <p className="text-[11px] text-muted-foreground -mt-1">
+          Opens your browser&apos;s print dialog at 300dpi — choose &ldquo;Save as PDF&rdquo; there if you want a file instead of paper.
+        </p>
       </div>
 
       {status === 'done' && shareUrl && (
