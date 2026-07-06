@@ -1,18 +1,31 @@
-import { nanoid } from 'nanoid';
-
-const KEY = 'clickstudio_session_id';
+import { ensureAnonSession } from './supabase';
 
 /**
- * Returns a stable anonymous id for this browser, generating and
- * persisting one on first use. Used to scope Supabase Storage paths
- * per "session" without requiring any real authentication.
+ * Returns the current anonymous session's user id — a real Supabase Auth
+ * `auth.uid()`, backed by an anonymous sign-in — creating that session on
+ * first call if one doesn't exist yet.
+ *
+ * This replaces the earlier client-generated nanoid stored in
+ * localStorage: that string was just data the browser happened to send
+ * along, unverifiable by the server or by RLS. `auth.uid()` is issued and
+ * verified by Supabase Auth itself, which is what lets Session History,
+ * the gallery opt-in, and rate limiting actually enforce "this is your
+ * own stuff" instead of trusting whatever the client claims.
  */
-export function getSessionId(): string {
-  if (typeof window === 'undefined') return 'server';
-  let id = window.localStorage.getItem(KEY);
-  if (!id) {
-    id = nanoid(12);
-    window.localStorage.setItem(KEY, id);
-  }
-  return id;
+export async function getSessionId(): Promise<string> {
+  const session = await ensureAnonSession();
+  if (!session?.user?.id) throw new Error('Could not establish a session.');
+  return session.user.id;
+}
+
+/**
+ * Returns the current session's access token. Used to authenticate
+ * requests to the upload-strip edge function as this specific anonymous
+ * user (via a verified JWT), rather than as the shared, unattributed
+ * anon API key.
+ */
+export async function getAccessToken(): Promise<string> {
+  const session = await ensureAnonSession();
+  if (!session?.access_token) throw new Error('Could not establish a session.');
+  return session.access_token;
 }

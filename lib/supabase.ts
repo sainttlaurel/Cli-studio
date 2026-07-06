@@ -11,3 +11,20 @@ if (!supabaseUrl || !supabaseAnonKey) {
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
+/**
+ * Ensures the current browser has a signed-in Supabase Auth session,
+ * creating an anonymous one on first visit if needed. Supabase persists
+ * the session (default localStorage-backed), so returning visitors keep
+ * the same `auth.uid()` across reloads — that's what Session History,
+ * the gallery opt-in, and per-user rate limiting are now anchored to,
+ * instead of a client-generated string nobody could actually verify.
+ */
+export async function ensureAnonSession() {
+  const { data } = await supabase.auth.getSession();
+  if (data.session) return data.session;
+
+  const { data: signInData, error } = await supabase.auth.signInAnonymously();
+  if (error) throw error;
+  return signInData.session;
+}

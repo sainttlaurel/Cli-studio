@@ -8,7 +8,6 @@ import { compositePrintPage, printPageImage, PRINT_SIZES } from '@/lib/print';
 import type { PrintSizeKey } from '@/lib/print';
 import { THEME_HEX } from '@/lib/theme-colors';
 import { uploadStrip } from '@/lib/api';
-import { getSessionId } from '@/lib/session';
 
 type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
 type PrintStatus = 'idle' | 'rendering' | 'error';
@@ -49,9 +48,11 @@ export function ExportPanel() {
       setBlobUrl(URL.createObjectURL(renderedBlob));
 
       setStatus('uploading');
+      // sessionId is no longer passed here — the upload-strip edge
+      // function derives the caller's identity itself from the verified
+      // access token that lib/api.ts's uploadStrip() attaches.
       const result = await uploadStrip({
         file: renderedBlob,
-        sessionId: getSessionId(),
         theme,
         filter,
         caption,

@@ -61,7 +61,7 @@ Cheap, high-impact upgrades to the existing editor, no new data model needed.
 
 ---
 
-## v1.3 — Real Print Export (Planned)
+## v1.3 — Real Print Export (Done)
 
 The Export screen already has a "Print-Ready PDF" button — right now it's
 a stub `alert()`. Making it real:
@@ -75,7 +75,7 @@ a stub `alert()`. Making it real:
 
 ---
 
-## v1.4 — Session History & Gallery (Planned)
+## v1.4 — Session History & Gallery (Done)
 
 Since every strip is already tagged with an anonymous `session_id`, we can
 give people a "my strips" view without adding real accounts:

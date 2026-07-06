@@ -6,5 +6,6 @@ export interface Strip {
   theme: string;
   filter: string;
   caption: string | null;
+  is_public: boolean;
   created_at: string;
 }
