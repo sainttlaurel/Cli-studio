@@ -139,18 +139,26 @@ export function EditorPanel() {
               <h3 className="text-sm font-heading font-bold text-foreground">Select Filter Preset</h3>
               <span className="text-xs text-muted-foreground">{FILTERS.length} gorgeous options</span>
             </div>
-            <div className="grid grid-cols-3 md:grid-cols-4 gap-3">
+            {/* flex-wrap + justify-center (rather than CSS grid) so an
+                uneven last row — 5 filters doesn't divide evenly into 3
+                or 4 columns — centers itself instead of hugging the left
+                edge with an empty gap. */}
+            <div className="flex flex-wrap justify-center gap-3">
               {FILTERS.map((f) => (
                 <button
                   key={f.key}
                   onClick={() => setFilter(f.key)}
-                  className={`p-1.5 rounded-xl border-2 cursor-pointer text-center transition-all ${
+                  className={`w-[calc(33.333%-8px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 cursor-pointer text-center transition-all ${
                     filter === f.key
                       ? 'bg-primary/5 border-primary'
                       : 'bg-background border-border hover:border-primary/50'
                   }`}
                 >
-                  <div className="aspect-video bg-muted rounded-lg mb-1.5 overflow-hidden">
+                  {/* 4:3 to match the real crop used in the exported strip
+                      (compositor.ts FRAME_W:FRAME_H and StripPreview's
+                      aspect-[4/3]) — previously aspect-video (16:9) showed
+                      a different crop than what people actually got. */}
+                  <div className="aspect-[4/3] bg-muted rounded-lg mb-1.5 overflow-hidden">
                     {thumbnailSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -224,10 +232,14 @@ export function EditorPanel() {
                     theme === t.key ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  <div
-                    className={`w-full aspect-square rounded-lg mb-2 bg-background border-4 ${t.border}/30 shadow-sm flex items-center justify-center`}
-                  >
-                    <div className="w-2/3 h-2/3 rounded-sm bg-muted border border-dashed border-border" />
+                  {/* Full-opacity theme border (was /30, which read as the
+                      same pale gray across all three themes) plus a mini
+                      2-frame strip mockup instead of one generic dashed
+                      box, so the swatch actually previews "a strip with
+                      this border color" rather than an abstract icon. */}
+                  <div className={`w-full aspect-square rounded-lg mb-2 bg-background border-4 ${t.border} shadow-sm p-1.5 flex flex-col gap-1`}>
+                    <div className="flex-1 rounded-sm bg-muted" />
+                    <div className="flex-1 rounded-sm bg-muted" />
                   </div>
                   <span className="text-xs font-bold text-foreground/80">{t.label}</span>
                 </button>

@@ -11,6 +11,8 @@ const TIMER_OPTIONS = [
   { label: 'Off', value: 0 },
 ];
 
+const DEFAULT_ASPECT = 3 / 4;
+
 export function CameraCapture() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -18,6 +20,8 @@ export function CameraCapture() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [timerSeconds, setTimerSeconds] = useState(3);
   const [showGrid, setShowGrid] = useState(false);
+
+  const [videoAspect, setVideoAspect] = useState<number>(DEFAULT_ASPECT);
 
   const { frames, addFrame, mirror, toggleMirror, soundEnabled, toggleSound } = useBoothStore();
 
@@ -40,6 +44,12 @@ export function CameraCapture() {
     return () => {
       stream?.getTracks().forEach((t) => t.stop());
     };
+  }, []);
+
+  const handleLoadedMetadata = useCallback(() => {
+    const video = videoRef.current;
+    if (!video || !video.videoWidth || !video.videoHeight) return;
+    setVideoAspect(video.videoWidth / video.videoHeight);
   }, []);
 
   const capture = useCallback(() => {
@@ -99,7 +109,10 @@ export function CameraCapture() {
 
   return (
     <div className="bg-background p-4 rounded-3xl border-2 border-primary/20 shadow-xl flex flex-col gap-4 relative">
-      <div className="relative aspect-video w-full rounded-2xl overflow-hidden bg-primary shadow-inner">
+      <div
+        className="relative w-full max-h-[70vh] rounded-2xl overflow-hidden bg-primary shadow-inner mx-auto"
+        style={{ aspectRatio: String(videoAspect) }}
+      >
         {streamError ? (
           <div className="w-full h-full flex items-center justify-center text-primary-foreground text-sm text-center px-6">
             {streamError}
@@ -110,6 +123,7 @@ export function CameraCapture() {
             autoPlay
             playsInline
             muted
+            onLoadedMetadata={handleLoadedMetadata}
             className={`w-full h-full object-cover ${mirror ? '-scale-x-100' : ''}`}
           />
         )}
