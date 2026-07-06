@@ -50,11 +50,11 @@ export function WizardHeader({ step }: { step: number }) {
         })}
       </div>
 
-      <div className="flex items-center gap-1.5 md:gap-3">
+    <div className="flex items-center gap-0.5 sm:gap-1.5 md:gap-3">
         <Link
           href="/gallery"
           title="Public Gallery"
-          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
         >
           <Images size={14} />
           <span className="hidden lg:inline">Gallery</span>
@@ -62,7 +62,7 @@ export function WizardHeader({ step }: { step: number }) {
         <Link
           href="/wall"
           title="Feedback Wall"
-          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
         >
           <MessageCircle size={14} />
           <span className="hidden lg:inline">Wall</span>
@@ -70,7 +70,7 @@ export function WizardHeader({ step }: { step: number }) {
         <Link
           href="/history"
           title="My Strips"
-          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
         >
           <Clock size={14} />
           <span className="hidden lg:inline">My Strips</span>
