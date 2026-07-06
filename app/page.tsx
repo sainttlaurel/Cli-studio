@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star } from 'lucide-react';
+import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star, Images, Clock } from 'lucide-react';
 
 const TESTIMONIALS = [
   {
@@ -40,6 +40,20 @@ export default function LandingPage() {
           <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
             <Sparkles size={14} /> No App Install Needed
           </span>
+          <Link
+            href="/gallery"
+            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Images size={14} />
+            Gallery
+          </Link>
+          <Link
+            href="/history"
+            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Clock size={14} />
+            My Strips
+          </Link>
           <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             Loved by creators
           </a>

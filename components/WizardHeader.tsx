@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Camera, Home } from 'lucide-react';
+import { Camera, Home, Images, Clock } from 'lucide-react';
 
 const STEPS = ['Start', 'Shoot', 'Edit', 'Export'];
 
@@ -50,13 +50,31 @@ export function WizardHeader({ step }: { step: number }) {
         })}
       </div>
 
-      <Link
-        href="/"
-        className="px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
-      >
-        <Home size={14} />
-        <span>Exit Studio</span>
-      </Link>
+      <div className="flex items-center gap-1.5 md:gap-3">
+        <Link
+          href="/gallery"
+          title="Public Gallery"
+          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+        >
+          <Images size={14} />
+          <span className="hidden lg:inline">Gallery</span>
+        </Link>
+        <Link
+          href="/history"
+          title="My Strips"
+          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+        >
+          <Clock size={14} />
+          <span className="hidden lg:inline">My Strips</span>
+        </Link>
+        <Link
+          href="/"
+          className="px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+        >
+          <Home size={14} />
+          <span>Exit Studio</span>
+        </Link>
+      </div>
     </header>
   );
 }
