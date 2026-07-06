@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star, Images, Clock } from 'lucide-react';
+import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star, Images, Clock, MessageCircle } from 'lucide-react';
 
 const TESTIMONIALS = [
   {
@@ -46,6 +46,13 @@ export default function LandingPage() {
           >
             <Images size={14} />
             Gallery
+          </Link>
+          <Link
+            href="/wall"
+            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          >
+            <MessageCircle size={14} />
+            Wall
           </Link>
           <Link
             href="/history"

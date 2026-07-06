@@ -9,3 +9,11 @@ export interface Strip {
   is_public: boolean;
   created_at: string;
 }
+
+export interface Message {
+  id: string;
+  session_id: string;
+  name: string | null;
+  message: string;
+  created_at: string;
+}

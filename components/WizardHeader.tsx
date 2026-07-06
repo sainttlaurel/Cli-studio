@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Camera, Home, Images, Clock } from 'lucide-react';
+import { Camera, Home, Images, Clock, MessageCircle } from 'lucide-react';
 
 const STEPS = ['Start', 'Shoot', 'Edit', 'Export'];
 
@@ -58,6 +58,14 @@ export function WizardHeader({ step }: { step: number }) {
         >
           <Images size={14} />
           <span className="hidden lg:inline">Gallery</span>
+        </Link>
+        <Link
+          href="/wall"
+          title="Feedback Wall"
+          className="hidden md:inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-2"
+        >
+          <MessageCircle size={14} />
+          <span className="hidden lg:inline">Wall</span>
         </Link>
         <Link
           href="/history"
