@@ -196,6 +196,23 @@ changes without reading the repo:
 
 ---
 
+## v2.4 — Sticker Packs (Done)
+
+Lightweight sticker layer support inside the current editor/export pipeline:
+
+- Stickers tab now offers 6 local Y2K-style sticker presets
+- Stickers can be placed, dragged on the live strip preview, resized,
+  rotated, removed, cleared, and included in undo/redo history
+- Exported PNGs and print-ready output draw stickers into the final canvas
+- No database model yet; sticker definitions remain local like the current
+  template gallery
+
+**Later option:** richer sticker packs with custom image assets, text-overlay
+layers, and per-sticker z-order controls if the editor moves further toward a
+full layer system.
+
+---
+
 ## v2.5 — Offline Shell / Service Worker (Done)
 
 PWA offline support on top of the install metadata shipped in v2.1:
@@ -228,20 +245,25 @@ Lightweight per-strip engagement counters, no third-party tracking:
 
 ---
 
-## v2.4 — Sticker Packs (Done)
+## v2.7 — Template Packs in Database (Done)
 
-Lightweight sticker layer support inside the current editor/export pipeline:
+Move the local 9-template gallery into a Supabase-backed `templates` table
+so templates can be added, updated, or grouped without a code deploy:
 
-- Stickers tab now offers 6 local Y2K-style sticker presets
-- Stickers can be placed, dragged on the live strip preview, resized,
-  rotated, removed, cleared, and included in undo/redo history
-- Exported PNGs and print-ready output draw stickers into the final canvas
-- No database model yet; sticker definitions remain local like the current
-  template gallery
+**Data model:**
+- New `public.templates` table: `id text PK, name text, hex_color text,
+  label text, category text, sort_order int, is_active bool, created_at`
+- Seeded with the 9 existing local themes (pink, lavender, blue, mint,
+  lemon, coral, grape, lime, mono)
+- RLS: public SELECT for active templates; writes via service role only
 
-**Later option:** richer sticker packs with custom image assets, text-overlay
-layers, and per-sticker z-order controls if the editor moves further toward a
-full layer system.
+**Editor integration:**
+- Frame tab fetches templates from Supabase on mount (with a local fallback
+  to the hardcoded list if the fetch fails, so offline still works)
+- Loading skeleton shown while fetching; error state falls back silently
+- `ThemeKey` union type stays for now — extended dynamically from DB rows
+
+**Migration:** `supabase/migrations/0006_v2_7_templates.sql`
 
 ---
 
@@ -249,9 +271,6 @@ full layer system.
 
 - Advanced layer editor — custom sticker image packs, text overlays with the
   same drag/resize behavior, z-order controls, and richer transforms.
-- Template packs in the database — the local gallery now has 9 frame
-  templates. A `templates` table still makes sense later for event packs,
-  seasonal drops, or admin-editable branding.
 - Boomerang/GIF mode — short looping clip instead of a static frame
 - Event/kiosk mode — big-screen tablet UI for real parties/weddings, maybe
   a physical printer integration

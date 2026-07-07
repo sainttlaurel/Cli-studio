@@ -103,3 +103,27 @@ $$;
 
 grant execute on function public.increment_strip_view(text) to anon;
 grant execute on function public.increment_strip_download(text) to anon;
+
+-- 5. Templates table (v2.7)
+-- Stores frame/theme definitions. Seeded with the 9 classic themes.
+-- New templates can be added via the Supabase dashboard without a code deploy.
+
+create table if not exists public.templates (
+  id text primary key,
+  name text not null,
+  hex_color text not null,
+  border_class text not null,
+  accent_class text not null,
+  paper_class text not null,
+  category text not null default 'classic',
+  sort_order int not null default 0,
+  is_active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
+alter table public.templates enable row level security;
+
+drop policy if exists "Active templates are readable by everyone" on public.templates;
+create policy "Active templates are readable by everyone"
+  on public.templates for select
+  using (is_active = true);

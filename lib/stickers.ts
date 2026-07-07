@@ -1,77 +1,160 @@
-import type { PlacedSticker, StickerKey } from './store';
+import type { PlacedSticker, TextStickerKey, ImageStickerKey } from "./store";
 
-export interface StickerDefinition {
-  key: StickerKey;
+// ── Text badge stickers (original Y2K pack) ──────────────────────────────────
+
+export interface TextStickerDefinition {
+  type: "text";
+  key: TextStickerKey;
   label: string;
   text: string;
   bg: string;
   fg: string;
   border: string;
-  shape: 'pill' | 'circle' | 'ticket';
+  shape: "pill" | "circle" | "ticket";
 }
 
-export const STICKERS: StickerDefinition[] = [
+export const TEXT_STICKERS: TextStickerDefinition[] = [
   {
-    key: 'love',
-    label: 'Love',
-    text: 'LOVE',
-    bg: '#FFE4F1',
-    fg: '#BE185D',
-    border: '#FF1493',
-    shape: 'pill',
+    type: "text",
+    key: "love",
+    label: "Love",
+    text: "LOVE",
+    bg: "#FFE4F1",
+    fg: "#BE185D",
+    border: "#FF1493",
+    shape: "pill",
   },
   {
-    key: 'xoxo',
-    label: 'XOXO',
-    text: 'XOXO',
-    bg: '#EDE9FE',
-    fg: '#6D28D9',
-    border: '#A78BFA',
-    shape: 'ticket',
+    type: "text",
+    key: "xoxo",
+    label: "XOXO",
+    text: "XOXO",
+    bg: "#EDE9FE",
+    fg: "#6D28D9",
+    border: "#A78BFA",
+    shape: "ticket",
   },
   {
-    key: 'bff',
-    label: 'BFF',
-    text: 'BFF',
-    bg: '#D1FAE5',
-    fg: '#047857',
-    border: '#34D399',
-    shape: 'circle',
+    type: "text",
+    key: "bff",
+    label: "BFF",
+    text: "BFF",
+    bg: "#D1FAE5",
+    fg: "#047857",
+    border: "#34D399",
+    shape: "circle",
   },
   {
-    key: 'wow',
-    label: 'Wow',
-    text: 'WOW',
-    bg: '#FEF3C7',
-    fg: '#B45309',
-    border: '#FBBF24',
-    shape: 'pill',
+    type: "text",
+    key: "wow",
+    label: "Wow",
+    text: "WOW",
+    bg: "#FEF3C7",
+    fg: "#B45309",
+    border: "#FBBF24",
+    shape: "pill",
   },
   {
-    key: 'cute',
-    label: 'Cute',
-    text: 'CUTE',
-    bg: '#DBEAFE',
-    fg: '#1D4ED8',
-    border: '#60A5FA',
-    shape: 'ticket',
+    type: "text",
+    key: "cute",
+    label: "Cute",
+    text: "CUTE",
+    bg: "#DBEAFE",
+    fg: "#1D4ED8",
+    border: "#60A5FA",
+    shape: "ticket",
   },
   {
-    key: 'flash',
-    label: 'Flash',
-    text: 'FLASH',
-    bg: '#FCE7F3',
-    fg: '#9D174D',
-    border: '#F472B6',
-    shape: 'pill',
+    type: "text",
+    key: "flash",
+    label: "Flash",
+    text: "FLASH",
+    bg: "#FCE7F3",
+    fg: "#9D174D",
+    border: "#F472B6",
+    shape: "pill",
   },
 ];
 
-export function getStickerDefinition(key: StickerKey) {
-  return STICKERS.find((sticker) => sticker.key === key) ?? STICKERS[0];
+// ── Image sticker packs ───────────────────────────────────────────────────────
+
+export interface ImageStickerDefinition {
+  type: "image";
+  key: ImageStickerKey;
+  label: string;
+  src: string; // path relative to /public
 }
 
-export function getNextStickerPosition(count: number): Pick<PlacedSticker, 'x' | 'y' | 'rotation'> {
+export interface StickerPack {
+  id: string;
+  label: string;
+  emoji: string;
+  stickers: ImageStickerDefinition[];
+}
+
+function makeImagePack(
+  id: "college" | "flowers" | "ribbon" | "y2k",
+  label: string,
+  emoji: string,
+  count: number,
+): StickerPack {
+  return {
+    id,
+    label,
+    emoji,
+    stickers: Array.from({ length: count }, (_, i) => ({
+      type: "image" as const,
+      key: `${id}-${i + 1}` as ImageStickerKey,
+      label: `${label} ${i + 1}`,
+      src: `/stickers/${id}/${i + 1}.png`,
+    })),
+  };
+}
+
+export const IMAGE_PACKS: StickerPack[] = [
+  makeImagePack("college", "College", "🎓", 10),
+  makeImagePack("flowers", "Flowers", "🌸", 10),
+  makeImagePack("ribbon", "Ribbon", "🎀", 10),
+  makeImagePack("y2k", "Y2K", "⭐", 10),
+];
+
+// ── Legacy export (keeps existing EditorPanel / StripPreview working) ─────────
+// `STICKERS` still points to the text badges so callers that haven't been
+// updated yet don't break.
+export const STICKERS = TEXT_STICKERS;
+
+// ── Lookup helpers ────────────────────────────────────────────────────────────
+
+export function getTextStickerDefinition(
+  key: TextStickerKey,
+): TextStickerDefinition {
+  return TEXT_STICKERS.find((s) => s.key === key) ?? TEXT_STICKERS[0];
+}
+
+export function getImageStickerDefinition(
+  key: ImageStickerKey,
+): ImageStickerDefinition | undefined {
+  for (const pack of IMAGE_PACKS) {
+    const found = pack.stickers.find((s) => s.key === key);
+    if (found) return found;
+  }
+  return undefined;
+}
+
+/** Works for both text and image sticker keys. */
+export function getStickerDefinition(
+  key: string,
+): TextStickerDefinition | ImageStickerDefinition {
+  if (key.includes("-")) {
+    const img = getImageStickerDefinition(key as ImageStickerKey);
+    if (img) return img;
+  }
+  return getTextStickerDefinition(key as TextStickerKey);
+}
+
+export function getNextStickerPosition(
+  count: number,
+): Pick<PlacedSticker, "x" | "y" | "rotation"> {
   const positions = [
     { x: 18, y: 16, rotation: -9 },
     { x: 78, y: 24, rotation: 8 },
@@ -80,6 +163,5 @@ export function getNextStickerPosition(count: number): Pick<PlacedSticker, 'x' |
     { x: 50, y: 43, rotation: 3 },
     { x: 40, y: 84, rotation: -4 },
   ];
-
   return positions[count % positions.length];
 }
