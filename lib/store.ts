@@ -5,7 +5,16 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { temporal } from 'zundo';
 
 export type FilterKey = 'none' | 'cherry' | 'noir' | 'cyber' | 'vintage';
-export type ThemeKey = 'pink' | 'lavender' | 'blue';
+export type ThemeKey =
+  | 'pink'
+  | 'lavender'
+  | 'blue'
+  | 'mint'
+  | 'lemon'
+  | 'coral'
+  | 'grape'
+  | 'lime'
+  | 'mono';
 
 interface Adjustments {
   brightness: number; // -50 to 50

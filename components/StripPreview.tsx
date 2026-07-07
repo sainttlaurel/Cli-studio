@@ -7,6 +7,12 @@ const THEME_STYLES: Record<string, { border: string; text: string }> = {
   pink: { border: 'border-primary/20', text: 'text-primary' },
   lavender: { border: 'border-secondary-foreground/20', text: 'text-secondary-foreground' },
   blue: { border: 'border-tertiary/40', text: 'text-tertiary' },
+  mint: { border: 'border-emerald-400/45', text: 'text-emerald-600' },
+  lemon: { border: 'border-amber-300/60', text: 'text-amber-600' },
+  coral: { border: 'border-orange-400/50', text: 'text-orange-600' },
+  grape: { border: 'border-violet-500/40', text: 'text-violet-700' },
+  lime: { border: 'border-lime-400/55', text: 'text-lime-700' },
+  mono: { border: 'border-gray-900/35', text: 'text-gray-900' },
 };
 
 export function StripPreview() {

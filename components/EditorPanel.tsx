@@ -14,10 +14,22 @@ const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'none', label: 'Natural' },
 ];
 
-const THEMES: { key: ThemeKey; label: string; border: string }[] = [
-  { key: 'pink', label: 'Y2K Pink', border: 'border-primary' },
-  { key: 'lavender', label: 'Lavender Dream', border: 'border-secondary-foreground' },
-  { key: 'blue', label: 'Baby Blue', border: 'border-tertiary' },
+const THEMES: { key: ThemeKey; label: string; border: string; accent: string; paper: string }[] = [
+  { key: 'pink', label: 'Y2K Pink', border: 'border-primary', accent: 'bg-primary', paper: 'bg-pink-50' },
+  {
+    key: 'lavender',
+    label: 'Lavender Dream',
+    border: 'border-secondary-foreground',
+    accent: 'bg-secondary-foreground',
+    paper: 'bg-violet-50',
+  },
+  { key: 'blue', label: 'Baby Blue', border: 'border-tertiary', accent: 'bg-tertiary', paper: 'bg-sky-50' },
+  { key: 'mint', label: 'Mint Pop', border: 'border-emerald-400', accent: 'bg-emerald-500', paper: 'bg-emerald-50' },
+  { key: 'lemon', label: 'Lemon Flash', border: 'border-amber-300', accent: 'bg-amber-400', paper: 'bg-yellow-50' },
+  { key: 'coral', label: 'Coral Crush', border: 'border-orange-400', accent: 'bg-orange-500', paper: 'bg-orange-50' },
+  { key: 'grape', label: 'Grape Beam', border: 'border-violet-500', accent: 'bg-violet-600', paper: 'bg-purple-50' },
+  { key: 'lime', label: 'Lime Glow', border: 'border-lime-400', accent: 'bg-lime-500', paper: 'bg-lime-50' },
+  { key: 'mono', label: 'Mono Star', border: 'border-gray-900', accent: 'bg-gray-900', paper: 'bg-gray-50' },
 ];
 
 const TABS = [
@@ -222,8 +234,11 @@ export function EditorPanel() {
 
         {tab === 'frame' && (
           <div>
-            <h3 className="text-sm font-heading font-bold text-foreground mb-4">Choose Your Frame Vibe</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-sm font-heading font-bold text-foreground">Choose Your Template</h3>
+              <span className="text-xs text-muted-foreground">{THEMES.length} frame vibes</span>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {THEMES.map((t) => (
                 <button
                   key={t.key}
@@ -237,9 +252,13 @@ export function EditorPanel() {
                       2-frame strip mockup instead of one generic dashed
                       box, so the swatch actually previews "a strip with
                       this border color" rather than an abstract icon. */}
-                  <div className={`w-full aspect-square rounded-lg mb-2 bg-background border-4 ${t.border} shadow-sm p-1.5 flex flex-col gap-1`}>
+                  <div className={`w-full aspect-square rounded-lg mb-2 ${t.paper} border-4 ${t.border} shadow-sm p-1.5 flex flex-col gap-1`}>
                     <div className="flex-1 rounded-sm bg-muted" />
                     <div className="flex-1 rounded-sm bg-muted" />
+                    <div className="flex items-center justify-between pt-1">
+                      <span className={`h-1.5 w-10 rounded-full ${t.accent}`} />
+                      <span className={`h-1.5 w-1.5 rounded-full ${t.accent}`} />
+                    </div>
                   </div>
                   <span className="text-xs font-bold text-foreground/80">{t.label}</span>
                 </button>

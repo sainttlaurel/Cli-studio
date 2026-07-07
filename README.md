@@ -89,9 +89,9 @@ foundation to build on:
 - **Sticker packs** — the Stickers tab is a "coming soon" placeholder.
   Adding draggable stickers would mean moving the preview from plain
   `<img>` layers to an absolutely-positioned canvas/layer system.
-- **Templates gallery** (the "37 templates" browser from the mockup) is
-  simplified to 3 frame-color themes. Easy to expand into a real template
-  picker backed by a `templates` table if you want more variety.
+- **Template packs** currently ship as 9 local frame themes. A Supabase
+  `templates` table still makes sense later if you want seasonal packs,
+  event branding, or admin-editable templates.
 - **QR codes** are generated via the free `api.qrserver.com` endpoint to
   avoid an extra dependency — swap in a local QR library (e.g. `qrcode`) if
   you'd rather not depend on a third-party service.

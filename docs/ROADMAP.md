@@ -170,15 +170,31 @@ depend on live Supabase/network behavior.
 
 ---
 
+## v2.2 — Expanded Template Gallery (Done)
+
+First pass at more visual variety without adding a database:
+
+- Frame/template picker expanded from 3 themes to 9 local templates
+- Live editor swatches show each template's border, paper tint, and accent
+- Preview and exported PNG/print output use the selected template color
+- No `templates` table yet; this keeps the feature lightweight while the
+  app is still a no-login casual booth
+
+**Later option:** move templates into a Supabase-backed gallery if the app
+needs many seasonal/event packs, custom branding, or admin-editable
+templates.
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
 - Sticker packs — draggable, resizable, rotatable stickers placed by click,
   plus a text-overlay tool with the same drag/resize behavior. Needs a
   layer-based canvas editor instead of the current flat CSS filters (each
   sticker/text needs its own x/y/scale/rotation state).
-- Bigger template gallery — the mockups showed 37 templates; current build
-  has 3 color themes. Could back this with a `templates` table and a
-  carousel/modal picker.
+- Template packs in the database — the local gallery now has 9 frame
+  templates. A `templates` table still makes sense later for event packs,
+  seasonal drops, or admin-editable branding.
 - Offline shell/service worker — useful if ClickStudio needs capture/edit
   to keep working during weak network moments. PWA install metadata is
   already shipped; this would be the offline layer on top.
