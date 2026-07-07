@@ -196,6 +196,38 @@ changes without reading the repo:
 
 ---
 
+## v2.5 — Offline Shell / Service Worker (Done)
+
+PWA offline support on top of the install metadata shipped in v2.1:
+
+- `serwist` + `@serwist/next` integrated via `withSerwist` in `next.config.mjs`
+- Service worker at `app/sw.ts` with precaching for static assets, `/`, `/studio`,
+  `/editor`, and font files
+- Runtime stale-while-revalidate cache for Supabase CDN strip images (60 entries, 7d TTL)
+- Offline fallback page at `/offline` — shown when a network-required navigation
+  misses the cache, with a link back to `/studio`
+- `ExportPanel` detects `navigator.onLine` before the upload step and shows a
+  friendly inline message instead of a failed network call
+- Service worker is disabled in `development` so Next.js HMR is unaffected
+
+---
+
+## v2.6 — Analytics: View & Download Counts (Done)
+
+Lightweight per-strip engagement counters, no third-party tracking:
+
+- `view_count` and `download_count` integer columns added to `strips` table (default 0)
+- Two `SECURITY DEFINER` RPCs (`increment_strip_view`, `increment_strip_download`)
+  callable by the anon role — no direct UPDATE policy needed
+- Share page (`/s/[id]`) increments the view count fire-and-forget on each load
+  and displays "👁 N views / ⬇ N saves" below the strip image
+- Save button in `ShareActions` fires `increment_strip_download` before opening
+  the image — no new API route required
+- History page (`/history`) shows view + download counts in each strip card
+- Migration: `supabase/migrations/0005_v2_6_strip_counts.sql`
+
+---
+
 ## v2.4 — Sticker Packs (Done)
 
 Lightweight sticker layer support inside the current editor/export pipeline:
@@ -220,9 +252,6 @@ full layer system.
 - Template packs in the database — the local gallery now has 9 frame
   templates. A `templates` table still makes sense later for event packs,
   seasonal drops, or admin-editable branding.
-- Offline shell/service worker — useful if ClickStudio needs capture/edit
-  to keep working during weak network moments. PWA install metadata is
-  already shipped; this would be the offline layer on top.
 - Boomerang/GIF mode — short looping clip instead of a static frame
 - Event/kiosk mode — big-screen tablet UI for real parties/weddings, maybe
   a physical printer integration
@@ -231,8 +260,6 @@ full layer system.
   look and land on one gallery page
 - Sponsor/partnership banner — a dismissible footer banner, useful if this
   is ever monetized via event sponsors
-- Analytics — view/download counts per strip, maybe a simple creator
-  dashboard
 - More languages — the UI is English-only right now
 
 ---

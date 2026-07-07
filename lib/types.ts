@@ -7,6 +7,8 @@ export interface Strip {
   filter: string;
   caption: string | null;
   is_public: boolean;
+  view_count: number;
+  download_count: number;
   created_at: string;
 }
 

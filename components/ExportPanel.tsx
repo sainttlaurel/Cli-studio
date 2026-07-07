@@ -1,25 +1,34 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import { Download, FileText, Copy, Loader2, RotateCcw, Share2, Printer } from 'lucide-react';
-import { useBoothStore } from '@/lib/store';
-import { compositeStrip } from '@/lib/compositor';
-import { compositePrintPage, printPageImage, PRINT_SIZES } from '@/lib/print';
-import type { PrintSizeKey } from '@/lib/print';
-import { THEME_HEX } from '@/lib/theme-colors';
-import { uploadStrip } from '@/lib/api';
+import { useCallback, useEffect, useState } from "react";
+import {
+  Download,
+  FileText,
+  Copy,
+  Loader2,
+  RotateCcw,
+  Share2,
+  Printer,
+} from "lucide-react";
+import { useBoothStore } from "@/lib/store";
+import { compositeStrip } from "@/lib/compositor";
+import { compositePrintPage, printPageImage, PRINT_SIZES } from "@/lib/print";
+import type { PrintSizeKey } from "@/lib/print";
+import { THEME_HEX } from "@/lib/theme-colors";
+import { uploadStrip } from "@/lib/api";
 
-type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
-type PrintStatus = 'idle' | 'rendering' | 'error';
+type Status = "idle" | "rendering" | "uploading" | "done" | "error";
+type PrintStatus = "idle" | "rendering" | "error";
 type ShareNavigator = Navigator & {
   share?: (data: ShareData) => Promise<void>;
 };
 
-const PRINT_SIZE_ORDER: PrintSizeKey[] = ['2x6', '4x6', 'a4', 'letter'];
+const PRINT_SIZE_ORDER: PrintSizeKey[] = ["2x6", "4x6", "a4", "letter"];
 
 export function ExportPanel() {
-  const { frames, filter, adjustments, theme, caption, stickers } = useBoothStore();
-  const [status, setStatus] = useState<Status>('idle');
+  const { frames, filter, adjustments, theme, caption, stickers } =
+    useBoothStore();
+  const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
@@ -27,14 +36,14 @@ export function ExportPanel() {
   const [copied, setCopied] = useState(false);
   const [attempt, setAttempt] = useState(0);
 
-  const [printSize, setPrintSize] = useState<PrintSizeKey>('2x6');
-  const [printStatus, setPrintStatus] = useState<PrintStatus>('idle');
+  const [printSize, setPrintSize] = useState<PrintSizeKey>("2x6");
+  const [printStatus, setPrintStatus] = useState<PrintStatus>("idle");
   const [printError, setPrintError] = useState<string | null>(null);
 
   const run = useCallback(async () => {
     try {
       setError(null);
-      setStatus('rendering');
+      setStatus("rendering");
       const renderedBlob = await compositeStrip({
         frames,
         filter,
@@ -47,7 +56,15 @@ export function ExportPanel() {
       setBlob(renderedBlob);
       setBlobUrl(URL.createObjectURL(renderedBlob));
 
-      setStatus('uploading');
+      if (!navigator.onLine) {
+        setError(
+          "You're offline. Connect to the internet and try again to upload your strip.",
+        );
+        setStatus("error");
+        return;
+      }
+
+      setStatus("uploading");
       const result = await uploadStrip({
         file: renderedBlob,
         theme,
@@ -56,15 +73,27 @@ export function ExportPanel() {
       });
 
       setShareUrl(`${window.location.origin}/s/${result.id}`);
-      setStatus('done');
+      setStatus("done");
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
-      setError(err instanceof Error ? err.message : 'Something went wrong exporting your strip.');
-      setStatus('error');
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong exporting your strip.",
+      );
+      setStatus("error");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frames, filter, adjustments.brightness, adjustments.contrast, theme, caption, stickers]);
+  }, [
+    frames,
+    filter,
+    adjustments.brightness,
+    adjustments.contrast,
+    theme,
+    caption,
+    stickers,
+  ]);
 
   useEffect(() => {
     if (frames.length === 0) return;
@@ -97,8 +126,8 @@ export function ExportPanel() {
     if (!shareUrl) return;
     const nav = navigator as ShareNavigator;
     const shareData: ShareData = {
-      title: 'My ClickStudio strip',
-      text: 'Check out my photo strip! ✨',
+      title: "My ClickStudio strip",
+      text: "Check out my photo strip! ✨",
       url: shareUrl,
     };
 
@@ -108,15 +137,14 @@ export function ExportPanel() {
       } else {
         await copyLink();
       }
-    } catch {
-    }
+    } catch {}
   };
 
   const handlePrint = async () => {
     let pageUrl: string | null = null;
     try {
       setPrintError(null);
-      setPrintStatus('rendering');
+      setPrintStatus("rendering");
       const pageBlob = await compositePrintPage({
         frames,
         filter,
@@ -129,12 +157,16 @@ export function ExportPanel() {
       });
       pageUrl = URL.createObjectURL(pageBlob);
       await printPageImage(pageUrl, printSize);
-      setPrintStatus('idle');
+      setPrintStatus("idle");
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
-      setPrintError(err instanceof Error ? err.message : 'Something went wrong preparing the print page.');
-      setPrintStatus('error');
+      setPrintError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong preparing the print page.",
+      );
+      setPrintStatus("error");
     } finally {
       if (pageUrl) URL.revokeObjectURL(pageUrl);
     }
@@ -152,12 +184,16 @@ export function ExportPanel() {
           <span>Get Your Digital Copy</span>
         </h2>
 
-        {status === 'rendering' || status === 'uploading' ? (
+        {status === "rendering" || status === "uploading" ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-6 justify-center">
             <Loader2 className="animate-spin" size={18} />
-            <span>{status === 'rendering' ? 'Compositing your strip...' : 'Uploading to the cloud...'}</span>
+            <span>
+              {status === "rendering"
+                ? "Compositing your strip..."
+                : "Uploading to the cloud..."}
+            </span>
           </div>
-        ) : status === 'error' ? (
+        ) : status === "error" ? (
           <div className="flex flex-col items-center gap-3 py-4 text-center">
             <p className="text-sm text-destructive">{error}</p>
             <button
@@ -171,7 +207,7 @@ export function ExportPanel() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <a
-              href={blobUrl ?? '#'}
+              href={blobUrl ?? "#"}
               download="clickstudio-strip.png"
               className="py-3 px-4 bg-primary hover:bg-primary/95 text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
             >
@@ -179,7 +215,7 @@ export function ExportPanel() {
               <span>Download PNG</span>
             </a>
             <a
-              href={shareUrl ?? '#'}
+              href={shareUrl ?? "#"}
               className="py-3 px-4 bg-secondary hover:bg-secondary/80 text-secondary-foreground font-heading font-bold text-sm rounded-xl transition-all flex items-center justify-center gap-2"
             >
               <FileText size={18} />
@@ -196,7 +232,9 @@ export function ExportPanel() {
         </h2>
 
         <div>
-          <span className="text-xs font-semibold text-muted-foreground block mb-2">Choose a size</span>
+          <span className="text-xs font-semibold text-muted-foreground block mb-2">
+            Choose a size
+          </span>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {PRINT_SIZE_ORDER.map((key) => {
               const spec = PRINT_SIZES[key];
@@ -204,11 +242,11 @@ export function ExportPanel() {
                 <button
                   key={key}
                   onClick={() => setPrintSize(key)}
-                  disabled={printStatus === 'rendering'}
+                  disabled={printStatus === "rendering"}
                   className={`px-2 py-2.5 text-xs font-bold rounded-xl border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
                     printSize === key
-                      ? 'bg-primary/5 border-primary text-primary'
-                      : 'bg-background border-border text-foreground/70 hover:border-primary/50'
+                      ? "bg-primary/5 border-primary text-primary"
+                      : "bg-background border-border text-foreground/70 hover:border-primary/50"
                   }`}
                 >
                   {spec.label}
@@ -218,19 +256,22 @@ export function ExportPanel() {
           </div>
           {PRINT_SIZES[printSize].copies > 1 && (
             <p className="text-[11px] text-muted-foreground mt-2">
-              Prints two copies side by side, so you can share one and keep one. ✂️
+              Prints two copies side by side, so you can share one and keep one.
+              ✂️
             </p>
           )}
         </div>
 
-        {printStatus === 'error' && <p className="text-sm text-destructive">{printError}</p>}
+        {printStatus === "error" && (
+          <p className="text-sm text-destructive">{printError}</p>
+        )}
 
         <button
           onClick={handlePrint}
-          disabled={printStatus === 'rendering' || frames.length === 0}
+          disabled={printStatus === "rendering" || frames.length === 0}
           className="w-full py-3 px-4 bg-secondary-foreground hover:bg-secondary-foreground/90 disabled:opacity-50 text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
         >
-          {printStatus === 'rendering' ? (
+          {printStatus === "rendering" ? (
             <>
               <Loader2 className="animate-spin" size={18} />
               <span>Preparing print page...</span>
@@ -243,24 +284,32 @@ export function ExportPanel() {
           )}
         </button>
         <p className="text-[11px] text-muted-foreground -mt-1">
-          Opens your browser&apos;s print dialog at 300dpi — choose &ldquo;Save as PDF&rdquo; there if you want a file instead of paper.
+          Opens your browser&apos;s print dialog at 300dpi — choose &ldquo;Save
+          as PDF&rdquo; there if you want a file instead of paper.
         </p>
       </div>
 
-      {status === 'done' && shareUrl && (
+      {status === "done" && shareUrl && (
         <div className="bg-background p-6 rounded-3xl border border-border/80 shadow-lg grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
           <div className="sm:col-span-4 flex justify-center">
             <div className="p-3 bg-secondary/40 rounded-2xl border border-border/60 max-w-[140px]">
               {qrSrc && (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={qrSrc} alt="Share QR Code" className="w-full h-auto rounded-lg" />
+                <img
+                  src={qrSrc}
+                  alt="Share QR Code"
+                  className="w-full h-auto rounded-lg"
+                />
               )}
             </div>
           </div>
           <div className="sm:col-span-8 flex flex-col gap-3">
-            <h3 className="text-sm font-heading font-bold text-foreground">Scan or Share Instantly</h3>
+            <h3 className="text-sm font-heading font-bold text-foreground">
+              Scan or Share Instantly
+            </h3>
             <p className="text-xs text-muted-foreground leading-relaxed">
-              Scan with a phone camera, or use the share sheet to send it straight to your apps.
+              Scan with a phone camera, or use the share sheet to send it
+              straight to your apps.
             </p>
             <div className="flex items-center gap-2 mt-2">
               <input
@@ -274,7 +323,7 @@ export function ExportPanel() {
                 className="px-3 py-2 bg-secondary-foreground hover:bg-secondary-foreground/90 text-primary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
               >
                 <Copy size={14} />
-                <span>{copied ? 'Copied!' : 'Copy'}</span>
+                <span>{copied ? "Copied!" : "Copy"}</span>
               </button>
               <button
                 onClick={nativeShare}

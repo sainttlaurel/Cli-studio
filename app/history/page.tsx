@@ -1,37 +1,47 @@
-'use client';
+"use client";
 
-import { useCallback, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { Camera, Loader2, Trash2, Globe, GlobeLock } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
-import { getSessionId } from '@/lib/session';
-import type { Strip } from '@/lib/types';
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Camera,
+  Loader2,
+  Trash2,
+  Globe,
+  GlobeLock,
+  Eye,
+  Download,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { getSessionId } from "@/lib/session";
+import type { Strip } from "@/lib/types";
 
-type Status = 'loading' | 'ready' | 'error';
+type Status = "loading" | "ready" | "error";
 
 export default function HistoryPage() {
   const [strips, setStrips] = useState<Strip[]>([]);
-  const [status, setStatus] = useState<Status>('loading');
+  const [status, setStatus] = useState<Status>("loading");
   const [error, setError] = useState<string | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
-      setStatus('loading');
+      setStatus("loading");
       const userId = await getSessionId();
       const { data, error: queryError } = await supabase
-        .from('strips')
-        .select('*')
-        .eq('session_id', userId)
-        .order('created_at', { ascending: false });
+        .from("strips")
+        .select("*")
+        .eq("session_id", userId)
+        .order("created_at", { ascending: false });
       if (queryError) throw queryError;
       setStrips((data ?? []) as Strip[]);
-      setStatus('ready');
+      setStatus("ready");
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
-      setError(err instanceof Error ? err.message : 'Could not load your strips.');
-      setStatus('error');
+      setError(
+        err instanceof Error ? err.message : "Could not load your strips.",
+      );
+      setStatus("error");
     }
   }, []);
 
@@ -40,16 +50,19 @@ export default function HistoryPage() {
   }, [load]);
 
   const remove = async (id: string) => {
-    if (!window.confirm('Delete this strip? This cannot be undone.')) return;
+    if (!window.confirm("Delete this strip? This cannot be undone.")) return;
     setBusyId(id);
     try {
-      const { error: deleteError } = await supabase.from('strips').delete().eq('id', id);
+      const { error: deleteError } = await supabase
+        .from("strips")
+        .delete()
+        .eq("id", id);
       if (deleteError) throw deleteError;
       setStrips((s) => s.filter((strip) => strip.id !== id));
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
-      window.alert('Could not delete that strip. Please try again.');
+      window.alert("Could not delete that strip. Please try again.");
     } finally {
       setBusyId(null);
     }
@@ -59,15 +72,19 @@ export default function HistoryPage() {
     setBusyId(strip.id);
     try {
       const { error: updateError } = await supabase
-        .from('strips')
+        .from("strips")
         .update({ is_public: !strip.is_public })
-        .eq('id', strip.id);
+        .eq("id", strip.id);
       if (updateError) throw updateError;
-      setStrips((s) => s.map((x) => (x.id === strip.id ? { ...x, is_public: !x.is_public } : x)));
+      setStrips((s) =>
+        s.map((x) =>
+          x.id === strip.id ? { ...x, is_public: !x.is_public } : x,
+        ),
+      );
     } catch (err) {
       // eslint-disable-next-line no-console
       console.error(err);
-      window.alert('Could not update that strip. Please try again.');
+      window.alert("Could not update that strip. Please try again.");
     } finally {
       setBusyId(null);
     }
@@ -94,9 +111,12 @@ export default function HistoryPage() {
 
       <main className="flex-1 max-w-5xl mx-auto px-6 py-10 w-full flex flex-col gap-6">
         <div>
-          <h1 className="text-2xl font-heading font-extrabold text-foreground">Your Strips</h1>
+          <h1 className="text-2xl font-heading font-extrabold text-foreground">
+            Your Strips
+          </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Only strips made from this browser. Private by default — flip one to Public to add it to the{' '}
+            Only strips made from this browser. Private by default — flip one to
+            Public to add it to the{" "}
             <Link href="/gallery" className="underline">
               gallery
             </Link>
@@ -104,18 +124,22 @@ export default function HistoryPage() {
           </p>
         </div>
 
-        {status === 'loading' && (
+        {status === "loading" && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground py-12 justify-center">
             <Loader2 className="animate-spin" size={18} />
             <span>Loading your strips...</span>
           </div>
         )}
 
-        {status === 'error' && <p className="text-sm text-destructive">{error}</p>}
+        {status === "error" && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
 
-        {status === 'ready' && strips.length === 0 && (
+        {status === "ready" && strips.length === 0 && (
           <div className="text-center py-16 flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground">No strips yet from this browser.</p>
+            <p className="text-sm text-muted-foreground">
+              No strips yet from this browser.
+            </p>
             <Link
               href="/studio"
               className="px-6 py-3 bg-primary text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md"
@@ -125,7 +149,7 @@ export default function HistoryPage() {
           </div>
         )}
 
-        {status === 'ready' && strips.length > 0 && (
+        {status === "ready" && strips.length > 0 && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {strips.map((strip) => (
               <div
@@ -134,21 +158,45 @@ export default function HistoryPage() {
               >
                 <Link href={`/s/${strip.id}`}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={strip.image_url} alt="Photo strip" className="w-full aspect-[4/3] object-cover" />
+                  <img
+                    src={strip.image_url}
+                    alt="Photo strip"
+                    className="w-full aspect-[4/3] object-cover"
+                  />
                 </Link>
                 <div className="p-3 flex flex-col gap-2">
-                  <span className="text-[11px] text-muted-foreground">
-                    {new Date(strip.created_at).toLocaleDateString()}
-                  </span>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">
+                      {new Date(strip.created_at).toLocaleDateString()}
+                    </span>
+                    <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span className="flex items-center gap-0.5">
+                        <Eye size={11} />
+                        {strip.view_count.toLocaleString()}
+                      </span>
+                      <span className="flex items-center gap-0.5">
+                        <Download size={11} />
+                        {strip.download_count.toLocaleString()}
+                      </span>
+                    </span>
+                  </div>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => toggleGallery(strip)}
                       disabled={busyId === strip.id}
-                      title={strip.is_public ? 'Remove from public gallery' : 'Add to public gallery'}
+                      title={
+                        strip.is_public
+                          ? "Remove from public gallery"
+                          : "Add to public gallery"
+                      }
                       className="flex-1 py-1.5 px-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[11px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 disabled:opacity-50"
                     >
-                      {strip.is_public ? <Globe size={12} /> : <GlobeLock size={12} />}
-                      <span>{strip.is_public ? 'Public' : 'Private'}</span>
+                      {strip.is_public ? (
+                        <Globe size={12} />
+                      ) : (
+                        <GlobeLock size={12} />
+                      )}
+                      <span>{strip.is_public ? "Public" : "Private"}</span>
                     </button>
                     <button
                       onClick={() => remove(strip.id)}

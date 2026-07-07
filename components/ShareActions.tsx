@@ -1,14 +1,21 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { Download, Camera, Share2, Check } from 'lucide-react';
+import { useState } from "react";
+import Link from "next/link";
+import { Download, Camera, Share2, Check } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 type ShareNavigator = Navigator & {
   share?: (data: ShareData) => Promise<void>;
 };
 
-export function ShareActions({ imageUrl, id }: { imageUrl: string; id: string }) {
+export function ShareActions({
+  imageUrl,
+  id,
+}: {
+  imageUrl: string;
+  id: string;
+}) {
   const [copied, setCopied] = useState(false);
 
   const nativeShare = async () => {
@@ -18,13 +25,12 @@ export function ShareActions({ imageUrl, id }: { imageUrl: string; id: string })
     if (nav.share) {
       try {
         await nav.share({
-          title: 'A ClickStudio strip',
-          text: 'Check this out! ✨',
+          title: "A ClickStudio strip",
+          text: "Check this out! ✨",
           url: shareUrl,
         });
         return;
-      } catch {
-      }
+      } catch {}
     }
 
     await navigator.clipboard.writeText(shareUrl);
@@ -32,25 +38,31 @@ export function ShareActions({ imageUrl, id }: { imageUrl: string; id: string })
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDownload = () => {
+    // Fire-and-forget download count increment
+    supabase.rpc("increment_strip_download", { p_id: id });
+
+    // Trigger the download by opening the image URL in a new tab
+    // (direct <a download> on a cross-origin URL is blocked by browsers)
+    window.open(imageUrl, "_blank", "noopener,noreferrer");
+  };
+
   return (
     <div className="w-full max-w-md flex flex-col gap-4">
       <div className="grid grid-cols-3 gap-3">
-        <a
-          href={imageUrl}
-          download
-          target="_blank"
-          rel="noopener noreferrer"
+        <button
+          onClick={handleDownload}
           className="py-3 px-3 bg-primary hover:bg-primary/95 text-primary-foreground font-heading font-bold text-xs sm:text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-1.5"
         >
           <Download size={16} />
           <span>Save</span>
-        </a>
+        </button>
         <button
           onClick={nativeShare}
           className="py-3 px-3 bg-secondary-foreground hover:bg-secondary-foreground/90 text-primary-foreground font-heading font-bold text-xs sm:text-sm rounded-xl transition-all flex items-center justify-center gap-1.5"
         >
           {copied ? <Check size={16} /> : <Share2 size={16} />}
-          <span>{copied ? 'Copied!' : 'Share'}</span>
+          <span>{copied ? "Copied!" : "Share"}</span>
         </button>
         <Link
           href="/studio"

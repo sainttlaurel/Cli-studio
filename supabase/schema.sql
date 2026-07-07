@@ -17,6 +17,9 @@ create table if not exists public.strips (
   theme text,
   filter text,
   caption text,
+  is_public boolean not null default false,
+  view_count integer not null default 0,
+  download_count integer not null default 0,
   created_at timestamptz not null default now()
 );
 
@@ -75,3 +78,28 @@ create policy "Public read for strip images"
 --   '0 3 * * *',
 --   $$ delete from public.strips where created_at < now() - interval '30 days'; $$
 -- );
+
+-- 4. Analytics RPCs (v2.6)
+-- SECURITY DEFINER so the anon key can increment counters without a direct
+-- UPDATE policy. The functions only touch view_count / download_count.
+
+create or replace function public.increment_strip_view(p_id text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.strips set view_count = view_count + 1 where id = p_id;
+$$;
+
+create or replace function public.increment_strip_download(p_id text)
+returns void
+language sql
+security definer
+set search_path = public
+as $$
+  update public.strips set download_count = download_count + 1 where id = p_id;
+$$;
+
+grant execute on function public.increment_strip_view(text) to anon;
+grant execute on function public.increment_strip_download(text) to anon;
