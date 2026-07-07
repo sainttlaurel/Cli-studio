@@ -1,17 +1,4 @@
  // @ts-nocheck
-// supabase/functions/cleanup-expired-strips/index.ts
-//
-// Deletes strips older than 30 days — both the DB row AND the Storage
-// object, since a SQL-only `pg_cron` job (see schema.sql) can only clean
-// the table, not the file sitting in Storage.
-//
-// Deploy: supabase functions deploy cleanup-expired-strips --no-verify-jwt
-//
-// Then schedule it to run automatically. Easiest path: Supabase Dashboard
-// -> Edge Functions -> cleanup-expired-strips -> Cron, e.g. "0 3 * * *"
-// (daily at 3am). If your project's dashboard doesn't have that yet, use
-// the pg_cron + pg_net alternative commented in schema.sql, which calls
-// this function's URL directly from Postgres on a schedule.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.4';
 import { corsHeaders } from '../_shared/cors.ts';

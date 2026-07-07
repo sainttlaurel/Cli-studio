@@ -46,9 +46,6 @@ export default function WallPage() {
 
   useEffect(() => {
     load();
-    // Best-effort — establishes/reads the anon session so "delete" shows
-    // up on the visitor's own messages. Not fatal if it fails; posting
-    // will simply re-attempt sign-in when the form is submitted.
     getSessionId()
       .then(setOwnId)
       .catch(() => undefined);

@@ -7,13 +7,6 @@ import type { Strip } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 async function getStrip(id: string): Promise<Strip | null> {
-  // Direct table selects are now restricted by RLS to the owner's own
-  // rows or rows marked is_public — a share link needs to work for
-  // *anyone* who has it, regardless of ownership or the public flag, so
-  // this goes through the get_strip_by_id() SECURITY DEFINER function
-  // instead (added in migration 0003). It does a targeted lookup by the
-  // exact, unguessable id, not a scan, so it doesn't reopen the blanket
-  // read the RLS tightening was meant to close.
   const { data, error } = await supabase.rpc('get_strip_by_id', { p_id: id });
   if (error || !data || data.length === 0) return null;
   return data[0] as Strip;

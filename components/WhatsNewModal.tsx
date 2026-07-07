@@ -32,7 +32,6 @@ export function WhatsNewModal() {
     try {
       localStorage.setItem(STORAGE_KEY, CHANGELOG_VERSION);
     } catch {
-      // Ignore storage failures; closing the modal should still work.
     }
     setIsOpen(false);
   }, []);

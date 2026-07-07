@@ -44,11 +44,6 @@ export default function LandingPage() {
           </span>
         </div>
 
-        {/* Icon-only pills that are ALWAYS visible, not hidden below a
-            breakpoint — only the text label hides on narrow screens.
-            Previously these links used `hidden sm:inline-flex`, which
-            removed them from the page entirely on real mobile widths
-            instead of just compacting them. */}
         <div className="flex items-center gap-1 sm:gap-4">
           {NAV_LINKS.map(({ href, label, icon: Icon }) => (
             <Link

@@ -6,10 +6,6 @@ import type { Strip } from '@/lib/types';
 export const dynamic = 'force-dynamic';
 
 async function getPublicStrips(): Promise<Strip[]> {
-  // is_public = true rows are readable without any auth context — RLS's
-  // `is_public = true or auth.uid()::text = session_id` check short-
-  // circuits on the first branch, so this works the same for a
-  // first-time visitor as it does for a signed-in anonymous session.
   const { data, error } = await supabase
     .from('strips')
     .select('*')

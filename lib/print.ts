@@ -7,36 +7,18 @@ interface PrintSizeSpec {
   label: string;
   widthIn: number;
   heightIn: number;
-  /** How many copies of the strip to place side by side on the page. */
   copies: number;
-  /** Passed straight into the `@page { size: ... }` print rule. */
   pageCss: string;
 }
 
 const DPI = 300;
 
-// Ideal render scale for the strip unit before placing it on the page
-// canvas — high enough to stay crisp once printed at 300dpi. The actual
-// scale used is clamped below this by getSafeUnitScale().
 const IDEAL_UNIT_RENDER_SCALE = 4;
 
-// iOS Safari caps a single canvas at ~4096px per side AND ~16.7M total
-// pixels (whichever hits first). A 4-frame strip with a caption, at 4x,
-// blows past the area limit (~23.5M px) even though neither side alone
-// looks unreasonable — Safari fails silently in that case (blank/garbled
-// canvas, no thrown error), so this has to be checked up front rather
-// than caught.
 const MAX_CANVAS_DIMENSION = 4096;
-const MAX_CANVAS_AREA = 16_777_216; // 4096 * 4096
-const SAFETY_MARGIN = 0.92; // stay a bit under the hard limit, not right at it
+const MAX_CANVAS_AREA = 16_777_216;
+const SAFETY_MARGIN = 0.92;
 
-/**
- * Computes the largest scale (up to IDEAL_UNIT_RENDER_SCALE) that keeps
- * the rendered strip canvas within known browser limits, given the
- * actual frame count and caption presence for this export. Falls back
- * toward 1 only in extreme cases; a normal 1-4 frame strip comfortably
- * fits at or near the ideal scale.
- */
 function getSafeUnitScale(frameCount: number, hasCaption: boolean): number {
   const base = getStripDimensions(frameCount, hasCaption, 1);
 
@@ -65,11 +47,6 @@ export const PRINT_SIZES: Record<PrintSizeKey, PrintSizeSpec> = {
   letter: { label: 'US Letter', widthIn: 8.5, heightIn: 11, copies: 2, pageCss: '8.5in 11in' },
 };
 
-/**
- * Renders a print-ready page at 300dpi: the composited strip, repeated
- * side-by-side (2 copies, classic double-strip layout) for sizes bigger
- * than the strip itself, or as a single copy filling the page for 2x6.
- */
 export async function compositePrintPage(
   opts: CompositeOptions & { printSize: PrintSizeKey }
 ): Promise<Blob> {
@@ -98,7 +75,6 @@ export async function compositePrintPage(
   const availH = pageH - MARGIN * 2;
   const perCopyMaxW = availW / spec.copies;
 
-  // Fit each copy within its share of the page, preserving aspect ratio.
   const scale = Math.min(perCopyMaxW / unitCanvas.width, availH / unitCanvas.height);
   const drawW = unitCanvas.width * scale;
   const drawH = unitCanvas.height * scale;
@@ -121,12 +97,6 @@ export async function compositePrintPage(
   });
 }
 
-/**
- * Injects a print-only <img> sized to the page plus a matching @page
- * rule, opens the browser's native print dialog, then cleans up. No PDF
- * library needed — the print dialog's "Save as PDF" destination covers
- * that use case for free, per the roadmap's bundle-size guidance.
- */
 export function printPageImage(blobUrl: string, printSize: PrintSizeKey): Promise<void> {
   const spec = PRINT_SIZES[printSize];
 
@@ -166,8 +136,6 @@ export function printPageImage(blobUrl: string, printSize: PrintSizeKey): Promis
     img.onload = () => {
       window.addEventListener('afterprint', cleanup);
       window.print();
-      // Fallback in case `afterprint` doesn't fire on some browser/OS
-      // combos — safe no-op if cleanup already ran via the event.
       setTimeout(cleanup, 60000);
     };
   });

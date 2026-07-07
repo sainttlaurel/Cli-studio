@@ -48,9 +48,6 @@ export function ExportPanel() {
       setBlobUrl(URL.createObjectURL(renderedBlob));
 
       setStatus('uploading');
-      // sessionId is no longer passed here — the upload-strip edge
-      // function derives the caller's identity itself from the verified
-      // access token that lib/api.ts's uploadStrip() attaches.
       const result = await uploadStrip({
         file: renderedBlob,
         theme,
@@ -72,8 +69,6 @@ export function ExportPanel() {
   useEffect(() => {
     if (frames.length === 0) return;
     run();
-    // Re-runs when "Try Again" bumps `attempt`. `run` intentionally
-    // omitted from deps — it's stable enough for this per-export-session flow.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attempt]);
 
@@ -114,7 +109,6 @@ export function ExportPanel() {
         await copyLink();
       }
     } catch {
-      // User cancelled the share sheet — nothing to surface.
     }
   };
 

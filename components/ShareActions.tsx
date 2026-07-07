@@ -24,7 +24,6 @@ export function ShareActions({ imageUrl, id }: { imageUrl: string; id: string })
         });
         return;
       } catch {
-        // User cancelled the native sheet — fall through to clipboard.
       }
     }
 

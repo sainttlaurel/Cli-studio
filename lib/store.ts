@@ -18,8 +18,8 @@ export type ThemeKey =
   | 'mono';
 
 interface Adjustments {
-  brightness: number; // -50 to 50
-  contrast: number; // -50 to 50
+  brightness: number;
+  contrast: number;
 }
 
 export interface PlacedSticker {
@@ -113,9 +113,6 @@ export const useBoothStore = create<BoothState>()(
       }
     ),
     {
-      // Only the fields it makes sense to step back/forward through in the
-      // editor go into undo history. Frames, mirror, and sound preference
-      // are deliberately excluded.
       partialize: (state) => ({
         filter: state.filter,
         adjustments: state.adjustments,
@@ -128,11 +125,6 @@ export const useBoothStore = create<BoothState>()(
   )
 );
 
-/**
- * React hook exposing undo/redo controls. zundo keeps its history on a
- * separate vanilla store at `useBoothStore.temporal` — this wraps it with
- * zustand's `useStore` so components re-render as history changes.
- */
 export function useBoothTemporal() {
   return useStore(useBoothStore.temporal, (state) => ({
     undo: state.undo,

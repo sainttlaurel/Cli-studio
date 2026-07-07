@@ -21,8 +21,6 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
-// Base (scale=1) layout constants, shared between renderStripCanvas and
-// getStripDimensions so the two can never drift apart.
 const BASE_PADDING = 24;
 const BASE_FRAME_W = 640;
 const BASE_FRAME_H = 480;
@@ -76,14 +74,6 @@ function drawSticker(ctx: CanvasRenderingContext2D, sticker: PlacedSticker, canv
   ctx.restore();
 }
 
-/**
- * Returns the pixel dimensions renderStripCanvas will produce for a given
- * frame count / caption presence, at a given scale — without actually
- * rendering anything. Used by lib/print.ts to figure out how far a strip
- * can be scaled up before hitting canvas size limits on some browsers
- * (notably iOS Safari, which caps canvases around 4096px per side and
- * ~16.7M total pixels).
- */
 export function getStripDimensions(frameCount: number, hasCaption: boolean, scale = 1) {
   const footerH = (hasCaption ? 110 : 70) * scale;
   const padding = BASE_PADDING * scale;
@@ -96,13 +86,6 @@ export function getStripDimensions(frameCount: number, hasCaption: boolean, scal
   return { width, height };
 }
 
-/**
- * Draws all captured frames onto a single canvas, applying the chosen
- * filter + brightness/contrast, plus branded footer and optional
- * caption. `scale` multiplies every dimension, so the same layout can
- * be rendered at screen resolution (scale=1, used by compositeStrip)
- * or at a higher resolution for crisp print output — see lib/print.ts.
- */
 export async function renderStripCanvas(opts: CompositeOptions, scale = 1): Promise<HTMLCanvasElement> {
   const { frames, filter, brightness, contrast, themeColor, caption, stickers = [] } = opts;
   const images = await Promise.all(frames.map(loadImage));
@@ -126,7 +109,6 @@ export async function renderStripCanvas(opts: CompositeOptions, scale = 1): Prom
   ctx.filter = buildFilterCss(filter, brightness, contrast) || 'none';
   images.forEach((img, i) => {
     const y = PADDING + i * (FRAME_H + GAP);
-    // Cover-fit crop, matching the object-cover behaviour of the live preview.
     const scaleFit = Math.max(FRAME_W / img.width, FRAME_H / img.height);
     const sw = FRAME_W / scaleFit;
     const sh = FRAME_H / scaleFit;
@@ -165,10 +147,6 @@ export async function renderStripCanvas(opts: CompositeOptions, scale = 1): Prom
   return canvas;
 }
 
-/**
- * Renders the strip at screen resolution and returns a PNG Blob, ready
- * to upload or download. Behaviour/output is unchanged from pre-v1.3.
- */
 export async function compositeStrip(opts: CompositeOptions): Promise<Blob> {
   const canvas = await renderStripCanvas(opts, 1);
   return new Promise((resolve, reject) => {

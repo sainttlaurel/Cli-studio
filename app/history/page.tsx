@@ -43,8 +43,6 @@ export default function HistoryPage() {
     if (!window.confirm('Delete this strip? This cannot be undone.')) return;
     setBusyId(id);
     try {
-      // Goes straight through RLS's owner-delete policy — no edge
-      // function needed, since ownership is provable via auth.uid().
       const { error: deleteError } = await supabase.from('strips').delete().eq('id', id);
       if (deleteError) throw deleteError;
       setStrips((s) => s.filter((strip) => strip.id !== id));

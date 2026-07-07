@@ -57,9 +57,6 @@ export function WizardHeader({ step }: { step: number }) {
         })}
       </div>
 
-      {/* Icon-only pills, ALWAYS visible — label hides on narrow screens,
-          the link itself never does. Same fix as the landing page:
-          `hidden md:inline-flex` was removing these from mobile entirely. */}
       <div className="flex items-center gap-1 sm:gap-1.5 md:gap-3">
         {NAV_LINKS.map(({ href, label, icon: Icon }) => (
           <Link

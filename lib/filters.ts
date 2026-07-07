@@ -8,12 +8,6 @@ export const FILTER_PRESETS: Record<FilterKey, string> = {
   vintage: 'sepia(0.5) contrast(0.95) brightness(1.05)',
 };
 
-/**
- * Builds a single CSS filter string combining a named preset with
- * live brightness/contrast adjustments. Used for both the live CSS
- * preview (img style) and the canvas compositor (ctx.filter) so the
- * exported strip matches exactly what the user saw while editing.
- */
 export function buildFilterCss(filter: FilterKey, brightness: number, contrast: number): string {
   const preset = FILTER_PRESETS[filter] ?? '';
   const b = `brightness(${1 + brightness / 100})`;
