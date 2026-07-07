@@ -117,6 +117,7 @@ interface BoothState {
   removeTextLayer: (id: string) => void;
   clearTextLayers: () => void;
   moveLayer: (kind: LayerRef["kind"], id: string, dir: "up" | "down") => void;
+  reorderLayer: (fromIndex: number, toIndex: number) => void;
   toggleMirror: () => void;
   toggleSound: () => void;
   resetAll: () => void;
@@ -163,10 +164,7 @@ export const useBoothStore = create<BoothState>()(
             if (s.stickers.length >= 12) return s;
             const id = createId();
             return {
-              stickers: [
-                ...s.stickers,
-                { opacity: 100, ...sticker, id },
-              ],
+              stickers: [...s.stickers, { opacity: 100, ...sticker, id }],
               layerOrder: [
                 ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
                 { kind: "sticker", id },
@@ -196,10 +194,7 @@ export const useBoothStore = create<BoothState>()(
             if (s.textLayers.length >= 10) return s;
             const id = createId();
             return {
-              textLayers: [
-                ...s.textLayers,
-                { opacity: 100, ...layer, id },
-              ],
+              textLayers: [...s.textLayers, { opacity: 100, ...layer, id }],
               layerOrder: [
                 ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
                 { kind: "text", id },
@@ -239,6 +234,26 @@ export const useBoothStore = create<BoothState>()(
             if (next < 0 || next >= order.length) return s;
             const arr = [...order];
             [arr[idx], arr[next]] = [arr[next], arr[idx]];
+            return { layerOrder: arr };
+          }),
+        reorderLayer: (fromIndex, toIndex) =>
+          set((s) => {
+            const order = resolveLayerOrder(
+              s.layerOrder,
+              s.stickers,
+              s.textLayers,
+            );
+            if (
+              fromIndex === toIndex ||
+              fromIndex < 0 ||
+              toIndex < 0 ||
+              fromIndex >= order.length ||
+              toIndex >= order.length
+            )
+              return s;
+            const arr = [...order];
+            const [item] = arr.splice(fromIndex, 1);
+            arr.splice(toIndex, 0, item);
             return { layerOrder: arr };
           }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),

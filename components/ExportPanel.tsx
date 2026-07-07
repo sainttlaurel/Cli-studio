@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import QRCode from "qrcode";
 import {
   Download,
   FileText,
@@ -31,8 +32,16 @@ type ShareNavigator = Navigator & {
 const PRINT_SIZE_ORDER: PrintSizeKey[] = ["2x6", "4x6", "a4", "letter"];
 
 export function ExportPanel() {
-  const { frames, filter, adjustments, theme, caption, stickers, textLayers, layerOrder } =
-    useBoothStore();
+  const {
+    frames,
+    filter,
+    adjustments,
+    theme,
+    caption,
+    stickers,
+    textLayers,
+    layerOrder,
+  } = useBoothStore();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
@@ -40,12 +49,25 @@ export function ExportPanel() {
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const qrCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [printSize, setPrintSize] = useState<PrintSizeKey>("2x6");
   const [printStatus, setPrintStatus] = useState<PrintStatus>("idle");
   const [printError, setPrintError] = useState<string | null>(null);
   const [templates, setTemplates] = useState<TemplateRow[]>(LOCAL_TEMPLATES);
   const [templatesReady, setTemplatesReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Detect touch-first devices (iOS, Android, Samsung, etc.)
+    // navigator.maxTouchPoints > 1 covers all modern touch devices without
+    // relying on deprecated user-agent sniffing.
+    setIsMobile(
+      typeof navigator !== "undefined" &&
+        (navigator.maxTouchPoints > 1 ||
+          /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)),
+    );
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -205,9 +227,10 @@ export function ExportPanel() {
     }
   };
 
-  const qrSrc = shareUrl
-    ? `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shareUrl)}`
-    : null;
+  useEffect(() => {
+    if (!shareUrl || !qrCanvasRef.current) return;
+    QRCode.toCanvas(qrCanvasRef.current, shareUrl, { width: 200, margin: 1 });
+  }, [shareUrl]);
 
   return (
     <section className="md:col-span-7 flex flex-col gap-6">
@@ -316,24 +339,30 @@ export function ExportPanel() {
             </>
           )}
         </button>
-        <p className="text-[11px] text-muted-foreground -mt-1">
-          Opens your browser&apos;s print dialog at 300dpi — choose &ldquo;Save
-          as PDF&rdquo; there if you want a file instead of paper.
-        </p>
+        {isMobile ? (
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            📱 Mobile tip: print dialog page-size settings are ignored by most
+            phone browsers (Safari, Chrome, Samsung Internet). For best results,
+            use &ldquo;Download PNG&rdquo; above and print from your Photos app,
+            or open the link on a desktop browser to get exact paper sizes.
+          </p>
+        ) : (
+          <p className="text-[11px] text-muted-foreground -mt-1">
+            Opens your browser&apos;s print dialog at 300dpi — choose
+            &ldquo;Save as PDF&rdquo; there if you want a file instead of paper.
+          </p>
+        )}
       </div>
 
       {status === "done" && shareUrl && (
         <div className="bg-background p-6 rounded-3xl border border-border/80 shadow-lg grid grid-cols-1 sm:grid-cols-12 gap-6 items-center">
           <div className="sm:col-span-4 flex justify-center">
             <div className="p-3 bg-secondary/40 rounded-2xl border border-border/60 max-w-[140px]">
-              {qrSrc && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={qrSrc}
-                  alt="Share QR Code"
-                  className="w-full h-auto rounded-lg"
-                />
-              )}
+              <canvas
+                ref={qrCanvasRef}
+                aria-label="Share QR Code"
+                className="w-full h-auto rounded-lg"
+              />
             </div>
           </div>
           <div className="sm:col-span-8 flex flex-col gap-3">

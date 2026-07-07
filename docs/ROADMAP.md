@@ -213,7 +213,7 @@ Lightweight sticker layer support inside the current editor/export pipeline:
 
 Extends the sticker system from text badges to real PNG image stickers:
 
-- 4 new image packs: Collage 🎓, Flowers 🌸, Ribbon 🎀, Y2K ⭐ — 10 stickers each
+- 4 new image packs: College 🎓, Flowers 🌸, Ribbon 🎀, Y2K ⭐ — 10 stickers each
 - All 40 PNGs are transparent-background, committed to `public/stickers/{pack}/`
 - Pack switcher pill bar in the Stickers tab switches between Y2K Text and the 4 image packs
 - Image sticker grid shows actual PNG thumbnails; placed-sticker list shows
@@ -327,7 +327,7 @@ Per-layer transparency and stacking controls for stickers and text overlays:
 - `lib/compositor.ts`: `globalAlpha` applied when drawing stickers and text layers
 - `components/StripPreview.tsx`: CSS `opacity` on layer preview elements
 - `components/EditorPanel.tsx`: opacity sliders and ▲/▼ controls in placed-layer lists
-- Cross-category stacking unchanged: all stickers render below all text layers *(superseded by v2.13 — unified `layerOrder` stack)*
+- Cross-category stacking unchanged: all stickers render below all text layers
 
 ---
 
@@ -346,25 +346,47 @@ Side-by-side editor UX improvements so the preview and controls feel balanced:
 
 ---
 
-## v2.12 — Template Hex Export (Done)
+## v3.0 — Hardening & Viral Mechanics (Planned)
 
-Export and print footer colors now follow Supabase template `hex_color`:
+Fixes real production gaps and adds the sharing features that make the app spread.
 
-- `resolveThemeHex()` in `lib/templates.ts` — DB rows, then `LOCAL_TEMPLATES`, then pink default
-- `ExportPanel` fetches templates before compositing (same fallback pattern as the Frame tab)
-- Renamed College sticker pack to **Collage** (id, keys, assets, editor label)
+- Done. Replaced `api.qrserver.com` with the local `qrcode` library. QR codes are
+  now rendered directly in `ExportPanel` using `QRCode.toCanvas()`, removing the
+  external API dependency.
 
----
+- Done. Added React Error Boundaries to `/studio`, `/editor`, and `/export`.
+  `components/ErrorBoundary.tsx` catches unexpected runtime errors and displays a
+  friendly "Try Again / Go Home" fallback instead of a blank page.
 
-## v2.13 — Cross-Layer Z-Order (Done)
+- Done. Improved the mobile print layout. `lib/print.ts` now uses
+  `width/height: 100%`, `object-fit: contain`, `page-break-inside: avoid`,
+  `-webkit-print-color-adjust: exact`, and a more reliable `afterprint` cleanup.
+  Touch devices also display a recommendation to download the PNG and print from
+  the Photos app for better results.
 
-Stickers and text overlays share one global stacking order:
+- Done. Added drag-reorder for sticker and text layer z-order. Created a new
+  "Layers" tab in `EditorPanel` with a unified `DraggableLayerList` showing all layers
+  (stickers and text) in a single draggable list. Users can now freely drag any layer
+  to any position to control stacking order.
 
-- `layerOrder` in `lib/store.ts` — ordered `{ kind, id }` refs across both layer types
-- `resolveLayerOrder()` rebuilds stack from persisted order + any new layers
-- ▲/▼ on sticker and text cards move layers in the **combined** stack (text can sit above/below stickers)
-- Preview, PNG export, and print all draw in `layerOrder` sequence
-- Included in undo/redo and session persist
+- Admin template management UI. The `templates` table introduced in v2.7 is still
+  managed through SQL. Add a lightweight protected `/admin/templates` page for
+  creating, editing, and disabling template packs without redeploying.
+
+- Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
+  complete. Direct Meta API posting should remain on hold until ClickStudio
+  supports user accounts and authentication.
+
+- PWA offline editing (or honest downgrade). While the service worker and offline
+  fallback page exist, the editor still depends on network access for uploads,
+  gallery, and wall features. Decide whether to build true offline editing with
+  sync-on-reconnect or remove the install prompt to better match the current
+  experience.
+
+- Rate limiter is session-based, not IP-based. The current 12-strips-per-hour
+  limit relies on `session_id` stored in localStorage, making it easy to bypass.
+  Consider adding an IP-based secondary limit within the upload edge function to
+  better protect storage resources.
 
 ---
 
@@ -380,6 +402,9 @@ Stickers and text overlays share one global stacking order:
 - Sponsor/partnership banner — a dismissible footer banner, useful if this
   is ever monetized via event sponsors
 - More languages — the UI is English-only right now
+- Soft dark mode — the Y2K palette is intentionally bright, but OLED phones make
+  the all-white background harsh. A `prefers-color-scheme` media query that dims
+  the background slightly (not a full dark theme) could help without breaking the aesthetic.
 
 ---
 
@@ -398,6 +423,7 @@ they're prioritized the way they are:
 - Their notes mention removing heavy packages (`jspdf`, `react-query`,
   `qrcode`) to control bundle size — worth keeping in mind so our PDF
   export and other additions don't reach for a heavy dependency by default.
+
 
 ---
 

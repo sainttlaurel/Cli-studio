@@ -14,8 +14,12 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useBoothStore, useBoothTemporal, resolveLayerOrder } from "@/lib/store";
-import type { FilterKey, FontFamily } from "@/lib/store";
+import {
+  useBoothStore,
+  useBoothTemporal,
+  resolveLayerOrder,
+} from "@/lib/store";
+import type { FilterKey, FontFamily, LayerRef } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
 import {
   TEXT_STICKERS,
@@ -25,6 +29,7 @@ import {
 } from "@/lib/stickers";
 import Image from "next/image";
 import { fetchTemplates, LOCAL_TEMPLATES } from "@/lib/templates";
+import { DraggableLayerList } from "@/components/DraggableLayerList";
 import type { TemplateRow } from "@/lib/templates";
 
 const FILTERS: { key: FilterKey; label: string }[] = [
@@ -41,6 +46,7 @@ const TABS = [
   { key: "frame", label: "3. Frame", icon: Layout },
   { key: "stickers", label: "4. Stickers", icon: Heart },
   { key: "text", label: "5. Text", icon: Type },
+  { key: "layers", label: "6. Layers", icon: Layout },
 ] as const;
 
 type TabKey = (typeof TABS)[number]["key"];
@@ -71,6 +77,7 @@ export function EditorPanel() {
     removeSticker,
     clearStickers,
     moveLayer,
+    reorderLayer,
     textLayers,
     addTextLayer,
     updateTextLayer,
@@ -458,17 +465,28 @@ export function EditorPanel() {
                     <span>Clear</span>
                   </button>
                 </div>
-                <div className="flex flex-col gap-3">
-                  {stickers.map((sticker, index) => {
+                <DraggableLayerList
+                  items={stickers}
+                  onReorder={(from, to) => {
+                    const resolved = layerStack;
+                    const fromRef = resolved.find(
+                      (r) => r.kind === "sticker" && r.id === stickers[from].id,
+                    );
+                    const toRef = resolved.find(
+                      (r) => r.kind === "sticker" && r.id === stickers[to].id,
+                    );
+                    if (!fromRef || !toRef) return;
+                    const fromLayerIdx = resolved.indexOf(fromRef);
+                    const toLayerIdx = resolved.indexOf(toRef);
+                    reorderLayer(fromLayerIdx, toLayerIdx);
+                  }}
+                  renderItem={(sticker, index) => {
                     const stickerDef = getStickerDefinition(sticker.key);
                     const stackIdx = layerStack.findIndex(
                       (ref) => ref.kind === "sticker" && ref.id === sticker.id,
                     );
                     return (
-                      <div
-                        key={sticker.id}
-                        className="rounded-xl border border-border bg-muted/40 p-3"
-                      >
+                      <div className="p-3">
                         <div className="flex items-center justify-between gap-3">
                           <div className="flex items-center gap-2 min-w-0">
                             {stickerDef.type === "image" ? (
@@ -497,7 +515,9 @@ export function EditorPanel() {
                           </div>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => moveLayer("sticker", sticker.id, "up")}
+                              onClick={() =>
+                                moveLayer("sticker", sticker.id, "up")
+                              }
                               disabled={stackIdx <= 0}
                               title="Move layer up"
                               className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
@@ -505,7 +525,9 @@ export function EditorPanel() {
                               <ChevronUp size={15} />
                             </button>
                             <button
-                              onClick={() => moveLayer("sticker", sticker.id, "down")}
+                              onClick={() =>
+                                moveLayer("sticker", sticker.id, "down")
+                              }
                               disabled={
                                 stackIdx === -1 ||
                                 stackIdx >= layerStack.length - 1
@@ -584,8 +606,8 @@ export function EditorPanel() {
                         </div>
                       </div>
                     );
-                  })}
-                </div>
+                  }}
+                />
               </div>
             )}
           </div>
@@ -737,116 +759,227 @@ export function EditorPanel() {
                     <span>Clear</span>
                   </button>
                 </div>
-                <div className="flex flex-col gap-3">
-                  {textLayers.map((layer, index) => {
+                <DraggableLayerList
+                  items={textLayers}
+                  onReorder={(from, to) => {
+                    const resolved = layerStack;
+                    const fromRef = resolved.find(
+                      (r) => r.kind === "text" && r.id === textLayers[from].id,
+                    );
+                    const toRef = resolved.find(
+                      (r) => r.kind === "text" && r.id === textLayers[to].id,
+                    );
+                    if (!fromRef || !toRef) return;
+                    const fromLayerIdx = resolved.indexOf(fromRef);
+                    const toLayerIdx = resolved.indexOf(toRef);
+                    reorderLayer(fromLayerIdx, toLayerIdx);
+                  }}
+                  renderItem={(layer, index) => {
                     const stackIdx = layerStack.findIndex(
                       (ref) => ref.kind === "text" && ref.id === layer.id,
                     );
                     return (
-                    <div
-                      key={layer.id}
-                      className="rounded-xl border border-border bg-muted/40 p-3"
-                    >
-                      <div className="flex items-center justify-between gap-2 mb-3">
-                        <span
-                          className="text-sm font-bold truncate"
-                          style={{ color: layer.color }}
-                        >
-                          {layer.text}
-                        </span>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            onClick={() => moveLayer("text", layer.id, "up")}
-                            disabled={stackIdx <= 0}
-                            title="Move layer up"
-                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                      <div className="p-3">
+                        <div className="flex items-center justify-between gap-2 mb-3">
+                          <span
+                            className="text-sm font-bold truncate"
+                            style={{ color: layer.color }}
                           >
-                            <ChevronUp size={15} />
-                          </button>
+                            {layer.text}
+                          </span>
+                          <div className="flex items-center gap-1 flex-shrink-0">
+                            <button
+                              onClick={() => moveLayer("text", layer.id, "up")}
+                              disabled={stackIdx <= 0}
+                              title="Move layer up"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                            >
+                              <ChevronUp size={15} />
+                            </button>
+                            <button
+                              onClick={() =>
+                                moveLayer("text", layer.id, "down")
+                              }
+                              disabled={
+                                stackIdx === -1 ||
+                                stackIdx >= layerStack.length - 1
+                              }
+                              title="Move layer down"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                            >
+                              <ChevronDown size={15} />
+                            </button>
+                            <button
+                              onClick={() => removeTextLayer(layer.id)}
+                              title="Remove text"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <label className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              Size {layer.size}%
+                            </span>
+                            <input
+                              type="range"
+                              min={4}
+                              max={20}
+                              value={layer.size}
+                              onChange={(e) =>
+                                updateTextLayer(layer.id, {
+                                  size: Number(e.target.value),
+                                })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                              <RotateCcw size={12} />
+                              <span>Rotate {layer.rotation}°</span>
+                            </span>
+                            <input
+                              type="range"
+                              min={-45}
+                              max={45}
+                              value={layer.rotation}
+                              onChange={(e) =>
+                                updateTextLayer(layer.id, {
+                                  rotation: Number(e.target.value),
+                                })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1.5 sm:col-span-2">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              Opacity {layer.opacity ?? 100}%
+                            </span>
+                            <input
+                              type="range"
+                              min={10}
+                              max={100}
+                              value={layer.opacity ?? 100}
+                              onChange={(e) =>
+                                updateTextLayer(layer.id, {
+                                  opacity: Number(e.target.value),
+                                })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                        </div>
+                        <div className="mt-2 text-[10px] text-muted-foreground">
+                          Layer {stackIdx + 1} of {layerStack.length} · drag on
+                          preview to reposition
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {tab === "layers" && (
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-heading font-bold text-foreground">
+                All Layers
+              </h3>
+              <span className="text-xs text-muted-foreground">
+                {stickers.length + textLayers.length} total
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Drag to reorder layers. All stickers render below text layers.
+            </p>
+            {layerStack.length > 0 ? (
+              <DraggableLayerList
+                items={layerStack}
+                onReorder={(fromIndex, toIndex) => {
+                  reorderLayer(fromIndex, toIndex);
+                }}
+                renderItem={(ref, index) => {
+                  const sticker = stickers.find((s) => s.id === ref.id);
+                  const textLayer = textLayers.find((t) => t.id === ref.id);
+                  const isSticker = ref.kind === "sticker";
+                  const layer = isSticker ? sticker : textLayer;
+                  if (!layer) return null;
+
+                  return (
+                    <div className="p-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {isSticker ? (
+                            <>
+                              <span className="text-xs font-bold text-foreground truncate">
+                                Sticker {index + 1}
+                              </span>
+                            </>
+                          ) : (
+                            <>
+                              <span
+                                className="text-sm font-bold truncate flex-shrink-0"
+                                style={{ color: textLayer?.color }}
+                              >
+                                {textLayer?.text}
+                              </span>
+                              <span className="text-xs font-bold text-muted-foreground">
+                                Text {index + 1}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
                           <button
-                            onClick={() => moveLayer("text", layer.id, "down")}
-                            disabled={
-                              stackIdx === -1 ||
-                              stackIdx >= layerStack.length - 1
-                            }
-                            title="Move layer down"
-                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
-                          >
-                            <ChevronDown size={15} />
-                          </button>
-                          <button
-                            onClick={() => removeTextLayer(layer.id)}
-                            title="Remove text"
+                            onClick={() => {
+                              if (isSticker && sticker) {
+                                removeSticker(sticker.id);
+                              } else if (textLayer) {
+                                removeTextLayer(textLayer.id);
+                              }
+                            }}
+                            title="Remove layer"
                             className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
                           >
                             <Trash2 size={15} />
                           </button>
                         </div>
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <label className="flex flex-col gap-1.5">
-                          <span className="text-[11px] font-semibold text-muted-foreground">
-                            Size {layer.size}%
-                          </span>
-                          <input
-                            type="range"
-                            min={4}
-                            max={20}
-                            value={layer.size}
-                            onChange={(e) =>
-                              updateTextLayer(layer.id, {
-                                size: Number(e.target.value),
-                              })
-                            }
-                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1.5">
-                          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
-                            <RotateCcw size={12} />
-                            <span>Rotate {layer.rotation}°</span>
-                          </span>
-                          <input
-                            type="range"
-                            min={-45}
-                            max={45}
-                            value={layer.rotation}
-                            onChange={(e) =>
-                              updateTextLayer(layer.id, {
-                                rotation: Number(e.target.value),
-                              })
-                            }
-                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
-                          />
-                        </label>
-                        <label className="flex flex-col gap-1.5 sm:col-span-2">
-                          <span className="text-[11px] font-semibold text-muted-foreground">
-                            Opacity {layer.opacity ?? 100}%
-                          </span>
-                          <input
-                            type="range"
-                            min={10}
-                            max={100}
-                            value={layer.opacity ?? 100}
-                            onChange={(e) =>
-                              updateTextLayer(layer.id, {
-                                opacity: Number(e.target.value),
-                              })
-                            }
-                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
-                          />
-                        </label>
-                      </div>
                       <div className="mt-2 text-[10px] text-muted-foreground">
-                        Layer {stackIdx + 1} of {layerStack.length} · drag on
-                        preview to reposition
+                        Layer {index + 1} of {layerStack.length}
+                        {isSticker ? " (sticker)" : " (text)"}
                       </div>
                     </div>
-                    );
-                  })}
-                </div>
+                  );
+                }}
+              />
+            ) : (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                No layers yet. Add stickers or text from their tabs.
               </div>
             )}
+            <div className="flex gap-2">
+              <button
+                onClick={clearStickers}
+                disabled={stickers.length === 0}
+                className="flex-1 py-2 px-4 rounded-xl border border-border text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 transition-colors"
+              >
+                Clear Stickers
+              </button>
+              <button
+                onClick={clearTextLayers}
+                disabled={textLayers.length === 0}
+                className="flex-1 py-2 px-4 rounded-xl border border-border text-sm font-bold text-muted-foreground hover:bg-destructive/10 hover:text-destructive disabled:opacity-40 transition-colors"
+              >
+                Clear Text
+              </button>
+            </div>
           </div>
         )}
       </div>
