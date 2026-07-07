@@ -66,6 +66,7 @@ app/
   editor/page.tsx         filters, adjustments, caption (step 3)
   export/page.tsx         composite, upload, share link + QR (step 4)
   s/[id]/page.tsx          public share page (server component)
+  manifest.ts              PWA install metadata
 components/               CameraCapture, StripPreview, EditorPanel, ExportPanel, ...
 lib/
   store.ts                Zustand store holding captured frames + edits (sessionStorage-backed)
@@ -76,6 +77,7 @@ lib/
   supabase.ts               Supabase client
   session.ts                anonymous per-browser session id
 supabase/schema.sql        table + RLS + storage bucket setup
+public/                    PWA icons served as static assets
 ```
 
 ## What's stubbed / next steps
@@ -103,3 +105,7 @@ foundation to build on:
   `@page` size support varies by browser (particularly Safari), so it's
   worth a manual print-preview check across Chrome/Firefox/Safari,
   desktop and iOS, before relying on it for real print jobs.
+- **PWA support** currently covers install metadata and app icons. A
+  service worker/offline shell is intentionally left for later because
+  upload, share links, gallery, and the feedback wall depend on networked
+  Supabase calls.

@@ -154,6 +154,22 @@ accounts and can justify developer app review.
 
 ---
 
+## v2.1 — PWA Support (Done)
+
+Lightweight install support for phone-first booth use:
+
+- Web app manifest via `app/manifest.ts`
+- Home-screen/mobile install metadata in the root layout
+- App icons for browser, Apple touch icon, and maskable Android icon
+- Standalone display mode with ClickStudio theme/background colors
+
+**Later option:** add a service worker/offline shell if the product needs
+offline capture/edit behavior. This was intentionally not included in the
+first PWA pass because upload, share pages, gallery, and feedback wall all
+depend on live Supabase/network behavior.
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
 - Sticker packs — draggable, resizable, rotatable stickers placed by click,
@@ -163,9 +179,9 @@ accounts and can justify developer app review.
 - Bigger template gallery — the mockups showed 37 templates; current build
   has 3 color themes. Could back this with a `templates` table and a
   carousel/modal picker.
-- PWA support — installable, works offline for the capture/edit steps.
-  Moved up in priority — worth doing earlier rather than later since it's
-  mostly config (manifest and service worker), not a big feature build.
+- Offline shell/service worker — useful if ClickStudio needs capture/edit
+  to keep working during weak network moments. PWA install metadata is
+  already shipped; this would be the offline layer on top.
 - "What's New" changelog modal — surface this very roadmap/changelog
   in-app so people notice new features after an update.
 - Boomerang/GIF mode — short looping clip instead of a static frame

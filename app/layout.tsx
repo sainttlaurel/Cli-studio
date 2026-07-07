@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter, Fredoka, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -21,9 +21,27 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ClickStudio — Own Your Shot',
+  title: 'ClickStudio - Own Your Shot',
   description:
     'The ultimate browser-based Y2K photo booth. No app, no signup, just vibes.',
+  applicationName: 'ClickStudio',
+  manifest: '/manifest.webmanifest',
+  appleWebApp: {
+    capable: true,
+    title: 'ClickStudio',
+    statusBarStyle: 'default',
+  },
+  icons: {
+    icon: [
+      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: '#fff0f5',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
