@@ -23,6 +23,7 @@ alter table public.strips add column if not exists is_public boolean not null de
 -- `auth.uid()::text = session_id` an actual enforceable check rather than
 -- cosmetic.
 drop policy if exists "Public strips are readable by everyone" on public.strips;
+drop policy if exists "Owners and public gallery strips are readable" on public.strips;
 create policy "Owners and public gallery strips are readable"
   on public.strips for select
   using (is_public = true or auth.uid()::text = session_id);

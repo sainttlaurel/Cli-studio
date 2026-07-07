@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star, Images, Clock, MessageCircle } from 'lucide-react';
+import { WhatsNewButton } from '@/components/WhatsNewModal';
 
 const TESTIMONIALS = [
   {
@@ -60,6 +61,7 @@ export default function LandingPage() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
+          <WhatsNewButton />
           <span className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
             <Sparkles size={14} /> No App Install Needed
           </span>

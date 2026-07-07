@@ -19,22 +19,19 @@ Status legend: Done | In progress | Planned | Idea (not committed)
 
 ---
 
-## v1.1 — Polish & Hardening (Implemented, needs deploy) (Done)
+## v1.1 — Polish & Hardening (Deployed) (Done)
 
 Small fixes that make the current flow production-solid before adding new
-surface area. Code is in place; each item needs a deploy/config step on
-your Supabase project before it's live — see `README.md` section 3.
+surface area. Code and Supabase project deployment are in place.
 
-- Done (needs deploy): 30-day auto-delete via the `cleanup-expired-strips`
+- Done: 30-day auto-delete via the `cleanup-expired-strips`
   edge function, which removes both the DB row and the Storage object.
-  Needs to be deployed and scheduled (Dashboard Cron, or the `pg_cron` +
-  `pg_net` alternative in `schema.sql`).
-- Done (needs deploy): Uploads now go through the `upload-strip` edge
+  Deployed and scheduled daily at 3am through `pg_cron` + `pg_net`.
+- Done: Uploads now go through the `upload-strip` edge
   function instead of the browser writing directly with the anon key. It
-  enforces a 12-strips-per-hour-per-session rate limit and does the actual
-  write with the service role key. The old public insert policies were
-  removed from `schema.sql` accordingly — existing projects should run
-  `supabase/migrations/0002_v1_1_hardening.sql`.
+  enforces a 12-strips-per-hour-per-session rate limit, requires a verified
+  anonymous-auth JWT, and does the actual write with the service role key.
+  The old public insert policies were removed from `schema.sql` accordingly.
 - Done: Native share sheet (`navigator.share()`) on both the Export panel
   and the public Share page, with a clipboard fallback.
 - Done: Retry handling on the export step — a "Try Again" button replaces
@@ -114,7 +111,7 @@ changes whether this is scoped into the share page or becomes a new route.
 
 ---
 
-## v2 — Social Sharing: Native Share Sheet (Done)
+## v2 — Social Sharing: Native Share Sheet (HOLD)
 
 Worth splitting into two tiers, since "share to" and "post via API" are very
 different amounts of work:
@@ -186,6 +183,19 @@ templates.
 
 ---
 
+## v2.3 — What's New Changelog Modal (Done)
+
+Small in-app release-notes surface so returning users can see recent product
+changes without reading the repo:
+
+- Auto-opens once per browser for a new changelog version, then stores the
+  dismissed version in `localStorage`
+- Manual "What's New" trigger in the landing and studio headers
+- Current content highlights PWA install support, expanded frame templates,
+  and native URL sharing
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
 - Sticker packs — draggable, resizable, rotatable stickers placed by click,
@@ -198,8 +208,6 @@ templates.
 - Offline shell/service worker — useful if ClickStudio needs capture/edit
   to keep working during weak network moments. PWA install metadata is
   already shipped; this would be the offline layer on top.
-- "What's New" changelog modal — surface this very roadmap/changelog
-  in-app so people notice new features after an update.
 - Boomerang/GIF mode — short looping clip instead of a static frame
 - Event/kiosk mode — big-screen tablet UI for real parties/weddings, maybe
   a physical printer integration

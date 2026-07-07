@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Fredoka, JetBrains_Mono } from 'next/font/google';
+import { WhatsNewModal } from '@/components/WhatsNewModal';
 import './globals.css';
 
 const inter = Inter({
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className={`${inter.variable} ${fredoka.variable} ${mono.variable} font-sans bg-background text-foreground antialiased`}
       >
         {children}
+        <WhatsNewModal />
       </body>
     </html>
   );
