@@ -1,6 +1,7 @@
 import { buildFilterCss } from "./filters";
 import { getStickerDefinition } from "./stickers";
-import type { FilterKey, PlacedSticker, PlacedTextLayer } from "./store";
+import type { FilterKey, LayerRef, PlacedSticker, PlacedTextLayer } from "./store";
+import { resolveLayerOrder } from "./store";
 import type { TextStickerDefinition } from "./stickers";
 
 export interface CompositeOptions {
@@ -12,6 +13,7 @@ export interface CompositeOptions {
   caption: string;
   stickers?: PlacedSticker[];
   textLayers?: PlacedTextLayer[];
+  layerOrder?: LayerRef[];
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -193,6 +195,7 @@ export async function renderStripCanvas(
     caption,
     stickers = [],
     textLayers = [],
+    layerOrder,
   } = opts;
   const images = await Promise.all(frames.map(loadImage));
 
@@ -256,15 +259,16 @@ export async function renderStripCanvas(
     ctx.fillText(caption, canvas.width / 2, footerY + 40 * scale);
   }
 
-  await Promise.all(
-    stickers.map((sticker) =>
-      drawSticker(ctx, sticker, canvas.width, canvas.height),
-    ),
-  );
-
-  textLayers.forEach((layer) =>
-    drawTextLayer(ctx, layer, canvas.width, canvas.height),
-  );
+  const stack = resolveLayerOrder(layerOrder, stickers, textLayers);
+  for (const ref of stack) {
+    if (ref.kind === "sticker") {
+      const sticker = stickers.find((s) => s.id === ref.id);
+      if (sticker) await drawSticker(ctx, sticker, canvas.width, canvas.height);
+    } else {
+      const layer = textLayers.find((t) => t.id === ref.id);
+      if (layer) drawTextLayer(ctx, layer, canvas.width, canvas.height);
+    }
+  }
 
   return canvas;
 }

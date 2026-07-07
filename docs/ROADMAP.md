@@ -327,7 +327,7 @@ Per-layer transparency and stacking controls for stickers and text overlays:
 - `lib/compositor.ts`: `globalAlpha` applied when drawing stickers and text layers
 - `components/StripPreview.tsx`: CSS `opacity` on layer preview elements
 - `components/EditorPanel.tsx`: opacity sliders and ▲/▼ controls in placed-layer lists
-- Cross-category stacking unchanged: all stickers render below all text layers
+- Cross-category stacking unchanged: all stickers render below all text layers *(superseded by v2.13 — unified `layerOrder` stack)*
 
 ---
 
@@ -343,6 +343,28 @@ Side-by-side editor UX improvements so the preview and controls feel balanced:
 - Frame tab template grid tightened to match the Filters tab — smaller cards,
   `aspect-[4/3]` swatches, 3 columns mobile / 4 on desktop
 - What's New modal updated to highlight text overlays, opacity, and layer stacking
+
+---
+
+## v2.12 — Template Hex Export (Done)
+
+Export and print footer colors now follow Supabase template `hex_color`:
+
+- `resolveThemeHex()` in `lib/templates.ts` — DB rows, then `LOCAL_TEMPLATES`, then pink default
+- `ExportPanel` fetches templates before compositing (same fallback pattern as the Frame tab)
+- Renamed College sticker pack to **Collage** (id, keys, assets, editor label)
+
+---
+
+## v2.13 — Cross-Layer Z-Order (Done)
+
+Stickers and text overlays share one global stacking order:
+
+- `layerOrder` in `lib/store.ts` — ordered `{ kind, id }` refs across both layer types
+- `resolveLayerOrder()` rebuilds stack from persisted order + any new layers
+- ▲/▼ on sticker and text cards move layers in the **combined** stack (text can sit above/below stickers)
+- Preview, PNG export, and print all draw in `layerOrder` sequence
+- Included in undo/redo and session persist
 
 ---
 

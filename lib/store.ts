@@ -47,6 +47,39 @@ export interface PlacedTextLayer {
   opacity: number; // 10–100
 }
 
+export type LayerRef = { kind: "sticker" | "text"; id: string };
+
+/** Merge persisted order with live layers; append any missing ids (stickers, then text). */
+export function resolveLayerOrder(
+  layerOrder: LayerRef[] | undefined,
+  stickers: PlacedSticker[],
+  textLayers: PlacedTextLayer[],
+): LayerRef[] {
+  const stickerIds = new Set(stickers.map((s) => s.id));
+  const textIds = new Set(textLayers.map((t) => t.id));
+
+  const resolved = (layerOrder ?? []).filter((ref) =>
+    ref.kind === "sticker" ? stickerIds.has(ref.id) : textIds.has(ref.id),
+  );
+
+  const seen = new Set(resolved.map((r) => `${r.kind}:${r.id}`));
+  for (const sticker of stickers) {
+    const key = `sticker:${sticker.id}`;
+    if (!seen.has(key)) {
+      resolved.push({ kind: "sticker", id: sticker.id });
+      seen.add(key);
+    }
+  }
+  for (const layer of textLayers) {
+    const key = `text:${layer.id}`;
+    if (!seen.has(key)) {
+      resolved.push({ kind: "text", id: layer.id });
+      seen.add(key);
+    }
+  }
+  return resolved;
+}
+
 interface BoothState {
   frames: string[];
   theme: ThemeKey;
@@ -55,6 +88,7 @@ interface BoothState {
   caption: string;
   stickers: PlacedSticker[];
   textLayers: PlacedTextLayer[];
+  layerOrder: LayerRef[];
   mirror: boolean;
   soundEnabled: boolean;
   addFrame: (dataUrl: string) => void;
@@ -73,7 +107,6 @@ interface BoothState {
   ) => void;
   removeSticker: (id: string) => void;
   clearStickers: () => void;
-  moveSticker: (id: string, dir: "up" | "down") => void;
   addTextLayer: (
     layer: Omit<PlacedTextLayer, "id" | "opacity"> & { opacity?: number },
   ) => void;
@@ -83,7 +116,7 @@ interface BoothState {
   ) => void;
   removeTextLayer: (id: string) => void;
   clearTextLayers: () => void;
-  moveTextLayer: (id: string, dir: "up" | "down") => void;
+  moveLayer: (kind: LayerRef["kind"], id: string, dir: "up" | "down") => void;
   toggleMirror: () => void;
   toggleSound: () => void;
   resetAll: () => void;
@@ -97,6 +130,7 @@ const initial = {
   caption: "",
   stickers: [] as PlacedSticker[],
   textLayers: [] as PlacedTextLayer[],
+  layerOrder: [] as LayerRef[],
   mirror: true,
   soundEnabled: true,
 };
@@ -125,12 +159,20 @@ export const useBoothStore = create<BoothState>()(
           set((s) => ({ adjustments: { ...s.adjustments, ...a } })),
         setCaption: (caption) => set({ caption }),
         addSticker: (sticker) =>
-          set((s) => ({
-            stickers:
-              s.stickers.length >= 12
-                ? s.stickers
-                : [...s.stickers, { opacity: 100, ...sticker, id: createId() }],
-          })),
+          set((s) => {
+            if (s.stickers.length >= 12) return s;
+            const id = createId();
+            return {
+              stickers: [
+                ...s.stickers,
+                { opacity: 100, ...sticker, id },
+              ],
+              layerOrder: [
+                ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
+                { kind: "sticker", id },
+              ],
+            };
+          }),
         updateSticker: (id, patch) =>
           set((s) => ({
             stickers: s.stickers.map((sticker) =>
@@ -140,25 +182,30 @@ export const useBoothStore = create<BoothState>()(
         removeSticker: (id) =>
           set((s) => ({
             stickers: s.stickers.filter((sticker) => sticker.id !== id),
+            layerOrder: s.layerOrder.filter(
+              (ref) => !(ref.kind === "sticker" && ref.id === id),
+            ),
           })),
-        clearStickers: () => set({ stickers: [] }),
-        moveSticker: (id, dir) =>
-          set((s) => {
-            const idx = s.stickers.findIndex((st) => st.id === id);
-            if (idx === -1) return s;
-            const next = dir === "up" ? idx - 1 : idx + 1;
-            if (next < 0 || next >= s.stickers.length) return s;
-            const arr = [...s.stickers];
-            [arr[idx], arr[next]] = [arr[next], arr[idx]];
-            return { stickers: arr };
-          }),
-        addTextLayer: (layer) =>
+        clearStickers: () =>
           set((s) => ({
-            textLayers:
-              s.textLayers.length >= 10
-                ? s.textLayers
-                : [...s.textLayers, { opacity: 100, ...layer, id: createId() }],
+            stickers: [],
+            layerOrder: s.layerOrder.filter((ref) => ref.kind !== "sticker"),
           })),
+        addTextLayer: (layer) =>
+          set((s) => {
+            if (s.textLayers.length >= 10) return s;
+            const id = createId();
+            return {
+              textLayers: [
+                ...s.textLayers,
+                { opacity: 100, ...layer, id },
+              ],
+              layerOrder: [
+                ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
+                { kind: "text", id },
+              ],
+            };
+          }),
         updateTextLayer: (id, patch) =>
           set((s) => ({
             textLayers: s.textLayers.map((layer) =>
@@ -168,17 +215,31 @@ export const useBoothStore = create<BoothState>()(
         removeTextLayer: (id) =>
           set((s) => ({
             textLayers: s.textLayers.filter((layer) => layer.id !== id),
+            layerOrder: s.layerOrder.filter(
+              (ref) => !(ref.kind === "text" && ref.id === id),
+            ),
           })),
-        clearTextLayers: () => set({ textLayers: [] }),
-        moveTextLayer: (id, dir) =>
+        clearTextLayers: () =>
+          set((s) => ({
+            textLayers: [],
+            layerOrder: s.layerOrder.filter((ref) => ref.kind !== "text"),
+          })),
+        moveLayer: (kind, id, dir) =>
           set((s) => {
-            const idx = s.textLayers.findIndex((l) => l.id === id);
+            const order = resolveLayerOrder(
+              s.layerOrder,
+              s.stickers,
+              s.textLayers,
+            );
+            const idx = order.findIndex(
+              (ref) => ref.kind === kind && ref.id === id,
+            );
             if (idx === -1) return s;
             const next = dir === "up" ? idx - 1 : idx + 1;
-            if (next < 0 || next >= s.textLayers.length) return s;
-            const arr = [...s.textLayers];
+            if (next < 0 || next >= order.length) return s;
+            const arr = [...order];
             [arr[idx], arr[next]] = [arr[next], arr[idx]];
-            return { textLayers: arr };
+            return { layerOrder: arr };
           }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
@@ -197,6 +258,7 @@ export const useBoothStore = create<BoothState>()(
         caption: state.caption,
         stickers: state.stickers,
         textLayers: state.textLayers,
+        layerOrder: state.layerOrder,
       }),
       limit: 50,
     },

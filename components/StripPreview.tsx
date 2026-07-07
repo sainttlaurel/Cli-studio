@@ -1,7 +1,7 @@
 "use client";
 
 import React, { PointerEvent, useRef } from "react";
-import { useBoothStore } from "@/lib/store";
+import { useBoothStore, resolveLayerOrder } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
 import { getStickerDefinition } from "@/lib/stickers";
 import Image from "next/image";
@@ -32,7 +32,9 @@ export function StripPreview() {
     updateSticker,
     textLayers,
     updateTextLayer,
+    layerOrder,
   } = useBoothStore();
+  const stack = resolveLayerOrder(layerOrder, stickers, textLayers);
   const stripRef = useRef<HTMLDivElement>(null);
   const filterCss = buildFilterCss(
     filter,
@@ -47,7 +49,7 @@ export function StripPreview() {
     mono: "monospace",
   };
 
-  const moveSticker = (id: string, event: PointerEvent<HTMLButtonElement>) => {
+  const dragSticker = (id: string, event: PointerEvent<HTMLButtonElement>) => {
     const rect = stripRef.current?.getBoundingClientRect();
     if (!rect) return;
 
@@ -63,7 +65,7 @@ export function StripPreview() {
     });
   };
 
-  const moveTextLayer = (
+  const dragTextLayer = (
     id: string,
     event: PointerEvent<HTMLButtonElement>,
   ) => {
@@ -131,115 +133,123 @@ export function StripPreview() {
             {caption}
           </div>
         )}
-        {stickers.map((sticker) => {
-          const stickerDef = getStickerDefinition(sticker.key);
-          const sharedPointerProps = {
-            onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => {
-              event.currentTarget.setPointerCapture(event.pointerId);
-              moveSticker(sticker.id, event);
-            },
-            onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => {
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                moveSticker(sticker.id, event);
-              }
-            },
-            onPointerUp: (event: React.PointerEvent<HTMLButtonElement>) => {
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                event.currentTarget.releasePointerCapture(event.pointerId);
-              }
-            },
-          };
-          const sharedStyle: React.CSSProperties = {
-            left: `${sticker.x}%`,
-            top: `${sticker.y}%`,
-            width: `${sticker.size}%`,
-            transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg)`,
-            opacity: (sticker.opacity ?? 100) / 100,
-          };
+        {stack.map((ref) => {
+          if (ref.kind === "sticker") {
+            const sticker = stickers.find((s) => s.id === ref.id);
+            if (!sticker) return null;
+            const stickerDef = getStickerDefinition(sticker.key);
+            const sharedPointerProps = {
+              onPointerDown: (event: React.PointerEvent<HTMLButtonElement>) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                dragSticker(sticker.id, event);
+              },
+              onPointerMove: (event: React.PointerEvent<HTMLButtonElement>) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  dragSticker(sticker.id, event);
+                }
+              },
+              onPointerUp: (event: React.PointerEvent<HTMLButtonElement>) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+              },
+            };
+            const sharedStyle: React.CSSProperties = {
+              left: `${sticker.x}%`,
+              top: `${sticker.y}%`,
+              width: `${sticker.size}%`,
+              transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg)`,
+              opacity: (sticker.opacity ?? 100) / 100,
+            };
 
-          if (stickerDef.type === "image") {
+            if (stickerDef.type === "image") {
+              return (
+                <button
+                  key={`sticker-${sticker.id}`}
+                  type="button"
+                  title="Drag sticker"
+                  {...sharedPointerProps}
+                  className="absolute select-none touch-none transition-transform hover:scale-105 drop-shadow-md"
+                  style={sharedStyle}
+                >
+                  <Image
+                    src={stickerDef.src}
+                    alt={stickerDef.label}
+                    width={120}
+                    height={120}
+                    className="w-full h-auto pointer-events-none"
+                    draggable={false}
+                  />
+                </button>
+              );
+            }
+
             return (
               <button
-                key={sticker.id}
+                key={`sticker-${sticker.id}`}
                 type="button"
                 title="Drag sticker"
                 {...sharedPointerProps}
-                className="absolute z-20 select-none touch-none transition-transform hover:scale-105 drop-shadow-md"
-                style={sharedStyle}
+                className={`absolute flex select-none touch-none items-center justify-center border-2 px-2 font-heading font-extrabold shadow-md transition-transform hover:scale-105 ${
+                  stickerDef.shape === "circle"
+                    ? "rounded-full aspect-square"
+                    : stickerDef.shape === "ticket"
+                      ? "rounded-md"
+                      : "rounded-full"
+                }`}
+                style={{
+                  ...sharedStyle,
+                  minWidth: 36,
+                  minHeight: 28,
+                  backgroundColor: stickerDef.bg,
+                  color: stickerDef.fg,
+                  borderColor: stickerDef.border,
+                  fontSize: `clamp(9px, ${sticker.size * 0.12}rem, 14px)`,
+                }}
               >
-                <Image
-                  src={stickerDef.src}
-                  alt={stickerDef.label}
-                  width={120}
-                  height={120}
-                  className="w-full h-auto pointer-events-none"
-                  draggable={false}
-                />
+                {stickerDef.text}
               </button>
             );
           }
 
+          const layer = textLayers.find((t) => t.id === ref.id);
+          if (!layer) return null;
+
           return (
             <button
-              key={sticker.id}
+              key={`text-${layer.id}`}
               type="button"
-              title="Drag sticker"
-              {...sharedPointerProps}
-              className={`absolute z-20 flex select-none touch-none items-center justify-center border-2 px-2 font-heading font-extrabold shadow-md transition-transform hover:scale-105 ${
-                stickerDef.shape === "circle"
-                  ? "rounded-full aspect-square"
-                  : stickerDef.shape === "ticket"
-                    ? "rounded-md"
-                    : "rounded-full"
-              }`}
+              title="Drag text"
+              onPointerDown={(event) => {
+                event.currentTarget.setPointerCapture(event.pointerId);
+                dragTextLayer(layer.id, event);
+              }}
+              onPointerMove={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  dragTextLayer(layer.id, event);
+                }
+              }}
+              onPointerUp={(event) => {
+                if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                  event.currentTarget.releasePointerCapture(event.pointerId);
+                }
+              }}
+              className="absolute select-none touch-none whitespace-nowrap font-extrabold drop-shadow-md transition-transform hover:scale-105"
               style={{
-                ...sharedStyle,
-                minWidth: 36,
-                minHeight: 28,
-                backgroundColor: stickerDef.bg,
-                color: stickerDef.fg,
-                borderColor: stickerDef.border,
-                fontSize: `clamp(9px, ${sticker.size * 0.12}rem, 14px)`,
+                left: `${layer.x}%`,
+                top: `${layer.y}%`,
+                transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
+                color: layer.color,
+                fontSize: `clamp(8px, ${layer.size}cqw, 64px)`,
+                fontFamily: FONT_PREVIEW_MAP[layer.fontFamily] ?? "inherit",
+                textShadow: "0 1px 4px rgba(0,0,0,0.22)",
+                opacity: (layer.opacity ?? 100) / 100,
               }}
             >
-              {stickerDef.text}
+              {layer.text}
             </button>
           );
         })}
-        {textLayers.map((layer) => (
-          <button
-            key={layer.id}
-            type="button"
-            title="Drag text"
-            onPointerDown={(event) => {
-              event.currentTarget.setPointerCapture(event.pointerId);
-              moveTextLayer(layer.id, event);
-            }}
-            onPointerMove={(event) => {
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                moveTextLayer(layer.id, event);
-              }
-            }}
-            onPointerUp={(event) => {
-              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
-                event.currentTarget.releasePointerCapture(event.pointerId);
-              }
-            }}
-            className="absolute z-30 select-none touch-none whitespace-nowrap font-extrabold drop-shadow-md transition-transform hover:scale-105"
-            style={{
-              left: `${layer.x}%`,
-              top: `${layer.y}%`,
-              transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
-              color: layer.color,
-              fontSize: `clamp(8px, ${layer.size}cqw, 64px)`,
-              fontFamily: FONT_PREVIEW_MAP[layer.fontFamily] ?? "inherit",
-              textShadow: "0 1px 4px rgba(0,0,0,0.22)",
-              opacity: (layer.opacity ?? 100) / 100,
-            }}
-          >
-            {layer.text}
-          </button>
-        ))}
       </div>
       </div>
     </div>

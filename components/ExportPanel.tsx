@@ -31,7 +31,7 @@ type ShareNavigator = Navigator & {
 const PRINT_SIZE_ORDER: PrintSizeKey[] = ["2x6", "4x6", "a4", "letter"];
 
 export function ExportPanel() {
-  const { frames, filter, adjustments, theme, caption, stickers, textLayers } =
+  const { frames, filter, adjustments, theme, caption, stickers, textLayers, layerOrder } =
     useBoothStore();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +78,7 @@ export function ExportPanel() {
         caption,
         stickers,
         textLayers,
+        layerOrder,
       });
       setBlob(renderedBlob);
       setBlobUrl(URL.createObjectURL(renderedBlob));
@@ -121,6 +122,7 @@ export function ExportPanel() {
     stickers,
     textLayers,
     templates,
+    layerOrder,
   ]);
 
   useEffect(() => {
@@ -183,6 +185,7 @@ export function ExportPanel() {
         caption,
         stickers,
         textLayers,
+        layerOrder,
         printSize,
       });
       pageUrl = URL.createObjectURL(pageBlob);

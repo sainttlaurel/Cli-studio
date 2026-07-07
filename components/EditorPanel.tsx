@@ -14,7 +14,7 @@ import {
   ChevronUp,
   ChevronDown,
 } from "lucide-react";
-import { useBoothStore, useBoothTemporal } from "@/lib/store";
+import { useBoothStore, useBoothTemporal, resolveLayerOrder } from "@/lib/store";
 import type { FilterKey, FontFamily } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
 import {
@@ -70,15 +70,16 @@ export function EditorPanel() {
     updateSticker,
     removeSticker,
     clearStickers,
-    moveSticker,
+    moveLayer,
     textLayers,
     addTextLayer,
     updateTextLayer,
     removeTextLayer,
     clearTextLayers,
-    moveTextLayer,
+    layerOrder,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
+  const layerStack = resolveLayerOrder(layerOrder, stickers, textLayers);
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -460,6 +461,9 @@ export function EditorPanel() {
                 <div className="flex flex-col gap-3">
                   {stickers.map((sticker, index) => {
                     const stickerDef = getStickerDefinition(sticker.key);
+                    const stackIdx = layerStack.findIndex(
+                      (ref) => ref.kind === "sticker" && ref.id === sticker.id,
+                    );
                     return (
                       <div
                         key={sticker.id}
@@ -493,16 +497,19 @@ export function EditorPanel() {
                           </div>
                           <div className="flex items-center gap-1">
                             <button
-                              onClick={() => moveSticker(sticker.id, "up")}
-                              disabled={index === 0}
+                              onClick={() => moveLayer("sticker", sticker.id, "up")}
+                              disabled={stackIdx <= 0}
                               title="Move layer up"
                               className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
                             >
                               <ChevronUp size={15} />
                             </button>
                             <button
-                              onClick={() => moveSticker(sticker.id, "down")}
-                              disabled={index === stickers.length - 1}
+                              onClick={() => moveLayer("sticker", sticker.id, "down")}
+                              disabled={
+                                stackIdx === -1 ||
+                                stackIdx >= layerStack.length - 1
+                              }
                               title="Move layer down"
                               className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
                             >
@@ -570,6 +577,10 @@ export function EditorPanel() {
                               className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
                             />
                           </label>
+                        </div>
+                        <div className="mt-2 text-[10px] text-muted-foreground">
+                          Layer {stackIdx + 1} of {layerStack.length} · drag on
+                          preview to reposition
                         </div>
                       </div>
                     );
@@ -727,7 +738,11 @@ export function EditorPanel() {
                   </button>
                 </div>
                 <div className="flex flex-col gap-3">
-                  {textLayers.map((layer, index) => (
+                  {textLayers.map((layer, index) => {
+                    const stackIdx = layerStack.findIndex(
+                      (ref) => ref.kind === "text" && ref.id === layer.id,
+                    );
+                    return (
                     <div
                       key={layer.id}
                       className="rounded-xl border border-border bg-muted/40 p-3"
@@ -741,16 +756,19 @@ export function EditorPanel() {
                         </span>
                         <div className="flex items-center gap-1 flex-shrink-0">
                           <button
-                            onClick={() => moveTextLayer(layer.id, "up")}
-                            disabled={index === 0}
+                            onClick={() => moveLayer("text", layer.id, "up")}
+                            disabled={stackIdx <= 0}
                             title="Move layer up"
                             className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
                           >
                             <ChevronUp size={15} />
                           </button>
                           <button
-                            onClick={() => moveTextLayer(layer.id, "down")}
-                            disabled={index === textLayers.length - 1}
+                            onClick={() => moveLayer("text", layer.id, "down")}
+                            disabled={
+                              stackIdx === -1 ||
+                              stackIdx >= layerStack.length - 1
+                            }
                             title="Move layer down"
                             className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
                           >
@@ -820,10 +838,12 @@ export function EditorPanel() {
                         </label>
                       </div>
                       <div className="mt-2 text-[10px] text-muted-foreground">
-                        Text {index + 1} · drag on preview to reposition
+                        Layer {stackIdx + 1} of {layerStack.length} · drag on
+                        preview to reposition
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             )}
