@@ -93,7 +93,7 @@ export interface StickerPack {
 }
 
 function makeImagePack(
-  id: "college" | "flowers" | "ribbon" | "y2k",
+  id: "collage" | "flowers" | "ribbon" | "y2k",
   label: string,
   emoji: string,
   count: number,
@@ -112,7 +112,7 @@ function makeImagePack(
 }
 
 export const IMAGE_PACKS: StickerPack[] = [
-  makeImagePack("college", "College", "🎓", 10),
+  makeImagePack("collage", "Collage", "🎓", 10),
   makeImagePack("flowers", "Flowers", "🌸", 10),
   makeImagePack("ribbon", "Ribbon", "🎀", 10),
   makeImagePack("y2k", "Y2K", "⭐", 10),

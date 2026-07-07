@@ -7,9 +7,9 @@ import { temporal } from "zundo";
 export type FilterKey = "none" | "cherry" | "noir" | "cyber" | "vintage";
 // Text badge sticker keys (existing Y2K pack)
 export type TextStickerKey = "love" | "xoxo" | "bff" | "wow" | "cute" | "flash";
-// Image sticker keys: {pack}-{number}, e.g. 'college-1', 'flowers-3'
+// Image sticker keys: {pack}-{number}, e.g. 'collage-1', 'flowers-3'
 export type ImageStickerKey =
-  | `college-${number}`
+  | `collage-${number}`
   | `flowers-${number}`
   | `ribbon-${number}`
   | `y2k-${number}`;

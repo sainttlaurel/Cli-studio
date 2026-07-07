@@ -35,3 +35,17 @@ export async function fetchTemplates(): Promise<TemplateRow[]> {
   if (error) throw error;
   return (data ?? []) as TemplateRow[];
 }
+
+const DEFAULT_THEME_HEX = LOCAL_TEMPLATES[0].hex_color;
+
+/** Resolve footer/export color for a template id (DB rows, then local fallback). */
+export function resolveThemeHex(
+  themeId: string,
+  templates: TemplateRow[] = LOCAL_TEMPLATES,
+): string {
+  return (
+    templates.find((t) => t.id === themeId)?.hex_color ??
+    LOCAL_TEMPLATES.find((t) => t.id === themeId)?.hex_color ??
+    DEFAULT_THEME_HEX
+  );
+}

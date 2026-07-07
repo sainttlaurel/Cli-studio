@@ -14,7 +14,12 @@ import { useBoothStore } from "@/lib/store";
 import { compositeStrip } from "@/lib/compositor";
 import { compositePrintPage, printPageImage, PRINT_SIZES } from "@/lib/print";
 import type { PrintSizeKey } from "@/lib/print";
-import { THEME_HEX } from "@/lib/theme-colors";
+import {
+  fetchTemplates,
+  LOCAL_TEMPLATES,
+  resolveThemeHex,
+} from "@/lib/templates";
+import type { TemplateRow } from "@/lib/templates";
 import { uploadStrip } from "@/lib/api";
 
 type Status = "idle" | "rendering" | "uploading" | "done" | "error";
@@ -39,17 +44,37 @@ export function ExportPanel() {
   const [printSize, setPrintSize] = useState<PrintSizeKey>("2x6");
   const [printStatus, setPrintStatus] = useState<PrintStatus>("idle");
   const [printError, setPrintError] = useState<string | null>(null);
+  const [templates, setTemplates] = useState<TemplateRow[]>(LOCAL_TEMPLATES);
+  const [templatesReady, setTemplatesReady] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchTemplates()
+      .then((rows) => {
+        if (!cancelled && rows.length > 0) setTemplates(rows);
+      })
+      .catch(() => {
+        // offline or DB unavailable — LOCAL_TEMPLATES already set
+      })
+      .finally(() => {
+        if (!cancelled) setTemplatesReady(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const run = useCallback(async () => {
     try {
       setError(null);
       setStatus("rendering");
+      const themeColor = resolveThemeHex(theme, templates);
       const renderedBlob = await compositeStrip({
         frames,
         filter,
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
-        themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
+        themeColor,
         caption,
         stickers,
         textLayers,
@@ -95,13 +120,14 @@ export function ExportPanel() {
     caption,
     stickers,
     textLayers,
+    templates,
   ]);
 
   useEffect(() => {
-    if (frames.length === 0) return;
+    if (frames.length === 0 || !templatesReady) return;
     run();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attempt]);
+  }, [attempt, templatesReady]);
 
   useEffect(() => {
     return () => {
@@ -147,12 +173,13 @@ export function ExportPanel() {
     try {
       setPrintError(null);
       setPrintStatus("rendering");
+      const themeColor = resolveThemeHex(theme, templates);
       const pageBlob = await compositePrintPage({
         frames,
         filter,
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
-        themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
+        themeColor,
         caption,
         stickers,
         textLayers,

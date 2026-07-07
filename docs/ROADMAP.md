@@ -213,7 +213,7 @@ Lightweight sticker layer support inside the current editor/export pipeline:
 
 Extends the sticker system from text badges to real PNG image stickers:
 
-- 4 new image packs: College 🎓, Flowers 🌸, Ribbon 🎀, Y2K ⭐ — 10 stickers each
+- 4 new image packs: Collage 🎓, Flowers 🌸, Ribbon 🎀, Y2K ⭐ — 10 stickers each
 - All 40 PNGs are transparent-background, committed to `public/stickers/{pack}/`
 - Pack switcher pill bar in the Stickers tab switches between Y2K Text and the 4 image packs
 - Image sticker grid shows actual PNG thumbnails; placed-sticker list shows
@@ -288,7 +288,7 @@ so templates can be added, updated, or grouped without a code deploy:
 
 ---
 
-## v2.9 — Advanced Layer Editor: Text Overlays (Done)
+## v2.8 — Advanced Layer Editor: Text Overlays (Done)
 
 Draggable, resizable, rotatable user-typed text layers on top of the strip,
 using the same infrastructure as stickers:
@@ -315,7 +315,7 @@ using the same infrastructure as stickers:
 
 ---
 
-## v2.10 — Layer Opacity & Z-Order (Done)
+## v2.9 — Layer Opacity & Z-Order (Done)
 
 Per-layer transparency and stacking controls for stickers and text overlays:
 
@@ -331,7 +331,7 @@ Per-layer transparency and stacking controls for stickers and text overlays:
 
 ---
 
-## v2.11 — Editor Layout Polish (Done)
+## v2.10 — Editor Layout Polish (Done)
 
 Side-by-side editor UX improvements so the preview and controls feel balanced:
 
