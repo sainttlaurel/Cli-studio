@@ -200,16 +200,37 @@ changes without reading the repo:
 
 Lightweight sticker layer support inside the current editor/export pipeline:
 
-- Stickers tab now offers 6 local Y2K-style sticker presets
+- Stickers tab now offers 6 local Y2K-style text badge sticker presets
 - Stickers can be placed, dragged on the live strip preview, resized,
   rotated, removed, cleared, and included in undo/redo history
 - Exported PNGs and print-ready output draw stickers into the final canvas
 - No database model yet; sticker definitions remain local like the current
   template gallery
 
-**Later option:** richer sticker packs with custom image assets, text-overlay
-layers, and per-sticker z-order controls if the editor moves further toward a
-full layer system.
+---
+
+## v2.8 — Custom Image Sticker Packs (Done)
+
+Extends the sticker system from text badges to real PNG image stickers:
+
+- 4 new image packs: College 🎓, Flowers 🌸, Ribbon 🎀, Y2K ⭐ — 10 stickers each
+- All 40 PNGs are transparent-background, committed to `public/stickers/{pack}/`
+- Pack switcher pill bar in the Stickers tab switches between Y2K Text and the 4 image packs
+- Image sticker grid shows actual PNG thumbnails; placed-sticker list shows
+  thumbnail for image stickers and the existing badge preview for text stickers
+- `lib/stickers.ts` extended with `TextStickerDefinition`, `ImageStickerDefinition`,
+  `StickerPack`, and `IMAGE_PACKS`; `getStickerDefinition` handles both types
+- `lib/store.ts`: `TextStickerKey` (existing 6 badges) + `ImageStickerKey`
+  (`{pack}-{n}` pattern, e.g. `flowers-3`); `StickerKey` is the union of both
+- `lib/compositor.ts`: `drawSticker` is now async; image stickers use `drawImage()`
+  with correct aspect ratio and a soft drop shadow; text badge rendering unchanged
+- `components/StripPreview.tsx`: image stickers render as `next/image` elements
+  with the same drag/resize/rotate pointer interactions as text stickers
+- No database or new Supabase migration needed — all assets are local
+
+**Later option:** add more packs by dropping PNGs into `public/stickers/{pack}/`
+and registering the pack in `IMAGE_PACKS`. No code changes required for new packs
+beyond that registration line.
 
 ---
 
@@ -267,10 +288,37 @@ so templates can be added, updated, or grouped without a code deploy:
 
 ---
 
+## v2.9 — Advanced Layer Editor: Text Overlays (Done)
+
+Draggable, resizable, rotatable user-typed text layers on top of the strip,
+using the same infrastructure as stickers:
+
+- Text Overlays section in the Text tab: text input, 8-color palette,
+  Fredoka / Sans / Mono font toggle, size slider (4–20%), and an Add Text button
+- Up to 10 text layers per strip; each layer has size + rotation sliders
+  and a remove button in the placed-layers list
+- Drag on the live strip preview to reposition (pointer capture API,
+  same pattern as stickers)
+- Font size uses `cqw` (container query width units) so preview size matches
+  the exported output proportionally
+- `lib/store.ts`: added `FontFamily` type, `PlacedTextLayer` interface,
+  `textLayers` state, and 4 actions (`addTextLayer`, `updateTextLayer`,
+  `removeTextLayer`, `clearTextLayers`); included in undo/redo partialize
+- `lib/compositor.ts`: `drawTextLayer` function with font family mapping
+  and drop shadow; `textLayers?: PlacedTextLayer[]` added to `CompositeOptions`;
+  called after stickers in `renderStripCanvas`
+- `components/StripPreview.tsx`: text layers rendered as draggable buttons
+  at z-30; strip container marked as CSS container (`container-type:inline-size`)
+- `components/ExportPanel.tsx`: `textLayers` passed to both `compositeStrip`
+  and `compositePrintPage` so text appears in PNG downloads and print output
+- Strip caption (footer text) is unchanged and remains in its own section
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
-- Advanced layer editor — custom sticker image packs, text overlays with the
-  same drag/resize behavior, z-order controls, and richer transforms.
+- Advanced layer editor extras — z-order controls, per-layer opacity slider,
+  richer transforms (scale handles on canvas).
 - Boomerang/GIF mode — short looping clip instead of a static frame
 - Event/kiosk mode — big-screen tablet UI for real parties/weddings, maybe
   a physical printer integration

@@ -32,6 +32,19 @@ export interface PlacedSticker {
   rotation: number;
 }
 
+export type FontFamily = "fredoka" | "inter" | "mono";
+
+export interface PlacedTextLayer {
+  id: string;
+  text: string;
+  x: number;
+  y: number;
+  size: number;
+  rotation: number;
+  color: string;
+  fontFamily: FontFamily;
+}
+
 interface BoothState {
   frames: string[];
   theme: ThemeKey;
@@ -39,6 +52,7 @@ interface BoothState {
   adjustments: Adjustments;
   caption: string;
   stickers: PlacedSticker[];
+  textLayers: PlacedTextLayer[];
   mirror: boolean;
   soundEnabled: boolean;
   addFrame: (dataUrl: string) => void;
@@ -55,6 +69,13 @@ interface BoothState {
   ) => void;
   removeSticker: (id: string) => void;
   clearStickers: () => void;
+  addTextLayer: (layer: Omit<PlacedTextLayer, "id">) => void;
+  updateTextLayer: (
+    id: string,
+    patch: Partial<Omit<PlacedTextLayer, "id">>,
+  ) => void;
+  removeTextLayer: (id: string) => void;
+  clearTextLayers: () => void;
   toggleMirror: () => void;
   toggleSound: () => void;
   resetAll: () => void;
@@ -67,6 +88,7 @@ const initial = {
   adjustments: { brightness: 0, contrast: 0 },
   caption: "",
   stickers: [] as PlacedSticker[],
+  textLayers: [] as PlacedTextLayer[],
   mirror: true,
   soundEnabled: true,
 };
@@ -112,6 +134,24 @@ export const useBoothStore = create<BoothState>()(
             stickers: s.stickers.filter((sticker) => sticker.id !== id),
           })),
         clearStickers: () => set({ stickers: [] }),
+        addTextLayer: (layer) =>
+          set((s) => ({
+            textLayers:
+              s.textLayers.length >= 10
+                ? s.textLayers
+                : [...s.textLayers, { id: createId(), ...layer }],
+          })),
+        updateTextLayer: (id, patch) =>
+          set((s) => ({
+            textLayers: s.textLayers.map((layer) =>
+              layer.id === id ? { ...layer, ...patch } : layer,
+            ),
+          })),
+        removeTextLayer: (id) =>
+          set((s) => ({
+            textLayers: s.textLayers.filter((layer) => layer.id !== id),
+          })),
+        clearTextLayers: () => set({ textLayers: [] }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
         resetAll: () => set({ ...initial }),
@@ -128,6 +168,7 @@ export const useBoothStore = create<BoothState>()(
         theme: state.theme,
         caption: state.caption,
         stickers: state.stickers,
+        textLayers: state.textLayers,
       }),
       limit: 50,
     },

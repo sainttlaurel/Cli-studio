@@ -13,7 +13,7 @@ import {
   RotateCcw,
 } from "lucide-react";
 import { useBoothStore, useBoothTemporal } from "@/lib/store";
-import type { FilterKey } from "@/lib/store";
+import type { FilterKey, FontFamily } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
 import {
   TEXT_STICKERS,
@@ -48,6 +48,11 @@ export function EditorPanel() {
   const [templates, setTemplates] = useState<TemplateRow[]>(LOCAL_TEMPLATES);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [stickerPack, setStickerPack] = useState<string>("text");
+  // Text layer draft state
+  const [draftText, setDraftText] = useState("");
+  const [draftColor, setDraftColor] = useState("#BE185D");
+  const [draftFont, setDraftFont] = useState<FontFamily>("fredoka");
+  const [draftSize, setDraftSize] = useState(8);
   const {
     frames,
     filter,
@@ -63,6 +68,11 @@ export function EditorPanel() {
     updateSticker,
     removeSticker,
     clearStickers,
+    textLayers,
+    addTextLayer,
+    updateTextLayer,
+    removeTextLayer,
+    clearTextLayers,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
 
@@ -532,21 +542,217 @@ export function EditorPanel() {
         )}
 
         {tab === "text" && (
-          <div>
-            <h3 className="text-sm font-heading font-bold text-foreground mb-4">
-              Add a Caption
-            </h3>
-            <input
-              type="text"
-              maxLength={40}
-              value={caption}
-              onChange={(e) => setCaption(e.target.value)}
-              placeholder="best day ever"
-              className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
-            />
-            <p className="text-[11px] text-muted-foreground mt-2">
-              Shows beneath your strip. {40 - caption.length} characters left.
-            </p>
+          <div className="flex flex-col gap-5">
+            {/* Strip caption */}
+            <div>
+              <h3 className="text-sm font-heading font-bold text-foreground mb-3">
+                Strip Caption
+              </h3>
+              <input
+                type="text"
+                maxLength={40}
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="best day ever"
+                className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
+              />
+              <p className="text-[11px] text-muted-foreground mt-1.5">
+                Shows beneath your strip. {40 - caption.length} chars left.
+              </p>
+            </div>
+
+            {/* Text overlay composer */}
+            <div className="border-t border-border pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-heading font-bold text-foreground">
+                  Text Overlays
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {textLayers.length}/10 placed
+                </span>
+              </div>
+
+              {/* Draft input */}
+              <div className="flex flex-col gap-3 mb-3">
+                <input
+                  type="text"
+                  maxLength={60}
+                  value={draftText}
+                  onChange={(e) => setDraftText(e.target.value)}
+                  placeholder="Type something…"
+                  className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
+                />
+
+                {/* Color palette */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-semibold text-muted-foreground">
+                    Color
+                  </span>
+                  {[
+                    "#BE185D",
+                    "#7C3AED",
+                    "#2563EB",
+                    "#059669",
+                    "#D97706",
+                    "#DC2626",
+                    "#ffffff",
+                    "#111827",
+                  ].map((c) => (
+                    <button
+                      key={c}
+                      title={c}
+                      onClick={() => setDraftColor(c)}
+                      className={`h-6 w-6 rounded-full border-2 transition-transform hover:scale-110 ${
+                        draftColor === c
+                          ? "border-primary scale-110"
+                          : "border-border"
+                      }`}
+                      style={{ backgroundColor: c }}
+                    />
+                  ))}
+                </div>
+
+                {/* Font toggle */}
+                <div className="flex gap-2">
+                  {(
+                    [
+                      { key: "fredoka", label: "Fredoka" },
+                      { key: "inter", label: "Sans" },
+                      { key: "mono", label: "Mono" },
+                    ] as { key: FontFamily; label: string }[]
+                  ).map(({ key, label }) => (
+                    <button
+                      key={key}
+                      onClick={() => setDraftFont(key)}
+                      className={`flex-1 py-1.5 text-xs font-bold rounded-lg border transition-all ${
+                        draftFont === key
+                          ? "border-primary bg-primary/10 text-primary"
+                          : "border-border text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Size slider */}
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-[11px] font-semibold text-muted-foreground">
+                    Size {draftSize}%
+                  </span>
+                  <input
+                    type="range"
+                    min={4}
+                    max={20}
+                    value={draftSize}
+                    onChange={(e) => setDraftSize(Number(e.target.value))}
+                    className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                  />
+                </label>
+
+                <button
+                  disabled={!draftText.trim() || textLayers.length >= 10}
+                  onClick={() => {
+                    if (!draftText.trim()) return;
+                    addTextLayer({
+                      text: draftText.trim(),
+                      x: 50,
+                      y: 30 + textLayers.length * 12,
+                      size: draftSize,
+                      rotation: 0,
+                      color: draftColor,
+                      fontFamily: draftFont,
+                    });
+                    setDraftText("");
+                  }}
+                  className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-heading font-bold disabled:opacity-40 hover:bg-primary/90 transition-colors"
+                >
+                  + Add Text
+                </button>
+              </div>
+            </div>
+
+            {/* Placed text layers */}
+            {textLayers.length > 0 && (
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-heading font-bold uppercase tracking-wide text-muted-foreground">
+                    Placed Text
+                  </h4>
+                  <button
+                    onClick={clearTextLayers}
+                    className="text-xs font-bold text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 size={13} />
+                    <span>Clear</span>
+                  </button>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {textLayers.map((layer, index) => (
+                    <div
+                      key={layer.id}
+                      className="rounded-xl border border-border bg-muted/40 p-3"
+                    >
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span
+                          className="text-sm font-bold truncate"
+                          style={{ color: layer.color }}
+                        >
+                          {layer.text}
+                        </span>
+                        <button
+                          onClick={() => removeTextLayer(layer.id)}
+                          title="Remove text"
+                          className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors flex-shrink-0"
+                        >
+                          <Trash2 size={15} />
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <label className="flex flex-col gap-1.5">
+                          <span className="text-[11px] font-semibold text-muted-foreground">
+                            Size {layer.size}%
+                          </span>
+                          <input
+                            type="range"
+                            min={4}
+                            max={20}
+                            value={layer.size}
+                            onChange={(e) =>
+                              updateTextLayer(layer.id, {
+                                size: Number(e.target.value),
+                              })
+                            }
+                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1.5">
+                          <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                            <RotateCcw size={12} />
+                            <span>Rotate {layer.rotation}°</span>
+                          </span>
+                          <input
+                            type="range"
+                            min={-45}
+                            max={45}
+                            value={layer.rotation}
+                            onChange={(e) =>
+                              updateTextLayer(layer.id, {
+                                rotation: Number(e.target.value),
+                              })
+                            }
+                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                          />
+                        </label>
+                      </div>
+                      <div className="mt-2 text-[10px] text-muted-foreground">
+                        Text {index + 1} · drag on preview to reposition
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>

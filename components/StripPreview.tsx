@@ -30,6 +30,8 @@ export function StripPreview() {
     caption,
     stickers,
     updateSticker,
+    textLayers,
+    updateTextLayer,
   } = useBoothStore();
   const stripRef = useRef<HTMLDivElement>(null);
   const filterCss = buildFilterCss(
@@ -38,6 +40,12 @@ export function StripPreview() {
     adjustments.contrast,
   );
   const themeStyle = THEME_STYLES[theme] ?? THEME_STYLES.pink;
+
+  const FONT_PREVIEW_MAP: Record<string, string> = {
+    fredoka: "var(--font-heading)",
+    inter: "var(--font-sans)",
+    mono: "monospace",
+  };
 
   const moveSticker = (id: string, event: PointerEvent<HTMLButtonElement>) => {
     const rect = stripRef.current?.getBoundingClientRect();
@@ -55,13 +63,32 @@ export function StripPreview() {
     });
   };
 
+  const moveTextLayer = (
+    id: string,
+    event: PointerEvent<HTMLButtonElement>,
+  ) => {
+    const rect = stripRef.current?.getBoundingClientRect();
+    if (!rect) return;
+
+    updateTextLayer(id, {
+      x: Math.min(
+        96,
+        Math.max(4, ((event.clientX - rect.left) / rect.width) * 100),
+      ),
+      y: Math.min(
+        96,
+        Math.max(4, ((event.clientY - rect.top) / rect.height) * 100),
+      ),
+    });
+  };
+
   return (
     <div
       className={`w-full max-w-xs bg-background p-4 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative`}
     >
       <div
         ref={stripRef}
-        className="relative flex flex-col gap-3 bg-background p-3 rounded-2xl border border-border/40"
+        className="relative flex flex-col gap-3 bg-background p-3 rounded-2xl border border-border/40 [container-type:inline-size]"
       >
         {frames.length === 0 && (
           <div className="aspect-[4/3] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -175,6 +202,39 @@ export function StripPreview() {
             </button>
           );
         })}
+        {textLayers.map((layer) => (
+          <button
+            key={layer.id}
+            type="button"
+            title="Drag text"
+            onPointerDown={(event) => {
+              event.currentTarget.setPointerCapture(event.pointerId);
+              moveTextLayer(layer.id, event);
+            }}
+            onPointerMove={(event) => {
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                moveTextLayer(layer.id, event);
+              }
+            }}
+            onPointerUp={(event) => {
+              if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+                event.currentTarget.releasePointerCapture(event.pointerId);
+              }
+            }}
+            className="absolute z-30 select-none touch-none whitespace-nowrap font-extrabold drop-shadow-md transition-transform hover:scale-105"
+            style={{
+              left: `${layer.x}%`,
+              top: `${layer.y}%`,
+              transform: `translate(-50%, -50%) rotate(${layer.rotation}deg)`,
+              color: layer.color,
+              fontSize: `clamp(8px, ${layer.size}cqw, 64px)`,
+              fontFamily: FONT_PREVIEW_MAP[layer.fontFamily] ?? "inherit",
+              textShadow: "0 1px 4px rgba(0,0,0,0.22)",
+            }}
+          >
+            {layer.text}
+          </button>
+        ))}
       </div>
     </div>
   );

@@ -1,6 +1,6 @@
 import { buildFilterCss } from "./filters";
 import { getStickerDefinition } from "./stickers";
-import type { FilterKey, PlacedSticker } from "./store";
+import type { FilterKey, PlacedSticker, PlacedTextLayer } from "./store";
 import type { TextStickerDefinition } from "./stickers";
 
 export interface CompositeOptions {
@@ -11,6 +11,7 @@ export interface CompositeOptions {
   themeColor: string;
   caption: string;
   stickers?: PlacedSticker[];
+  textLayers?: PlacedTextLayer[];
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -109,6 +110,37 @@ function drawImageStickerOnCanvas(
   ctx.restore();
 }
 
+const FONT_FAMILY_MAP: Record<string, string> = {
+  fredoka: "'Fredoka', sans-serif",
+  inter: "Inter, sans-serif",
+  mono: "'Courier New', monospace",
+};
+
+function drawTextLayer(
+  ctx: CanvasRenderingContext2D,
+  layer: PlacedTextLayer,
+  canvasWidth: number,
+  canvasHeight: number,
+) {
+  const fontSize = (canvasWidth * layer.size) / 100;
+  const x = (canvasWidth * layer.x) / 100;
+  const y = (canvasHeight * layer.y) / 100;
+  const fontFamily = FONT_FAMILY_MAP[layer.fontFamily] ?? FONT_FAMILY_MAP.inter;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate((layer.rotation * Math.PI) / 180);
+  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = layer.color;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.shadowColor = "rgba(0,0,0,0.25)";
+  ctx.shadowBlur = fontSize * 0.08;
+  ctx.shadowOffsetY = fontSize * 0.04;
+  ctx.fillText(layer.text, 0, 0);
+  ctx.restore();
+}
+
 async function drawSticker(
   ctx: CanvasRenderingContext2D,
   sticker: PlacedSticker,
@@ -156,6 +188,7 @@ export async function renderStripCanvas(
     themeColor,
     caption,
     stickers = [],
+    textLayers = [],
   } = opts;
   const images = await Promise.all(frames.map(loadImage));
 
@@ -223,6 +256,10 @@ export async function renderStripCanvas(
     stickers.map((sticker) =>
       drawSticker(ctx, sticker, canvas.width, canvas.height),
     ),
+  );
+
+  textLayers.forEach((layer) =>
+    drawTextLayer(ctx, layer, canvas.width, canvas.height),
   );
 
   return canvas;

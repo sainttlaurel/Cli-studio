@@ -26,7 +26,7 @@ type ShareNavigator = Navigator & {
 const PRINT_SIZE_ORDER: PrintSizeKey[] = ["2x6", "4x6", "a4", "letter"];
 
 export function ExportPanel() {
-  const { frames, filter, adjustments, theme, caption, stickers } =
+  const { frames, filter, adjustments, theme, caption, stickers, textLayers } =
     useBoothStore();
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
@@ -52,6 +52,7 @@ export function ExportPanel() {
         themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
         caption,
         stickers,
+        textLayers,
       });
       setBlob(renderedBlob);
       setBlobUrl(URL.createObjectURL(renderedBlob));
@@ -93,6 +94,7 @@ export function ExportPanel() {
     theme,
     caption,
     stickers,
+    textLayers,
   ]);
 
   useEffect(() => {
@@ -153,6 +155,7 @@ export function ExportPanel() {
         themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
         caption,
         stickers,
+        textLayers,
         printSize,
       });
       pageUrl = URL.createObjectURL(pageBlob);
