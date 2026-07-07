@@ -92,7 +92,7 @@ give people a "my strips" view without adding real accounts:
 
 ---
 
-## v2 — Feedback Wall (Planned)
+## v2 — Feedback Wall (Done)
 
 A public space for visitors to leave a message — could live on the share
 page, or as its own `/wall` page showing recent messages site-wide.
@@ -114,19 +114,29 @@ changes whether this is scoped into the share page or becomes a new route.
 
 ---
 
-## v2 — Social Sharing: TikTok / Instagram (Planned)
+## v2 — Social Sharing: Native Share Sheet (Done)
 
 Worth splitting into two tiers, since "share to" and "post via API" are very
 different amounts of work:
 
-**Tier 1 — Share sheet (low effort, ships fast)**
-- `navigator.share()` with the PNG attached — on mobile this already
-  surfaces Instagram, TikTok, Messages, WhatsApp, etc. if installed, no API
-  keys or app review needed
-- Instagram Stories has a documented deep link (`instagram-stories://share`)
-  that can pre-load an image as a sticker — mobile web only, no desktop
-  equivalent
-- TikTok has a similar limited "Share to TikTok" SDK for mobile
+**Tier 1 — Native share sheet (shipped)**
+- Current implementation: `navigator.share()` with the public strip URL on
+  both the Export panel and public Share page, plus a clipboard fallback.
+- Confirmed correction: Instagram Stories deep-linking from mobile web did
+  not work reliably on the real iPhone test and was removed. ClickStudio no
+  longer shows a separate IG Stories button.
+- The share sheet is controlled by the OS/browser and installed apps. If
+  TikTok, Facebook, Instagram, or another app does not appear there, code in
+  ClickStudio cannot force that destination to show. The reliable web
+  capability is sharing the strip URL through the native sheet or copying the
+  link.
+- File attachments were also removed from the native share payload. URL-only
+  sharing is the widest-compatible Tier 1 behavior for this no-login web app.
+
+**Potential Tier 1 follow-up**
+- If a real-device test shows that URL-only sharing still hides important
+  apps that are installed and normally accept links from Safari, retest the
+  installed-app/browser settings before treating it as a ClickStudio bug.
 
 **Tier 2 — Real API integration (bigger lift)**
 - Actually posting on the user's behalf requires:
@@ -138,8 +148,9 @@ different amounts of work:
   (accounts), less so for a no-login casual booth — worth revisiting if and
   when auth gets added for other reasons
 
-**Recommendation:** ship Tier 1 first (cheap, works today), treat Tier 2 as
-a "later, if this takes off" item.
+**Recommendation:** keep Tier 1 as native URL sharing. Treat platform-owned
+posting APIs as a later product decision if ClickStudio adds real user
+accounts and can justify developer app review.
 
 ---
 

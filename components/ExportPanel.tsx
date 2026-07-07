@@ -13,7 +13,6 @@ type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
 type PrintStatus = 'idle' | 'rendering' | 'error';
 type ShareNavigator = Navigator & {
   share?: (data: ShareData) => Promise<void>;
-  canShare?: (data?: ShareData) => boolean;
 };
 
 const PRINT_SIZE_ORDER: PrintSizeKey[] = ['2x6', '4x6', 'a4', 'letter'];
@@ -106,13 +105,6 @@ export function ExportPanel() {
       text: 'Check out my photo strip! ✨',
       url: shareUrl,
     };
-
-    if (blob) {
-      const file = new File([blob], 'clickstudio-strip.png', { type: 'image/png' });
-      if (nav.canShare?.({ files: [file] })) {
-        shareData.files = [file];
-      }
-    }
 
     try {
       if (nav.share) {
