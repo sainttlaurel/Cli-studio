@@ -1,13 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Download, FileText, Copy, Loader2, RotateCcw, Share2, Printer } from 'lucide-react';
+import { Download, FileText, Copy, Loader2, RotateCcw, Share2, Printer, Sparkles } from 'lucide-react';
 import { useBoothStore } from '@/lib/store';
 import { compositeStrip } from '@/lib/compositor';
 import { compositePrintPage, printPageImage, PRINT_SIZES } from '@/lib/print';
 import type { PrintSizeKey } from '@/lib/print';
 import { THEME_HEX } from '@/lib/theme-colors';
 import { uploadStrip } from '@/lib/api';
+import { canShareToInstagramStories, shareToInstagramStories } from '@/lib/share';
 
 type Status = 'idle' | 'rendering' | 'uploading' | 'done' | 'error';
 type PrintStatus = 'idle' | 'rendering' | 'error';
@@ -32,6 +33,14 @@ export function ExportPanel() {
   const [printStatus, setPrintStatus] = useState<PrintStatus>('idle');
   const [printError, setPrintError] = useState<string | null>(null);
 
+  // Computed client-side only, after mount — checking navigator/window
+  // during SSR would mismatch the client render (hydration error), so
+  // this starts false and flips true on iOS Safari once mounted.
+  const [canIgStories, setCanIgStories] = useState(false);
+  useEffect(() => {
+    setCanIgStories(canShareToInstagramStories());
+  }, []);
+
   const run = useCallback(async () => {
     try {
       setError(null);
@@ -48,9 +57,6 @@ export function ExportPanel() {
       setBlobUrl(URL.createObjectURL(renderedBlob));
 
       setStatus('uploading');
-      // sessionId is no longer passed here — the upload-strip edge
-      // function derives the caller's identity itself from the verified
-      // access token that lib/api.ts's uploadStrip() attaches.
       const result = await uploadStrip({
         file: renderedBlob,
         theme,
@@ -125,30 +131,18 @@ export function ExportPanel() {
     }
   };
 
-  const handlePrint = async () => {
-    let pageUrl: string | null = null;
-    try {
-      setPrintError(null);
-      setPrintStatus('rendering');
-      const pageBlob = await compositePrintPage({
-        frames,
-        filter,
-        brightness: adjustments.brightness,
-        contrast: adjustments.contrast,
-        themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
-        caption,
-        printSize,
-      });
-      pageUrl = URL.createObjectURL(pageBlob);
-      await printPageImage(pageUrl, printSize);
-      setPrintStatus('idle');
-    } catch (err) {
-      // eslint-disable-next-line no-console
-      console.error(err);
-      setPrintError(err instanceof Error ? err.message : 'Something went wrong preparing the print page.');
-      setPrintStatus('error');
-    } finally {
-      if (pageUrl) URL.revokeObjectURL(pageUrl);
+  // IMPORTANT: this must stay a direct click-handler call with no `await`
+  // before the clipboard write inside shareToInstagramStories — Safari
+  // ties clipboard-write permission to the originating user gesture, and
+  // an awaited gap beforehand can silently break it.
+  const shareToInstagram = async () => {
+    if (!blob) return;
+    const opened = await shareToInstagramStories(blob);
+    if (!opened) {
+      // Instagram isn't installed, or the unofficial technique didn't
+      // work on this device/version — fall back to the normal share sheet
+      // rather than leaving the person stuck.
+      await nativeShare();
     }
   };
 
@@ -238,7 +232,32 @@ export function ExportPanel() {
         {printStatus === 'error' && <p className="text-sm text-destructive">{printError}</p>}
 
         <button
-          onClick={handlePrint}
+          onClick={async () => {
+            let pageUrl: string | null = null;
+            try {
+              setPrintError(null);
+              setPrintStatus('rendering');
+              const pageBlob = await compositePrintPage({
+                frames,
+                filter,
+                brightness: adjustments.brightness,
+                contrast: adjustments.contrast,
+                themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
+                caption,
+                printSize,
+              });
+              pageUrl = URL.createObjectURL(pageBlob);
+              await printPageImage(pageUrl, printSize);
+              setPrintStatus('idle');
+            } catch (err) {
+              // eslint-disable-next-line no-console
+              console.error(err);
+              setPrintError(err instanceof Error ? err.message : 'Something went wrong preparing the print page.');
+              setPrintStatus('error');
+            } finally {
+              if (pageUrl) URL.revokeObjectURL(pageUrl);
+            }
+          }}
           disabled={printStatus === 'rendering' || frames.length === 0}
           className="w-full py-3 px-4 bg-secondary-foreground hover:bg-secondary-foreground/90 disabled:opacity-50 text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md transition-all flex items-center justify-center gap-2"
         >
@@ -274,12 +293,12 @@ export function ExportPanel() {
             <p className="text-xs text-muted-foreground leading-relaxed">
               Scan with a phone camera, or use the share sheet to send it straight to your apps.
             </p>
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <input
                 type="text"
                 readOnly
                 value={shareUrl}
-                className="flex-1 px-3 py-2 bg-muted border border-border rounded-xl text-xs font-mono text-muted-foreground outline-none"
+                className="flex-1 min-w-[140px] px-3 py-2 bg-muted border border-border rounded-xl text-xs font-mono text-muted-foreground outline-none"
               />
               <button
                 onClick={copyLink}
@@ -295,6 +314,16 @@ export function ExportPanel() {
                 <Share2 size={14} />
                 <span>Share</span>
               </button>
+              {canIgStories && (
+                <button
+                  onClick={shareToInstagram}
+                  title="Share to Instagram Stories"
+                  className="px-3 py-2 bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 hover:opacity-90 text-white text-xs font-bold rounded-xl transition-all flex items-center gap-1"
+                >
+                  <Sparkles size={14} />
+                  <span>IG Stories</span>
+                </button>
+              )}
             </div>
           </div>
         </div>

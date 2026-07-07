@@ -5,10 +5,16 @@ import { Camera, Home, Images, Clock, MessageCircle } from 'lucide-react';
 
 const STEPS = ['Start', 'Shoot', 'Edit', 'Export'];
 
+const NAV_LINKS = [
+  { href: '/gallery', label: 'Gallery', icon: Images },
+  { href: '/wall', label: 'Wall', icon: MessageCircle },
+  { href: '/history', label: 'My Strips', icon: Clock },
+];
+
 export function WizardHeader({ step }: { step: number }) {
   return (
-    <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between border-b border-border bg-background/70 backdrop-blur-md">
-      <Link href="/" className="flex items-center gap-2">
+    <header className="relative z-10 w-full px-4 sm:px-6 py-4 flex items-center justify-between border-b border-border bg-background/70 backdrop-blur-md">
+      <Link href="/" className="flex items-center gap-2 shrink-0">
         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center shadow">
           <Camera className="text-primary-foreground" size={16} />
         </div>
@@ -17,7 +23,7 @@ export function WizardHeader({ step }: { step: number }) {
         </span>
       </Link>
 
-      <div className="hidden sm:flex items-center gap-2 md:gap-4">
+      <div className="hidden lg:flex items-center gap-2 md:gap-4">
         {STEPS.map((label, i) => {
           const n = i + 1;
           const active = n === step;
@@ -50,37 +56,27 @@ export function WizardHeader({ step }: { step: number }) {
         })}
       </div>
 
-    <div className="flex items-center gap-0.5 sm:gap-1.5 md:gap-3">
-        <Link
-          href="/gallery"
-          title="Public Gallery"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
-        >
-          <Images size={14} />
-          <span className="hidden lg:inline">Gallery</span>
-        </Link>
-        <Link
-          href="/wall"
-          title="Feedback Wall"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
-        >
-          <MessageCircle size={14} />
-          <span className="hidden lg:inline">Wall</span>
-        </Link>
-        <Link
-          href="/history"
-          title="My Strips"
-          className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-primary transition-colors px-1.5 sm:px-2"
-        >
-          <Clock size={14} />
-          <span className="hidden lg:inline">My Strips</span>
-        </Link>
+      {/* Icon-only pills, ALWAYS visible — label hides on narrow screens,
+          the link itself never does. Same fix as the landing page:
+          `hidden md:inline-flex` was removing these from mobile entirely. */}
+      <div className="flex items-center gap-1 sm:gap-1.5 md:gap-3">
+        {NAV_LINKS.map(({ href, label, icon: Icon }) => (
+          <Link
+            key={href}
+            href={href}
+            title={label}
+            className="inline-flex items-center gap-1 px-2 py-1.5 md:px-2 md:py-0 rounded-lg hover:bg-secondary/50 md:hover:bg-transparent text-xs font-semibold text-muted-foreground hover:text-primary transition-colors"
+          >
+            <Icon size={14} />
+            <span className="hidden lg:inline">{label}</span>
+          </Link>
+        ))}
         <Link
           href="/"
           className="px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"
         >
           <Home size={14} />
-          <span>Exit Studio</span>
+          <span className="hidden sm:inline">Exit Studio</span>
         </Link>
       </div>
     </header>

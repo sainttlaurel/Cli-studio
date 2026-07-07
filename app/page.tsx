@@ -22,13 +22,19 @@ const TESTIMONIALS = [
   },
 ];
 
+const NAV_LINKS = [
+  { href: '/gallery', label: 'Gallery', icon: Images },
+  { href: '/wall', label: 'Wall', icon: MessageCircle },
+  { href: '/history', label: 'My Strips', icon: Clock },
+];
+
 export default function LandingPage() {
   return (
     <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden">
       <div className="absolute inset-0 sparkle-bg pointer-events-none" />
 
-      <header className="relative z-10 w-full px-6 py-4 flex items-center justify-between border-b border-border bg-background/70 backdrop-blur-md">
-        <div className="flex items-center gap-2">
+      <header className="relative z-10 w-full px-4 sm:px-6 py-4 flex items-center justify-between border-b border-border bg-background/70 backdrop-blur-md">
+        <div className="flex items-center gap-2 shrink-0">
           <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 -rotate-6">
             <Camera className="text-primary-foreground" size={20} />
           </div>
@@ -36,32 +42,31 @@ export default function LandingPage() {
             Click<span className="text-secondary-foreground">Studio</span>
           </span>
         </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden md:inline-flex items-center gap-1.5 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
+
+        {/* Icon-only pills that are ALWAYS visible, not hidden below a
+            breakpoint — only the text label hides on narrow screens.
+            Previously these links used `hidden sm:inline-flex`, which
+            removed them from the page entirely on real mobile widths
+            instead of just compacting them. */}
+        <div className="flex items-center gap-1 sm:gap-4">
+          {NAV_LINKS.map(({ href, label, icon: Icon }) => (
+            <Link
+              key={href}
+              href={href}
+              title={label}
+              className="inline-flex items-center gap-1.5 px-2 py-1.5 sm:px-0 sm:py-0 rounded-lg hover:bg-secondary/50 sm:hover:bg-transparent text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+            >
+              <Icon size={16} />
+              <span className="hidden sm:inline">{label}</span>
+            </Link>
+          ))}
+          <span className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
             <Sparkles size={14} /> No App Install Needed
           </span>
-          <Link
-            href="/gallery"
-            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+          <a
+            href="#testimonials"
+            className="hidden lg:inline text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
           >
-            <Images size={14} />
-            Gallery
-          </Link>
-          <Link
-            href="/wall"
-            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-          >
-            <MessageCircle size={14} />
-            Wall
-          </Link>
-          <Link
-            href="/history"
-            className="hidden sm:inline-flex items-center gap-1 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
-          >
-            <Clock size={14} />
-            My Strips
-          </Link>
-          <a href="#testimonials" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
             Loved by creators
           </a>
         </div>
