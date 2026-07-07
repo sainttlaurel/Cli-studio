@@ -11,6 +11,8 @@ import {
   Redo2,
   Trash2,
   RotateCcw,
+  ChevronUp,
+  ChevronDown,
 } from "lucide-react";
 import { useBoothStore, useBoothTemporal } from "@/lib/store";
 import type { FilterKey, FontFamily } from "@/lib/store";
@@ -68,11 +70,13 @@ export function EditorPanel() {
     updateSticker,
     removeSticker,
     clearStickers,
+    moveSticker,
     textLayers,
     addTextLayer,
     updateTextLayer,
     removeTextLayer,
     clearTextLayers,
+    moveTextLayer,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
 
@@ -287,42 +291,42 @@ export function EditorPanel() {
                   : `${templates.length} frame vibes`}
               </span>
             </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
               {templatesLoading
                 ? Array.from({ length: 6 }).map((_, i) => (
                     <div
                       key={i}
-                      className="p-3 rounded-xl border-2 border-border animate-pulse"
+                      className="w-[calc(33.333%-6px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 border-border animate-pulse"
                     >
-                      <div className="w-full aspect-square rounded-lg mb-2 bg-muted" />
-                      <div className="h-3 rounded bg-muted w-3/4 mx-auto" />
+                      <div className="w-full aspect-[4/3] rounded-lg mb-1.5 bg-muted" />
+                      <div className="h-2.5 rounded bg-muted w-3/4 mx-auto" />
                     </div>
                   ))
                 : templates.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setTheme(t.id)}
-                      className={`p-3 rounded-xl border-2 text-center transition-all ${
+                      className={`w-[calc(33.333%-6px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 text-center transition-all ${
                         theme === t.id
                           ? "border-primary bg-primary/5"
                           : "border-border hover:border-primary/50"
                       }`}
                     >
                       <div
-                        className={`w-full aspect-square rounded-lg mb-2 ${t.paper_class} border-4 ${t.border_class} shadow-sm p-1.5 flex flex-col gap-1`}
+                        className={`w-full aspect-[4/3] rounded-lg mb-1.5 ${t.paper_class} border-2 ${t.border_class} shadow-sm p-1 flex flex-col gap-0.5`}
                       >
                         <div className="flex-1 rounded-sm bg-muted" />
                         <div className="flex-1 rounded-sm bg-muted" />
-                        <div className="flex items-center justify-between pt-1">
+                        <div className="flex items-center justify-between pt-0.5">
                           <span
-                            className={`h-1.5 w-10 rounded-full ${t.accent_class}`}
+                            className={`h-1 w-8 rounded-full ${t.accent_class}`}
                           />
                           <span
-                            className={`h-1.5 w-1.5 rounded-full ${t.accent_class}`}
+                            className={`h-1 w-1 rounded-full ${t.accent_class}`}
                           />
                         </div>
                       </div>
-                      <span className="text-xs font-bold text-foreground/80">
+                      <span className="text-[11px] font-bold text-foreground/80 leading-tight">
                         {t.name}
                       </span>
                     </button>
@@ -487,13 +491,31 @@ export function EditorPanel() {
                               Sticker {index + 1}
                             </span>
                           </div>
-                          <button
-                            onClick={() => removeSticker(sticker.id)}
-                            title="Remove sticker"
-                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
-                          >
-                            <Trash2 size={15} />
-                          </button>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => moveSticker(sticker.id, "up")}
+                              disabled={index === 0}
+                              title="Move layer up"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                            >
+                              <ChevronUp size={15} />
+                            </button>
+                            <button
+                              onClick={() => moveSticker(sticker.id, "down")}
+                              disabled={index === stickers.length - 1}
+                              title="Move layer down"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                            >
+                              <ChevronDown size={15} />
+                            </button>
+                            <button
+                              onClick={() => removeSticker(sticker.id)}
+                              title="Remove sticker"
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          </div>
                         </div>
                         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <label className="flex flex-col gap-1.5">
@@ -516,7 +538,7 @@ export function EditorPanel() {
                           <label className="flex flex-col gap-1.5">
                             <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
                               <RotateCcw size={12} />
-                              <span>Rotate {sticker.rotation} deg</span>
+                              <span>Rotate {sticker.rotation}°</span>
                             </span>
                             <input
                               type="range"
@@ -526,6 +548,23 @@ export function EditorPanel() {
                               onChange={(event) =>
                                 updateSticker(sticker.id, {
                                   rotation: Number(event.target.value),
+                                })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1.5 sm:col-span-2">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              Opacity {sticker.opacity ?? 100}%
+                            </span>
+                            <input
+                              type="range"
+                              min={10}
+                              max={100}
+                              value={sticker.opacity ?? 100}
+                              onChange={(event) =>
+                                updateSticker(sticker.id, {
+                                  opacity: Number(event.target.value),
                                 })
                               }
                               className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
@@ -700,13 +739,31 @@ export function EditorPanel() {
                         >
                           {layer.text}
                         </span>
-                        <button
-                          onClick={() => removeTextLayer(layer.id)}
-                          title="Remove text"
-                          className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors flex-shrink-0"
-                        >
-                          <Trash2 size={15} />
-                        </button>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => moveTextLayer(layer.id, "up")}
+                            disabled={index === 0}
+                            title="Move layer up"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                          >
+                            <ChevronUp size={15} />
+                          </button>
+                          <button
+                            onClick={() => moveTextLayer(layer.id, "down")}
+                            disabled={index === textLayers.length - 1}
+                            title="Move layer down"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-30 transition-colors"
+                          >
+                            <ChevronDown size={15} />
+                          </button>
+                          <button
+                            onClick={() => removeTextLayer(layer.id)}
+                            title="Remove text"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         <label className="flex flex-col gap-1.5">
@@ -739,6 +796,23 @@ export function EditorPanel() {
                             onChange={(e) =>
                               updateTextLayer(layer.id, {
                                 rotation: Number(e.target.value),
+                              })
+                            }
+                            className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                          />
+                        </label>
+                        <label className="flex flex-col gap-1.5 sm:col-span-2">
+                          <span className="text-[11px] font-semibold text-muted-foreground">
+                            Opacity {layer.opacity ?? 100}%
+                          </span>
+                          <input
+                            type="range"
+                            min={10}
+                            max={100}
+                            value={layer.opacity ?? 100}
+                            onChange={(e) =>
+                              updateTextLayer(layer.id, {
+                                opacity: Number(e.target.value),
                               })
                             }
                             className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"

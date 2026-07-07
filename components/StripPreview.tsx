@@ -84,11 +84,14 @@ export function StripPreview() {
 
   return (
     <div
-      className={`w-full max-w-xs bg-background p-4 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative`}
+      className={`w-full min-h-[28rem] lg:min-h-[32rem] bg-background rounded-3xl border border-border/80 shadow-lg overflow-hidden flex flex-col p-5 sm:p-6 lg:p-8`}
     >
       <div
+        className={`w-full h-full flex-1 bg-background p-4 sm:p-5 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative flex flex-col justify-center`}
+      >
+      <div
         ref={stripRef}
-        className="relative flex flex-col gap-3 bg-background p-3 rounded-2xl border border-border/40 [container-type:inline-size]"
+        className="relative flex flex-col gap-3 sm:gap-4 bg-background p-3 sm:p-4 rounded-2xl border border-border/40 [container-type:inline-size] h-full"
       >
         {frames.length === 0 && (
           <div className="aspect-[4/3] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -151,6 +154,7 @@ export function StripPreview() {
             top: `${sticker.y}%`,
             width: `${sticker.size}%`,
             transform: `translate(-50%, -50%) rotate(${sticker.rotation}deg)`,
+            opacity: (sticker.opacity ?? 100) / 100,
           };
 
           if (stickerDef.type === "image") {
@@ -230,11 +234,13 @@ export function StripPreview() {
               fontSize: `clamp(8px, ${layer.size}cqw, 64px)`,
               fontFamily: FONT_PREVIEW_MAP[layer.fontFamily] ?? "inherit",
               textShadow: "0 1px 4px rgba(0,0,0,0.22)",
+              opacity: (layer.opacity ?? 100) / 100,
             }}
           >
             {layer.text}
           </button>
         ))}
+      </div>
       </div>
     </div>
   );

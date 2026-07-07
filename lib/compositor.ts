@@ -128,6 +128,7 @@ function drawTextLayer(
   const fontFamily = FONT_FAMILY_MAP[layer.fontFamily] ?? FONT_FAMILY_MAP.inter;
 
   ctx.save();
+  ctx.globalAlpha = (layer.opacity ?? 100) / 100;
   ctx.translate(x, y);
   ctx.rotate((layer.rotation * Math.PI) / 180);
   ctx.font = `bold ${fontSize}px ${fontFamily}`;
@@ -147,6 +148,8 @@ async function drawSticker(
   canvasWidth: number,
   canvasHeight: number,
 ) {
+  ctx.save();
+  ctx.globalAlpha = (sticker.opacity ?? 100) / 100;
   const def = getStickerDefinition(sticker.key);
   if (def.type === "image") {
     const img = await loadImage(def.src);
@@ -154,6 +157,7 @@ async function drawSticker(
   } else {
     drawTextSticker(ctx, sticker, def, canvasWidth, canvasHeight);
   }
+  ctx.restore();
 }
 
 export function getStripDimensions(

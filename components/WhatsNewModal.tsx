@@ -1,27 +1,27 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import { Check, MonitorSmartphone, Palette, Share2, Sparkles, X } from 'lucide-react';
+import { Check, Layers, Sparkles, Type, X } from 'lucide-react';
 
-const CHANGELOG_VERSION = '2026-07-07-v2.2';
+const CHANGELOG_VERSION = '2026-07-08-v2.10';
 const STORAGE_KEY = 'clickstudio-whats-new-version';
 const OPEN_EVENT = 'clickstudio:open-whats-new';
 
 const CHANGES = [
   {
-    title: 'Installable on phones',
-    description: 'Add ClickStudio to your home screen from Safari or Chrome.',
-    icon: MonitorSmartphone,
+    title: 'Text overlays',
+    description: 'Add your own draggable text on top of the strip with fonts, colors, and sizing.',
+    icon: Type,
   },
   {
-    title: 'More frame templates',
-    description: 'The editor now includes 9 frame vibes with matching export colors.',
-    icon: Palette,
+    title: 'Layer opacity',
+    description: 'Fade stickers and text layers with a per-layer opacity slider.',
+    icon: Layers,
   },
   {
-    title: 'Cleaner sharing',
-    description: 'Sharing now uses the native URL share sheet with copy-link fallback.',
-    icon: Share2,
+    title: 'Layer stacking',
+    description: 'Use the up/down arrows to reorder stickers or text within each layer list.',
+    icon: Sparkles,
   },
 ];
 

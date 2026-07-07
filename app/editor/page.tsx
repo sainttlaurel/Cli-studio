@@ -25,15 +25,15 @@ export default function EditorPage() {
       <SparkleOverlay />
       <WizardHeader step={3} />
 
-      <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-12 gap-8 w-full">
-        <section className="lg:col-span-5 flex flex-col items-center gap-4">
+      <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 w-full lg:items-start">
+        <section className="flex flex-col gap-4 w-full lg:sticky lg:top-8">
           <StripPreview />
           <p className="text-xs text-muted-foreground font-semibold text-center">
             Pick a filter, fine-tune, and caption your strip.
           </p>
         </section>
 
-        <section className="lg:col-span-7 flex flex-col gap-6">
+        <section className="flex flex-col gap-6 w-full">
           <EditorPanel />
 
           <div className="border-t border-border pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">

@@ -315,10 +315,40 @@ using the same infrastructure as stickers:
 
 ---
 
+## v2.10 — Layer Opacity & Z-Order (Done)
+
+Per-layer transparency and stacking controls for stickers and text overlays:
+
+- Opacity slider (10–100%) on each placed sticker and text layer card
+- Up/down arrow buttons reorder layers within their category (stickers or text)
+- Array order drives draw order in preview, PNG export, and print output
+- `lib/store.ts`: `opacity` field on `PlacedSticker` and `PlacedTextLayer`
+  (default 100); `moveSticker` and `moveTextLayer` actions
+- `lib/compositor.ts`: `globalAlpha` applied when drawing stickers and text layers
+- `components/StripPreview.tsx`: CSS `opacity` on layer preview elements
+- `components/EditorPanel.tsx`: opacity sliders and ▲/▼ controls in placed-layer lists
+- Cross-category stacking unchanged: all stickers render below all text layers
+
+---
+
+## v2.11 — Editor Layout Polish (Done)
+
+Side-by-side editor UX improvements so the preview and controls feel balanced:
+
+- Editor page uses a true 50/50 split (`lg:grid-cols-2`) — preview and panel
+  get equal column width
+- Strip preview fills the left column with matching card chrome (`rounded-3xl`,
+  `shadow-lg`) and scales up on large screens instead of capping at `max-w-xs`
+- Preview stays sticky while scrolling long sticker/text layer lists
+- Frame tab template grid tightened to match the Filters tab — smaller cards,
+  `aspect-[4/3]` swatches, 3 columns mobile / 4 on desktop
+- What's New modal updated to highlight text overlays, opacity, and layer stacking
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
-- Advanced layer editor extras — z-order controls, per-layer opacity slider,
-  richer transforms (scale handles on canvas).
+- Advanced layer editor extras — richer transforms (scale handles on canvas).
 - Boomerang/GIF mode — short looping clip instead of a static frame
 - Event/kiosk mode — big-screen tablet UI for real parties/weddings, maybe
   a physical printer integration

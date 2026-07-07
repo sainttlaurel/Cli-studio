@@ -30,6 +30,7 @@ export interface PlacedSticker {
   y: number;
   size: number;
   rotation: number;
+  opacity: number; // 10–100
 }
 
 export type FontFamily = "fredoka" | "inter" | "mono";
@@ -43,6 +44,7 @@ export interface PlacedTextLayer {
   rotation: number;
   color: string;
   fontFamily: FontFamily;
+  opacity: number; // 10–100
 }
 
 interface BoothState {
@@ -62,20 +64,26 @@ interface BoothState {
   setFilter: (f: FilterKey) => void;
   setAdjustments: (a: Partial<Adjustments>) => void;
   setCaption: (c: string) => void;
-  addSticker: (sticker: Omit<PlacedSticker, "id">) => void;
+  addSticker: (
+    sticker: Omit<PlacedSticker, "id" | "opacity"> & { opacity?: number },
+  ) => void;
   updateSticker: (
     id: string,
     patch: Partial<Omit<PlacedSticker, "id" | "key">>,
   ) => void;
   removeSticker: (id: string) => void;
   clearStickers: () => void;
-  addTextLayer: (layer: Omit<PlacedTextLayer, "id">) => void;
+  moveSticker: (id: string, dir: "up" | "down") => void;
+  addTextLayer: (
+    layer: Omit<PlacedTextLayer, "id" | "opacity"> & { opacity?: number },
+  ) => void;
   updateTextLayer: (
     id: string,
     patch: Partial<Omit<PlacedTextLayer, "id">>,
   ) => void;
   removeTextLayer: (id: string) => void;
   clearTextLayers: () => void;
+  moveTextLayer: (id: string, dir: "up" | "down") => void;
   toggleMirror: () => void;
   toggleSound: () => void;
   resetAll: () => void;
@@ -121,7 +129,7 @@ export const useBoothStore = create<BoothState>()(
             stickers:
               s.stickers.length >= 12
                 ? s.stickers
-                : [...s.stickers, { id: createId(), ...sticker }],
+                : [...s.stickers, { opacity: 100, ...sticker, id: createId() }],
           })),
         updateSticker: (id, patch) =>
           set((s) => ({
@@ -134,12 +142,22 @@ export const useBoothStore = create<BoothState>()(
             stickers: s.stickers.filter((sticker) => sticker.id !== id),
           })),
         clearStickers: () => set({ stickers: [] }),
+        moveSticker: (id, dir) =>
+          set((s) => {
+            const idx = s.stickers.findIndex((st) => st.id === id);
+            if (idx === -1) return s;
+            const next = dir === "up" ? idx - 1 : idx + 1;
+            if (next < 0 || next >= s.stickers.length) return s;
+            const arr = [...s.stickers];
+            [arr[idx], arr[next]] = [arr[next], arr[idx]];
+            return { stickers: arr };
+          }),
         addTextLayer: (layer) =>
           set((s) => ({
             textLayers:
               s.textLayers.length >= 10
                 ? s.textLayers
-                : [...s.textLayers, { id: createId(), ...layer }],
+                : [...s.textLayers, { opacity: 100, ...layer, id: createId() }],
           })),
         updateTextLayer: (id, patch) =>
           set((s) => ({
@@ -152,6 +170,16 @@ export const useBoothStore = create<BoothState>()(
             textLayers: s.textLayers.filter((layer) => layer.id !== id),
           })),
         clearTextLayers: () => set({ textLayers: [] }),
+        moveTextLayer: (id, dir) =>
+          set((s) => {
+            const idx = s.textLayers.findIndex((l) => l.id === id);
+            if (idx === -1) return s;
+            const next = dir === "up" ? idx - 1 : idx + 1;
+            if (next < 0 || next >= s.textLayers.length) return s;
+            const arr = [...s.textLayers];
+            [arr[idx], arr[next]] = [arr[next], arr[idx]];
+            return { textLayers: arr };
+          }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
         resetAll: () => set({ ...initial }),
