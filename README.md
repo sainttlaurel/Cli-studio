@@ -71,6 +71,7 @@ components/               CameraCapture, StripPreview, EditorPanel, ExportPanel,
 lib/
   store.ts                Zustand store holding captured frames + edits (sessionStorage-backed)
   filters.ts               CSS filter presets shared by live preview + canvas export
+  stickers.ts              local sticker presets shared by the editor, preview, and compositor
   compositor.ts             canvas compositor that renders the final PNG; also exposes
                             renderStripCanvas() and getStripDimensions(), shared with lib/print.ts
   print.ts                  print-page compositor (300dpi, size presets) + window.print() trigger
@@ -86,9 +87,10 @@ This is a real, working scaffold end-to-end, but a few things from the
 original designs are intentionally simplified so you have a solid
 foundation to build on:
 
-- **Sticker packs** — the Stickers tab is a "coming soon" placeholder.
-  Adding draggable stickers would mean moving the preview from plain
-  `<img>` layers to an absolutely-positioned canvas/layer system.
+- **Advanced layers** — sticker presets now ship in the editor and export
+  into the final PNG/print output. A fuller layer editor with custom sticker
+  images, text overlays, z-ordering, and richer transforms is still a good
+  future upgrade.
 - **Template packs** currently ship as 9 local frame themes. A Supabase
   `templates` table still makes sense later if you want seasonal packs,
   event branding, or admin-editable templates.

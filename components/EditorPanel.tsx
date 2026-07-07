@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { Sparkles, Sliders, Layout, Heart, Type, Undo2, Redo2 } from 'lucide-react';
+import { Sparkles, Sliders, Layout, Heart, Type, Undo2, Redo2, Trash2, RotateCcw } from 'lucide-react';
 import { useBoothStore, useBoothTemporal } from '@/lib/store';
 import type { FilterKey, ThemeKey } from '@/lib/store';
 import { buildFilterCss } from '@/lib/filters';
+import { STICKERS, getNextStickerPosition, getStickerDefinition } from '@/lib/stickers';
 
 const FILTERS: { key: FilterKey; label: string }[] = [
   { key: 'cherry', label: 'Cherry Blossom' },
@@ -54,10 +55,14 @@ export function EditorPanel() {
     setTheme,
     caption,
     setCaption,
+    stickers,
+    addSticker,
+    updateSticker,
+    removeSticker,
+    clearStickers,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
 
-  // --- Ctrl/Cmd+Z to undo, Ctrl+Y or Ctrl/Cmd+Shift+Z to redo ---
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       const isMac = navigator.platform.toUpperCase().includes('MAC');
@@ -76,7 +81,6 @@ export function EditorPanel() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [undo, redo]);
 
-  // --- Sliding underline under the active tab ---
   const tabRefs = useRef<Partial<Record<TabKey, HTMLButtonElement>>>({});
   const [indicator, setIndicator] = useState({ left: 0, width: 0 });
 
@@ -151,10 +155,6 @@ export function EditorPanel() {
               <h3 className="text-sm font-heading font-bold text-foreground">Select Filter Preset</h3>
               <span className="text-xs text-muted-foreground">{FILTERS.length} gorgeous options</span>
             </div>
-            {/* flex-wrap + justify-center (rather than CSS grid) so an
-                uneven last row — 5 filters doesn't divide evenly into 3
-                or 4 columns — centers itself instead of hugging the left
-                edge with an empty gap. */}
             <div className="flex flex-wrap justify-center gap-3">
               {FILTERS.map((f) => (
                 <button
@@ -166,10 +166,6 @@ export function EditorPanel() {
                       : 'bg-background border-border hover:border-primary/50'
                   }`}
                 >
-                  {/* 4:3 to match the real crop used in the exported strip
-                      (compositor.ts FRAME_W:FRAME_H and StripPreview's
-                      aspect-[4/3]) — previously aspect-video (16:9) showed
-                      a different crop than what people actually got. */}
                   <div className="aspect-[4/3] bg-muted rounded-lg mb-1.5 overflow-hidden">
                     {thumbnailSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -194,14 +190,14 @@ export function EditorPanel() {
           <div>
             <h3 className="text-sm font-heading font-bold text-foreground mb-4">Fine-Tune Vibe</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+              <label className="flex flex-col gap-1.5">
+                <span className="flex justify-between text-xs font-semibold text-muted-foreground">
                   <span>Brightness</span>
                   <span className="text-primary font-bold">
                     {adjustments.brightness > 0 ? '+' : ''}
                     {adjustments.brightness}%
                   </span>
-                </div>
+                </span>
                 <input
                   type="range"
                   min={-50}
@@ -210,15 +206,15 @@ export function EditorPanel() {
                   onChange={(e) => setAdjustments({ brightness: Number(e.target.value) })}
                   className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <div className="flex justify-between text-xs font-semibold text-muted-foreground">
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="flex justify-between text-xs font-semibold text-muted-foreground">
                   <span>Contrast</span>
                   <span className="text-primary font-bold">
                     {adjustments.contrast > 0 ? '+' : ''}
                     {adjustments.contrast}%
                   </span>
-                </div>
+                </span>
                 <input
                   type="range"
                   min={-50}
@@ -227,7 +223,7 @@ export function EditorPanel() {
                   onChange={(e) => setAdjustments({ contrast: Number(e.target.value) })}
                   className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
                 />
-              </div>
+              </label>
             </div>
           </div>
         )}
@@ -247,11 +243,6 @@ export function EditorPanel() {
                     theme === t.key ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/50'
                   }`}
                 >
-                  {/* Full-opacity theme border (was /30, which read as the
-                      same pale gray across all three themes) plus a mini
-                      2-frame strip mockup instead of one generic dashed
-                      box, so the swatch actually previews "a strip with
-                      this border color" rather than an abstract icon. */}
                   <div className={`w-full aspect-square rounded-lg mb-2 ${t.paper} border-4 ${t.border} shadow-sm p-1.5 flex flex-col gap-1`}>
                     <div className="flex-1 rounded-sm bg-muted" />
                     <div className="flex-1 rounded-sm bg-muted" />
@@ -268,12 +259,125 @@ export function EditorPanel() {
         )}
 
         {tab === 'stickers' && (
-          <div className="flex-1 flex flex-col items-center justify-center text-center gap-2 py-8">
-            <Heart className="text-primary/40" size={32} />
-            <p className="text-sm font-bold text-foreground">Sticker packs coming soon!</p>
-            <p className="text-xs text-muted-foreground max-w-xs">
-              We&apos;re cooking up draggable Y2K stickers. For now, add a caption in the Text tab. ✨
-            </p>
+          <div className="flex flex-col gap-5">
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-heading font-bold text-foreground">Add Stickers</h3>
+                <span className="text-xs text-muted-foreground">{stickers.length}/12 placed</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {STICKERS.map((sticker) => (
+                  <button
+                    key={sticker.key}
+                    onClick={() => {
+                      const position = getNextStickerPosition(stickers.length);
+                      addSticker({ key: sticker.key, size: 16, ...position });
+                    }}
+                    disabled={stickers.length >= 12}
+                    className="p-3 rounded-xl border-2 border-border bg-background hover:border-primary/50 disabled:opacity-40 disabled:hover:border-border transition-all"
+                  >
+                    <span
+                      className={`mx-auto flex h-12 w-full items-center justify-center border-2 px-2 text-[11px] font-heading font-extrabold ${
+                        sticker.shape === 'circle'
+                          ? 'rounded-full aspect-square max-w-12'
+                          : sticker.shape === 'ticket'
+                            ? 'rounded-md'
+                            : 'rounded-full'
+                      }`}
+                      style={{
+                        backgroundColor: sticker.bg,
+                        color: sticker.fg,
+                        borderColor: sticker.border,
+                      }}
+                    >
+                      {sticker.text}
+                    </span>
+                    <span className="mt-2 block text-xs font-bold text-foreground/80">{sticker.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {stickers.length > 0 && (
+              <div className="border-t border-border pt-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-heading font-bold uppercase tracking-wide text-muted-foreground">
+                    Placed Stickers
+                  </h4>
+                  <button
+                    onClick={clearStickers}
+                    className="text-xs font-bold text-muted-foreground hover:text-destructive transition-colors flex items-center gap-1"
+                  >
+                    <Trash2 size={13} />
+                    <span>Clear</span>
+                  </button>
+                </div>
+                <div className="flex flex-col gap-3">
+                  {stickers.map((sticker, index) => {
+                    const stickerDef = getStickerDefinition(sticker.key);
+                    return (
+                      <div key={sticker.id} className="rounded-xl border border-border bg-muted/40 p-3">
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span
+                              className="flex h-8 min-w-14 items-center justify-center rounded-full border-2 px-2 text-[10px] font-heading font-extrabold"
+                              style={{
+                                backgroundColor: stickerDef.bg,
+                                color: stickerDef.fg,
+                                borderColor: stickerDef.border,
+                              }}
+                            >
+                              {stickerDef.text}
+                            </span>
+                            <span className="text-xs font-bold text-foreground">Sticker {index + 1}</span>
+                          </div>
+                          <button
+                            onClick={() => removeSticker(sticker.id)}
+                            title="Remove sticker"
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
+                          >
+                            <Trash2 size={15} />
+                          </button>
+                        </div>
+                        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <label className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-semibold text-muted-foreground">
+                              Size {sticker.size}%
+                            </span>
+                            <input
+                              type="range"
+                              min={10}
+                              max={28}
+                              value={sticker.size}
+                              onChange={(event) =>
+                                updateSticker(sticker.id, { size: Number(event.target.value) })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1.5">
+                            <span className="text-[11px] font-semibold text-muted-foreground flex items-center gap-1">
+                              <RotateCcw size={12} />
+                              <span>Rotate {sticker.rotation} deg</span>
+                            </span>
+                            <input
+                              type="range"
+                              min={-30}
+                              max={30}
+                              value={sticker.rotation}
+                              onChange={(event) =>
+                                updateSticker(sticker.id, { rotation: Number(event.target.value) })
+                              }
+                              className="w-full accent-primary h-1.5 bg-secondary rounded-lg appearance-none cursor-pointer"
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -285,7 +389,7 @@ export function EditorPanel() {
               maxLength={40}
               value={caption}
               onChange={(e) => setCaption(e.target.value)}
-              placeholder="best day ever ✨"
+              placeholder="best day ever"
               className="w-full px-4 py-3 bg-muted border border-border rounded-xl text-sm outline-none focus:border-primary transition-colors"
             />
             <p className="text-[11px] text-muted-foreground mt-2">

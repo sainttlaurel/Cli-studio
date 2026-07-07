@@ -18,7 +18,7 @@ type ShareNavigator = Navigator & {
 const PRINT_SIZE_ORDER: PrintSizeKey[] = ['2x6', '4x6', 'a4', 'letter'];
 
 export function ExportPanel() {
-  const { frames, filter, adjustments, theme, caption } = useBoothStore();
+  const { frames, filter, adjustments, theme, caption, stickers } = useBoothStore();
   const [status, setStatus] = useState<Status>('idle');
   const [error, setError] = useState<string | null>(null);
   const [blob, setBlob] = useState<Blob | null>(null);
@@ -42,6 +42,7 @@ export function ExportPanel() {
         contrast: adjustments.contrast,
         themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
         caption,
+        stickers,
       });
       setBlob(renderedBlob);
       setBlobUrl(URL.createObjectURL(renderedBlob));
@@ -66,7 +67,7 @@ export function ExportPanel() {
       setStatus('error');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [frames, filter, adjustments.brightness, adjustments.contrast, theme, caption]);
+  }, [frames, filter, adjustments.brightness, adjustments.contrast, theme, caption, stickers]);
 
   useEffect(() => {
     if (frames.length === 0) return;
@@ -129,6 +130,7 @@ export function ExportPanel() {
         contrast: adjustments.contrast,
         themeColor: THEME_HEX[theme] ?? THEME_HEX.pink,
         caption,
+        stickers,
         printSize,
       });
       pageUrl = URL.createObjectURL(pageBlob);

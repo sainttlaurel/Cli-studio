@@ -1,5 +1,6 @@
 import { buildFilterCss } from './filters';
-import type { FilterKey } from './store';
+import { getStickerDefinition } from './stickers';
+import type { FilterKey, PlacedSticker } from './store';
 
 export interface CompositeOptions {
   frames: string[];
@@ -8,6 +9,7 @@ export interface CompositeOptions {
   contrast: number;
   themeColor: string;
   caption: string;
+  stickers?: PlacedSticker[];
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -25,6 +27,54 @@ const BASE_PADDING = 24;
 const BASE_FRAME_W = 640;
 const BASE_FRAME_H = 480;
 const BASE_GAP = 20;
+
+function roundedRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+  const radius = Math.min(r, w / 2, h / 2);
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + w - radius, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + radius);
+  ctx.lineTo(x + w, y + h - radius);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - radius, y + h);
+  ctx.lineTo(x + radius, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+function drawSticker(ctx: CanvasRenderingContext2D, sticker: PlacedSticker, canvasWidth: number, canvasHeight: number) {
+  const stickerDef = getStickerDefinition(sticker.key);
+  const width = (canvasWidth * sticker.size) / 100;
+  const height = stickerDef.shape === 'circle' ? width : width * 0.48;
+  const x = (canvasWidth * sticker.x) / 100;
+  const y = (canvasHeight * sticker.y) / 100;
+  const radius = stickerDef.shape === 'ticket' ? width * 0.08 : height / 2;
+
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate((sticker.rotation * Math.PI) / 180);
+
+  ctx.shadowColor = 'rgba(76, 5, 25, 0.18)';
+  ctx.shadowBlur = width * 0.08;
+  ctx.shadowOffsetY = width * 0.035;
+
+  roundedRect(ctx, -width / 2, -height / 2, width, height, radius);
+  ctx.fillStyle = stickerDef.bg;
+  ctx.fill();
+
+  ctx.shadowColor = 'transparent';
+  ctx.lineWidth = Math.max(3, width * 0.035);
+  ctx.strokeStyle = stickerDef.border;
+  ctx.stroke();
+
+  ctx.fillStyle = stickerDef.fg;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font = `900 ${Math.max(20, width * 0.21)}px 'Fredoka', sans-serif`;
+  ctx.fillText(stickerDef.text, 0, 1, width * 0.78);
+  ctx.restore();
+}
 
 /**
  * Returns the pixel dimensions renderStripCanvas will produce for a given
@@ -54,7 +104,7 @@ export function getStripDimensions(frameCount: number, hasCaption: boolean, scal
  * or at a higher resolution for crisp print output — see lib/print.ts.
  */
 export async function renderStripCanvas(opts: CompositeOptions, scale = 1): Promise<HTMLCanvasElement> {
-  const { frames, filter, brightness, contrast, themeColor, caption } = opts;
+  const { frames, filter, brightness, contrast, themeColor, caption, stickers = [] } = opts;
   const images = await Promise.all(frames.map(loadImage));
 
   const PADDING = BASE_PADDING * scale;
@@ -109,6 +159,8 @@ export async function renderStripCanvas(opts: CompositeOptions, scale = 1): Prom
     ctx.textAlign = 'center';
     ctx.fillText(caption, canvas.width / 2, footerY + 40 * scale);
   }
+
+  stickers.forEach((sticker) => drawSticker(ctx, sticker, canvas.width, canvas.height));
 
   return canvas;
 }

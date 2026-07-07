@@ -196,12 +196,27 @@ changes without reading the repo:
 
 ---
 
+## v2.4 — Sticker Packs (Done)
+
+Lightweight sticker layer support inside the current editor/export pipeline:
+
+- Stickers tab now offers 6 local Y2K-style sticker presets
+- Stickers can be placed, dragged on the live strip preview, resized,
+  rotated, removed, cleared, and included in undo/redo history
+- Exported PNGs and print-ready output draw stickers into the final canvas
+- No database model yet; sticker definitions remain local like the current
+  template gallery
+
+**Later option:** richer sticker packs with custom image assets, text-overlay
+layers, and per-sticker z-order controls if the editor moves further toward a
+full layer system.
+
+---
+
 ## Ideas Parking Lot (Idea, not committed)
 
-- Sticker packs — draggable, resizable, rotatable stickers placed by click,
-  plus a text-overlay tool with the same drag/resize behavior. Needs a
-  layer-based canvas editor instead of the current flat CSS filters (each
-  sticker/text needs its own x/y/scale/rotation state).
+- Advanced layer editor — custom sticker image packs, text overlays with the
+  same drag/resize behavior, z-order controls, and richer transforms.
 - Template packs in the database — the local gallery now has 9 frame
   templates. A `templates` table still makes sense later for event packs,
   seasonal drops, or admin-editable branding.
