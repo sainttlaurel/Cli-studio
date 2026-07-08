@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Plus, Edit2, Trash2, Check, X, Eye, EyeOff, Loader2 } from "lucide-react";
 import { LOCAL_TEMPLATES } from "@/lib/templates";
 
-const ADMIN_PASSWORD = "admin123"; // Match the API route password
+// Password is validated via API, not hardcoded on client
 
 interface TemplateRow {
   id: string;
@@ -49,20 +49,32 @@ export default function AdminTemplatesPage() {
   useEffect(() => {
     // Check for password in sessionStorage (for page refresh)
     const savedAuth = sessionStorage.getItem("admin_auth");
-    if (savedAuth === ADMIN_PASSWORD) {
+    if (savedAuth) {
       setAuthenticated(true);
       fetchTemplates();
     }
   }, []);
 
-  const handlePasswordSubmit = (e: FormEvent) => {
+  const handlePasswordSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (password === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-      sessionStorage.setItem("admin_auth", ADMIN_PASSWORD);
-      fetchTemplates();
-    } else {
-      setError("Incorrect password");
+    setError(null);
+    try {
+      // Validate password via API
+      const response = await fetch("/api/admin/templates", {
+        headers: {
+          "x-admin-password": password,
+        },
+      });
+
+      if (response.ok) {
+        setAuthenticated(true);
+        sessionStorage.setItem("admin_auth", password);
+        fetchTemplates();
+      } else {
+        setError("Incorrect password");
+      }
+    } catch (err) {
+      setError("Failed to validate password");
     }
   };
 
@@ -70,9 +82,10 @@ export default function AdminTemplatesPage() {
     setLoading(true);
     setError(null);
     try {
+      const savedPassword = sessionStorage.getItem("admin_auth");
       const response = await fetch("/api/admin/templates", {
         headers: {
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": savedPassword || "",
         },
       });
 
@@ -108,11 +121,12 @@ export default function AdminTemplatesPage() {
     if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
+      const savedPassword = sessionStorage.getItem("admin_auth");
       const response = await fetch("/api/admin/templates", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": savedPassword || "",
         },
         body: JSON.stringify({ id }),
       });
@@ -128,11 +142,12 @@ export default function AdminTemplatesPage() {
 
   const handleToggleActive = async (template: TemplateRow) => {
     try {
+      const savedPassword = sessionStorage.getItem("admin_auth");
       const response = await fetch("/api/admin/templates", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": savedPassword || "",
         },
         body: JSON.stringify({
           id: template.id,
@@ -163,11 +178,12 @@ export default function AdminTemplatesPage() {
       const url = editingTemplate ? `/api/admin/templates` : `/api/admin/templates`;
       const method = editingTemplate ? "PUT" : "POST";
 
+      const savedPassword = sessionStorage.getItem("admin_auth");
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": ADMIN_PASSWORD,
+          "x-admin-password": savedPassword || "",
         },
         body: JSON.stringify(payload),
       });
