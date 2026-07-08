@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
-import { validateAdminPassword, storeAdminAuth } from "@/lib/admin-auth";
+import { storeAdminAuth } from "@/lib/admin-auth";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -17,24 +17,37 @@ export default function AdminLoginPage() {
     setError(null);
     setLoading(true);
 
-    // Client-side validation first (basic check)
+    // Basic validation
     if (!password) {
       setError("Please enter a password");
       setLoading(false);
       return;
     }
 
-    // Validate against expected password
-    if (!validateAdminPassword(password)) {
-      setError("Incorrect password");
-      setLoading(false);
-      return;
-    }
+    try {
+      // Validate password via server-side API
+      const response = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
-    // Store auth and redirect
-    storeAdminAuth(password);
-    setLoading(false);
-    router.push("/admin");
+      const data = await response.json();
+
+      if (!data.success) {
+        setError(data.error || "Incorrect password");
+        setLoading(false);
+        return;
+      }
+
+      // Store auth and redirect
+      storeAdminAuth(password);
+      setLoading(false);
+      router.push("/admin");
+    } catch {
+      setError("Network error. Please try again.");
+      setLoading(false);
+    }
   };
 
   return (

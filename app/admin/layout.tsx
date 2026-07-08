@@ -19,7 +19,6 @@ import {
   isAdminAuthenticated,
   clearAdminAuth,
   getStoredAdminPassword,
-  validateAdminPassword,
 } from "@/lib/admin-auth";
 
 const navItems = [
@@ -44,12 +43,14 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
+    // If authenticated via sessionStorage, check for stored password
+    // Password was already validated at login time via server-side API
     if (isAdminAuthenticated()) {
       setAuthenticated(true);
     } else {
-      // Check if we have stored password and validate it
+      // Check if we have stored password (validated at login)
       const storedPassword = getStoredAdminPassword();
-      if (storedPassword && validateAdminPassword(storedPassword)) {
+      if (storedPassword) {
         setAuthenticated(true);
       }
     }
