@@ -13,6 +13,8 @@ import {
   RotateCcw,
   ChevronUp,
   ChevronDown,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import {
   useBoothStore,
@@ -84,6 +86,8 @@ export function EditorPanel() {
     removeTextLayer,
     clearTextLayers,
     layerOrder,
+    toggleStickerVisibility,
+    toggleTextLayerVisibility,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
   const layerStack = resolveLayerOrder(layerOrder, stickers, textLayers);
@@ -538,6 +542,23 @@ export function EditorPanel() {
                               <ChevronDown size={15} />
                             </button>
                             <button
+                              onClick={() =>
+                                toggleStickerVisibility(sticker.id)
+                              }
+                              title={
+                                sticker.visible
+                                  ? "Hide sticker"
+                                  : "Show sticker"
+                              }
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            >
+                              {sticker.visible ? (
+                                <Eye size={15} />
+                              ) : (
+                                <EyeOff size={15} />
+                              )}
+                            </button>
+                            <button
                               onClick={() => removeSticker(sticker.id)}
                               title="Remove sticker"
                               className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
@@ -810,6 +831,19 @@ export function EditorPanel() {
                               <ChevronDown size={15} />
                             </button>
                             <button
+                              onClick={() =>
+                                toggleTextLayerVisibility(layer.id)
+                              }
+                              title={layer.visible ? "Hide text" : "Show text"}
+                              className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                            >
+                              {layer.visible ? (
+                                <Eye size={15} />
+                              ) : (
+                                <EyeOff size={15} />
+                              )}
+                            </button>
+                            <button
                               onClick={() => removeTextLayer(layer.id)}
                               title="Remove text"
                               className="p-1.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
@@ -936,6 +970,23 @@ export function EditorPanel() {
                           )}
                         </div>
                         <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => {
+                              if (isSticker && sticker) {
+                                toggleStickerVisibility(sticker.id);
+                              } else if (textLayer) {
+                                toggleTextLayerVisibility(textLayer.id);
+                              }
+                            }}
+                            title={layer.visible ? "Hide layer" : "Show layer"}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            {layer.visible ? (
+                              <Eye size={15} />
+                            ) : (
+                              <EyeOff size={15} />
+                            )}
+                          </button>
                           <button
                             onClick={() => {
                               if (isSticker && sticker) {

@@ -31,6 +31,7 @@ export interface PlacedSticker {
   size: number;
   rotation: number;
   opacity: number; // 10–100
+  visible: boolean;
 }
 
 export type FontFamily = "fredoka" | "inter" | "mono";
@@ -45,6 +46,7 @@ export interface PlacedTextLayer {
   color: string;
   fontFamily: FontFamily;
   opacity: number; // 10–100
+  visible: boolean;
 }
 
 export type LayerRef = { kind: "sticker" | "text"; id: string };
@@ -99,7 +101,9 @@ interface BoothState {
   setAdjustments: (a: Partial<Adjustments>) => void;
   setCaption: (c: string) => void;
   addSticker: (
-    sticker: Omit<PlacedSticker, "id" | "opacity"> & { opacity?: number },
+    sticker: Omit<PlacedSticker, "id" | "opacity" | "visible"> & {
+      opacity?: number;
+    },
   ) => void;
   updateSticker: (
     id: string,
@@ -108,7 +112,9 @@ interface BoothState {
   removeSticker: (id: string) => void;
   clearStickers: () => void;
   addTextLayer: (
-    layer: Omit<PlacedTextLayer, "id" | "opacity"> & { opacity?: number },
+    layer: Omit<PlacedTextLayer, "id" | "opacity" | "visible"> & {
+      opacity?: number;
+    },
   ) => void;
   updateTextLayer: (
     id: string,
@@ -120,6 +126,8 @@ interface BoothState {
   reorderLayer: (fromIndex: number, toIndex: number) => void;
   toggleMirror: () => void;
   toggleSound: () => void;
+  toggleStickerVisibility: (id: string) => void;
+  toggleTextLayerVisibility: (id: string) => void;
   resetAll: () => void;
 }
 
@@ -135,6 +143,22 @@ const initial = {
   mirror: true,
   soundEnabled: true,
 };
+
+// Migration helper: ensure all stickers and text layers have visible property
+function migrateState(state: any): any {
+  const migrated = { ...state };
+  if (migrated.stickers) {
+    migrated.stickers = migrated.stickers.map((s: any) =>
+      s.visible !== undefined ? s : { ...s, visible: true },
+    );
+  }
+  if (migrated.textLayers) {
+    migrated.textLayers = migrated.textLayers.map((t: any) =>
+      t.visible !== undefined ? t : { ...t, visible: true },
+    );
+  }
+  return migrated;
+}
 
 function createId() {
   return typeof crypto !== "undefined" && "randomUUID" in crypto
@@ -164,7 +188,10 @@ export const useBoothStore = create<BoothState>()(
             if (s.stickers.length >= 12) return s;
             const id = createId();
             return {
-              stickers: [...s.stickers, { opacity: 100, ...sticker, id }],
+              stickers: [
+                ...s.stickers,
+                { opacity: 100, visible: true, ...sticker, id },
+              ],
               layerOrder: [
                 ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
                 { kind: "sticker", id },
@@ -194,7 +221,10 @@ export const useBoothStore = create<BoothState>()(
             if (s.textLayers.length >= 10) return s;
             const id = createId();
             return {
-              textLayers: [...s.textLayers, { opacity: 100, ...layer, id }],
+              textLayers: [
+                ...s.textLayers,
+                { opacity: 100, visible: true, ...layer, id },
+              ],
               layerOrder: [
                 ...resolveLayerOrder(s.layerOrder, s.stickers, s.textLayers),
                 { kind: "text", id },
@@ -258,11 +288,27 @@ export const useBoothStore = create<BoothState>()(
           }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+        toggleStickerVisibility: (id) =>
+          set((s) => ({
+            stickers: s.stickers.map((sticker) =>
+              sticker.id === id
+                ? { ...sticker, visible: !sticker.visible }
+                : sticker,
+            ),
+          })),
+        toggleTextLayerVisibility: (id) =>
+          set((s) => ({
+            textLayers: s.textLayers.map((layer) =>
+              layer.id === id ? { ...layer, visible: !layer.visible } : layer,
+            ),
+          })),
         resetAll: () => set({ ...initial }),
       }),
       {
         name: "clickstudio-booth",
         storage: createJSONStorage(() => sessionStorage),
+        version: 2,
+        migrate: migrateState,
       },
     ),
     {

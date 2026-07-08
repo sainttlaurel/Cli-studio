@@ -1,6 +1,11 @@
 import { buildFilterCss } from "./filters";
 import { getStickerDefinition } from "./stickers";
-import type { FilterKey, LayerRef, PlacedSticker, PlacedTextLayer } from "./store";
+import type {
+  FilterKey,
+  LayerRef,
+  PlacedSticker,
+  PlacedTextLayer,
+} from "./store";
 import { resolveLayerOrder } from "./store";
 import type { TextStickerDefinition } from "./stickers";
 
@@ -263,10 +268,12 @@ export async function renderStripCanvas(
   for (const ref of stack) {
     if (ref.kind === "sticker") {
       const sticker = stickers.find((s) => s.id === ref.id);
-      if (sticker) await drawSticker(ctx, sticker, canvas.width, canvas.height);
+      if (sticker && sticker.visible)
+        await drawSticker(ctx, sticker, canvas.width, canvas.height);
     } else {
       const layer = textLayers.find((t) => t.id === ref.id);
-      if (layer) drawTextLayer(ctx, layer, canvas.width, canvas.height);
+      if (layer && layer.visible)
+        drawTextLayer(ctx, layer, canvas.width, canvas.height);
     }
   }
 
