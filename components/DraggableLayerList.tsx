@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState, type ReactNode, type PointerEvent } from "react";
+import { useRef, useState, type ReactNode } from "react";
+import type { DragEvent } from "react";
 import { GripVertical } from "lucide-react";
 
 interface Props<T extends { id: string }> {
@@ -48,7 +49,7 @@ export function DraggableLayerList<T extends { id: string }>({
   };
 
   // Prevent default on dragover so drop fires
-  const handleDragOver = (e: React.DragEvent) => e.preventDefault();
+  const handleDragOver = (e: DragEvent) => e.preventDefault();
 
   return (
     <div className="flex flex-col gap-3">

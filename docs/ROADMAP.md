@@ -373,6 +373,33 @@ Fixes real production gaps and adds the sharing features that make the app sprea
   Features: create, edit, disable templates, view all templates (including inactive), and
   delete templates. Uses service role key for Supabase write operations via API routes.
 
+---
+
+## v3.0.1 — Admin Management Suite (Done)
+
+Comprehensive admin features for managing content and monitoring the platform:
+
+- Admin dashboard at `/admin` with overview metrics (total strips, views, downloads, active sessions)
+- Admin layout with navigation sidebar and password protection
+- Sticker pack management UI at `/admin/stickers`: upload, organize, enable/disable custom sticker packs, preview stickers, bulk import from ZIP files
+- Gallery moderation at `/admin/gallery`: view all public/private strips, search and filter, flag inappropriate content, delete entries, feature selected strips, view details
+- User/session management at `/admin/sessions`: view active sessions, strip counts per session, block/unblock sessions, IP tracking
+- Analytics dashboard at `/admin/analytics`: time-series charts for daily activity, popular templates and filters, device breakdown, pie charts
+- System settings at `/admin/settings`: configure rate limits (strips per hour/day per session), toggle maintenance mode, manage feature flags (PWA install prompt, gallery visibility, etc.), set default template
+- Audit log at `/admin/audit`: track all admin actions with timestamps, admin identifier, IP address, user agent, filter by action and resource type
+
+API routes:
+- `/api/admin` - GET dashboard metrics
+- `/api/admin` - GET audit logs (with filters)
+- `/api/admin` - GET sessions data
+- `/api/admin/templates` - existing CRUD operations for templates
+
+---
+
+## v3.0.2 — Platform Hardening (Planned)
+
+Infrastructure improvements for security, reliability, and protection:
+
 - Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
   complete. Direct Meta API posting should remain on hold until ClickStudio
   supports user accounts and authentication.
