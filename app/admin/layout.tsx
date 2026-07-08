@@ -15,11 +15,6 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import {
-  isAdminAuthenticated,
-  clearAdminAuth,
-  getStoredAdminPassword,
-} from "@/lib/admin-auth";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -38,52 +33,21 @@ interface AdminLayoutProps {
 export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [authenticated, setAuthenticated] = useState(false);
-  const [checkingAuth, setCheckingAuth] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-    // If authenticated via sessionStorage, check for stored password
-    // Password was already validated at login time via server-side API
-    if (isAdminAuthenticated()) {
-      setAuthenticated(true);
-    } else {
-      // Check if we have stored password (validated at login)
-      const storedPassword = getStoredAdminPassword();
-      if (storedPassword) {
-        setAuthenticated(true);
-      }
-    }
-    setCheckingAuth(false);
-  }, []);
-
-  useEffect(() => {
-    if (!checkingAuth && !authenticated && pathname !== "/admin/login") {
-      router.push("/admin/login");
-    }
-  }, [authenticated, checkingAuth, pathname, router]);
+  // Authentication bypassed - admin panel is open
+  const authenticated = true;
 
   const handleLogout = () => {
-    clearAdminAuth();
-    setAuthenticated(false);
-    router.push("/admin/login");
+    router.push("/");
   };
 
-  if (checkingAuth) {
-    return (
-      <div className="min-h-screen w-full bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
-  }
-
-  if (!authenticated && pathname !== "/admin/login") {
-    return null; // Redirecting...
-  }
-
-  // Login page doesn't need layout
+  // Redirect /admin/login to /admin
   if (pathname === "/admin/login") {
-    return <>{children}</>;
+    useEffect(() => {
+      router.push("/admin");
+    }, [router]);
+    return null;
   }
 
   return (
