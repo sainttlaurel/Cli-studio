@@ -1,7 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
 
-export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
-
 /** Admin client with service role key for full access */
 export function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL as string;
@@ -16,7 +14,7 @@ export function createAdminClient() {
 
 /** Check if password matches admin password */
 export function validateAdminPassword(password: string): boolean {
-  return password === ADMIN_PASSWORD;
+  return password === (process.env.ADMIN_PASSWORD || "admin123");
 }
 
 /** Client-side auth storage key */

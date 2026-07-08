@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import {
-  validateAdminPassword,
-  createAdminClient,
-  ADMIN_PASSWORD,
-} from "@/lib/admin-auth";
+import { createAdminClient } from "@/lib/admin-auth";
 
 function checkPassword(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const password = request.headers.get("x-admin-password");
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
-  if (authHeader === `Bearer ${ADMIN_PASSWORD}`) return true;
-  if (password === ADMIN_PASSWORD) return true;
+  if (authHeader === `Bearer ${adminPassword}`) return true;
+  if (password === adminPassword) return true;
 
   const url = new URL(request.url);
-  if (url.searchParams.get("password") === ADMIN_PASSWORD) return true;
+  if (url.searchParams.get("password") === adminPassword) return true;
 
   return false;
 }
