@@ -19,6 +19,7 @@ import {
   isAdminAuthenticated,
   clearAdminAuth,
   getStoredAdminPassword,
+  validateAdminPassword,
 } from "@/lib/admin-auth";
 
 const navItems = [
@@ -46,9 +47,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
     if (isAdminAuthenticated()) {
       setAuthenticated(true);
     } else {
-      // Check if we have stored password
+      // Check if we have stored password and validate it
       const storedPassword = getStoredAdminPassword();
-      if (storedPassword) {
+      if (storedPassword && validateAdminPassword(storedPassword)) {
         setAuthenticated(true);
       }
     }
