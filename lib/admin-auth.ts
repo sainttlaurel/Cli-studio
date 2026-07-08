@@ -14,8 +14,7 @@ export function createAdminClient() {
 
 /** Check if password matches admin password */
 export function validateAdminPassword(password: string): boolean {
-  // Hardcoded for testing - replace with process.env once verified
-  return password === "ClickStudio@";
+  return password === (process.env.ADMIN_PASSWORD || "admin123");
 }
 
 /** Client-side auth storage key */

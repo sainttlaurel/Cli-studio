@@ -4,8 +4,7 @@ import { createAdminClient } from "@/lib/admin-auth";
 function checkPassword(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const password = request.headers.get("x-admin-password");
-  // Hardcoded for testing
-  const adminPassword = "ClickStudio@";
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
   if (authHeader === `Bearer ${adminPassword}`) return true;
   if (password === adminPassword) return true;

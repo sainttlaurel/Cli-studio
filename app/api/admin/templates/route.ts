@@ -16,8 +16,7 @@ function createAdminClient() {
 function checkPassword(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const password = request.headers.get("x-admin-password");
-  // Hardcoded for testing
-  const adminPassword = "ClickStudio@";
+  const adminPassword = process.env.ADMIN_PASSWORD || "admin123";
 
   // Check either Authorization header or custom header
   if (authHeader === `Bearer ${adminPassword}`) return true;
