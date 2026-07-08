@@ -27,18 +27,18 @@ const STATIC_METRICS: DashboardMetrics = {
   privateStrips: 791,
   recentlyCreated: 42,
   popularTemplates: [
-    { name: "Y2K Pink", count: 345 },
-    { name: "Baby Blue", count: 289 },
-    { name: "Mint Pop", count: 212 },
-    { name: "Lemon Flash", count: 187 },
-    { name: "Coral Crush", count: 156 },
+    { name: "Y2K Pink", id: "y2k-pink", count: 345, percentage: 27.6 },
+    { name: "Baby Blue", id: "baby-blue", count: 289, percentage: 23.2 },
+    { name: "Mint Pop", id: "mint-pop", count: 212, percentage: 17.0 },
+    { name: "Lemon Flash", id: "lemon-flash", count: 187, percentage: 15.0 },
+    { name: "Coral Crush", id: "coral-crush", count: 156, percentage: 12.5 },
   ],
   popularStickers: [
-    { name: "Love", count: 456 },
-    { name: "XOXO", count: 389 },
-    { name: "BFF", count: 312 },
-    { name: "Wow", count: 278 },
-    { name: "Cute", count: 245 },
+    { name: "Love", id: "love", count: 456, percentage: 27.8 },
+    { name: "XOXO", id: "xoxo", count: 389, percentage: 23.7 },
+    { name: "BFF", id: "bff", count: 312, percentage: 19.0 },
+    { name: "Wow", id: "wow", count: 278, percentage: 17.0 },
+    { name: "Cute", id: "cute", count: 245, percentage: 15.0 },
   ],
 };
 
@@ -164,7 +164,10 @@ function QuickActionCard({ action }: { action: QuickAction }) {
       className="bg-background rounded-2xl border border-border/80 shadow-sm p-6 hover:border-primary/30 hover:shadow-primary/10 transition-all group"
     >
       <div className="p-3 rounded-xl bg-primary/10 mb-4 group-hover:bg-primary/20 transition-colors">
-        <Icon size={24} className="text-primary group-hover:scale-105 transition-transform" />
+        <Icon
+          size={24}
+          className="text-primary group-hover:scale-105 transition-transform"
+        />
       </div>
       <h3 className="font-heading font-bold text-foreground mb-1">
         {action.title}
@@ -177,9 +180,17 @@ function QuickActionCard({ action }: { action: QuickAction }) {
 function RecentActivity() {
   const activities = [
     { action: "Template created", name: "Halloween Theme", time: "2 mins ago" },
-    { action: "Sticker uploaded", name: "Pumpkin Sticker", time: "15 mins ago" },
+    {
+      action: "Sticker uploaded",
+      name: "Pumpkin Sticker",
+      time: "15 mins ago",
+    },
     { action: "Strip flagged", name: "Strip #abc123", time: "1 hour ago" },
-    { action: "Settings updated", name: "Rate limit changed", time: "2 hours ago" },
+    {
+      action: "Settings updated",
+      name: "Rate limit changed",
+      time: "2 hours ago",
+    },
     { action: "New session", name: "Anonymous user", time: "3 hours ago" },
   ];
 
@@ -350,7 +361,10 @@ export default function AdminDashboardPage() {
 
       {/* Popular Sections */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PopularList title="Popular Templates" items={metrics.popularTemplates} />
+        <PopularList
+          title="Popular Templates"
+          items={metrics.popularTemplates}
+        />
         <PopularList title="Popular Stickers" items={metrics.popularStickers} />
       </div>
 

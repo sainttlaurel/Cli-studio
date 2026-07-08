@@ -5,7 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import {
   LayoutDashboard,
-  StickerMule,
+  Sticker,
   Image as ImageIcon,
   Users,
   BarChart3,
@@ -23,7 +23,7 @@ import {
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Stickers", href: "/admin/stickers", icon: StickerMule },
+  { label: "Stickers", href: "/admin/stickers", icon: Sticker },
   { label: "Gallery", href: "/admin/gallery", icon: ImageIcon },
   { label: "Sessions", href: "/admin/sessions", icon: Users },
   { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
@@ -116,7 +116,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
             </Link>
             <nav className="space-y-2">
               {navItems.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isActive =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
                 return (
                   <Link
                     key={item.href}
@@ -166,7 +168,9 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
               </div>
               <nav className="space-y-2">
                 {navItems.map((item) => {
-                  const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                  const isActive =
+                    pathname === item.href ||
+                    pathname.startsWith(item.href + "/");
                   return (
                     <Link
                       key={item.href}
@@ -201,9 +205,7 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
         )}
 
         {/* Main content */}
-        <main className="flex-1 p-4 lg:p-8">
-          {children}
-        </main>
+        <main className="flex-1 p-4 lg:p-8">{children}</main>
       </div>
     </div>
   );

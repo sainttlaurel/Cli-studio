@@ -11,6 +11,8 @@ import {
   Loader2,
   ChevronLeft,
   ChevronRight,
+  MoreVertical,
+  X,
 } from "lucide-react";
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { SessionRow } from "@/lib/admin-types";

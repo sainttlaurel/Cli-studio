@@ -19,14 +19,14 @@ export interface DashboardMetrics {
   publicStrips: number;
   privateStrips: number;
   recentlyCreated: number; // Last 24h
-  popularTemplates: { name: string; count: number }[];
-  popularStickers: { name: string; count: number }[];
+  popularTemplates: PopularItem[];
+  popularStickers: PopularItem[];
 }
 
 export interface StatCardProps {
   title: string;
   value: number | string;
-  change?: { value: number; direction: 'up' | 'down' | 'neutral' };
+  change?: { value: number; direction: "up" | "down" | "neutral" };
   icon: React.ComponentType<{ size?: number | string; className?: string }>;
   color?: string;
 }
@@ -83,7 +83,7 @@ export interface UploadedStickerFile {
   file: File;
   preview: string;
   uploadProgress: number;
-  status: 'idle' | 'uploading' | 'complete' | 'error';
+  status: "idle" | "uploading" | "complete" | "error";
 }
 
 // ── Sessions ───────────────────────────────────────────────────────────────
@@ -114,12 +114,28 @@ export interface AuditLogEntry {
 }
 
 export type AuditAction =
-  | 'create' | 'update' | 'delete' | 'toggle' | 'block' | 'unblock'
-  | 'flag' | 'unflag' | 'feature' | 'unfeature' | 'export' | 'import';
+  | "create"
+  | "update"
+  | "delete"
+  | "toggle"
+  | "block"
+  | "unblock"
+  | "flag"
+  | "unflag"
+  | "feature"
+  | "unfeature"
+  | "export"
+  | "import";
 
 export type AuditResourceType =
-  | 'template' | 'sticker_pack' | 'sticker' | 'strip' | 'session'
-  | 'settings' | 'gallery' | 'message';
+  | "template"
+  | "sticker_pack"
+  | "sticker"
+  | "strip"
+  | "session"
+  | "settings"
+  | "gallery"
+  | "message";
 
 // ── Settings ───────────────────────────────────────────────────────────────
 
@@ -141,6 +157,7 @@ export interface SystemSettings {
   showGallery: boolean;
   showFeedbackWall: boolean;
   defaultTemplate: string;
+  [key: string]: number | boolean | string | null;
 }
 
 // ── Analytics ──────────────────────────────────────────────────────────────
@@ -177,7 +194,7 @@ export interface BrowserAnalytics {
 export interface AnalyticsFilters {
   startDate: string;
   endDate: string;
-  range: 'day' | 'week' | 'month' | 'year' | 'custom';
+  range: "day" | "week" | "month" | "year" | "custom";
 }
 
 // ── Common ─────────────────────────────────────────────────────────────────
@@ -201,7 +218,7 @@ export interface SearchParams {
   search?: string;
   filter?: string;
   sortBy?: string;
-  sortOrder?: 'asc' | 'desc';
+  sortOrder?: "asc" | "desc";
   page?: string;
   pageSize?: string;
 }

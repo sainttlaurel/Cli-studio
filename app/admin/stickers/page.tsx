@@ -17,17 +17,63 @@ import {
   ArrowDown,
   FolderOpen,
   Search,
+  Image as ImageIcon,
 } from "lucide-react";
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { StickerPackRow, StickerRow } from "@/lib/admin-types";
 
 // Local sticker packs for now (will migrate to DB)
 const LOCAL_PACKS = [
-  { id: "y2k-text", name: "Y2K Text", emoji: "⭐", is_active: true, sort_order: 1, description: "Original text badge stickers" },
-  { id: "collage", name: "Collage", emoji: "🎓", is_active: true, sort_order: 2, description: "Education-themed stickers" },
-  { id: "flowers", name: "Flowers", emoji: "🌸", is_active: true, sort_order: 3, description: "Floral stickers" },
-  { id: "ribbon", name: "Ribbon", emoji: "🎀", is_active: true, sort_order: 4, description: "Decorative ribbon stickers" },
-  { id: "y2k", name: "Y2K Images", emoji: "✨", is_active: true, sort_order: 5, description: "Y2K-themed image stickers" },
+  {
+    id: "y2k-text",
+    name: "Y2K Text",
+    emoji: "⭐",
+    is_active: true,
+    sort_order: 1,
+    description: "Original text badge stickers",
+    created_at: new Date("2024-01-01").toISOString(),
+    updated_at: new Date("2024-01-01").toISOString(),
+  },
+  {
+    id: "collage",
+    name: "Collage",
+    emoji: "🎓",
+    is_active: true,
+    sort_order: 2,
+    description: "Education-themed stickers",
+    created_at: new Date("2024-01-01").toISOString(),
+    updated_at: new Date("2024-01-01").toISOString(),
+  },
+  {
+    id: "flowers",
+    name: "Flowers",
+    emoji: "🌸",
+    is_active: true,
+    sort_order: 3,
+    description: "Floral stickers",
+    created_at: new Date("2024-01-01").toISOString(),
+    updated_at: new Date("2024-01-01").toISOString(),
+  },
+  {
+    id: "ribbon",
+    name: "Ribbon",
+    emoji: "🎀",
+    is_active: true,
+    sort_order: 4,
+    description: "Decorative ribbon stickers",
+    created_at: new Date("2024-01-01").toISOString(),
+    updated_at: new Date("2024-01-01").toISOString(),
+  },
+  {
+    id: "y2k",
+    name: "Y2K Images",
+    emoji: "✨",
+    is_active: true,
+    sort_order: 5,
+    description: "Y2K-themed image stickers",
+    created_at: new Date("2024-01-01").toISOString(),
+    updated_at: new Date("2024-01-01").toISOString(),
+  },
 ];
 
 const PACK_STICKERS: Record<string, { name: string; file: string }[]> = {
@@ -39,10 +85,22 @@ const PACK_STICKERS: Record<string, { name: string; file: string }[]> = {
     { name: "Cute", file: "y2k-text-cute.png" },
     { name: "Flash", file: "y2k-text-flash.png" },
   ],
-  collage: Array.from({ length: 10 }, (_, i) => ({ name: `Collage ${i + 1}`, file: `collage/${i + 1}.png` })),
-  flowers: Array.from({ length: 10 }, (_, i) => ({ name: `Flower ${i + 1}`, file: `flowers/${i + 1}.png` })),
-  ribbon: Array.from({ length: 10 }, (_, i) => ({ name: `Ribbon ${i + 1}`, file: `ribbon/${i + 1}.png` })),
-  "y2k": Array.from({ length: 10 }, (_, i) => ({ name: `Y2K ${i + 1}`, file: `y2k/${i + 1}.png` })),
+  collage: Array.from({ length: 10 }, (_, i) => ({
+    name: `Collage ${i + 1}`,
+    file: `collage/${i + 1}.png`,
+  })),
+  flowers: Array.from({ length: 10 }, (_, i) => ({
+    name: `Flower ${i + 1}`,
+    file: `flowers/${i + 1}.png`,
+  })),
+  ribbon: Array.from({ length: 10 }, (_, i) => ({
+    name: `Ribbon ${i + 1}`,
+    file: `ribbon/${i + 1}.png`,
+  })),
+  y2k: Array.from({ length: 10 }, (_, i) => ({
+    name: `Y2K ${i + 1}`,
+    file: `y2k/${i + 1}.png`,
+  })),
 };
 
 interface PackWithStickers extends StickerPackRow {
@@ -60,7 +118,9 @@ export default function AdminStickersPage() {
   const [showCreatePackModal, setShowCreatePackModal] = useState(false);
   const [showUploadStickerModal, setShowUploadStickerModal] = useState(false);
   const [showEditPackModal, setShowEditPackModal] = useState(false);
-  const [selectedPack, setSelectedPack] = useState<PackWithStickers | null>(null);
+  const [selectedPack, setSelectedPack] = useState<PackWithStickers | null>(
+    null,
+  );
 
   // Form states
   const [packForm, setPackForm] = useState({
@@ -78,21 +138,23 @@ export default function AdminStickersPage() {
     // Load packs from local data
     const packsWithStickers = LOCAL_PACKS.map((pack) => ({
       ...pack,
-      stickers: PACK_STICKERS[pack.id]?.map((s, i) => ({
-        id: `${pack.id}-${i}`,
-        name: s.name,
-        file: s.file,
-        is_active: true,
-      })) || [],
+      stickers:
+        PACK_STICKERS[pack.id]?.map((s, i) => ({
+          id: `${pack.id}-${i}`,
+          name: s.name,
+          file: s.file,
+          is_active: true,
+        })) || [],
     }));
     setPacks(packsWithStickers);
     setLoading(false);
   }, []);
 
-  const filteredPacks = packs.filter((pack) =>
-    pack.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pack.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    pack.id.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPacks = packs.filter(
+    (pack) =>
+      pack.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pack.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      pack.id.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
   const handleTogglePackActive = async (pack: StickerPackRow) => {
@@ -102,32 +164,45 @@ export default function AdminStickersPage() {
 
       // API call would go here
       // For now, update locally
-      setPacks(packs.map(p => p.id === pack.id ? { ...p, is_active: !p.is_active } : p));
+      setPacks(
+        packs.map((p) =>
+          p.id === pack.id ? { ...p, is_active: !p.is_active } : p,
+        ),
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update pack");
     }
   };
 
   const handleToggleStickerActive = (packId: string, stickerId: string) => {
-    setPacks(packs.map(pack =>
-      pack.id === packId ? {
-        ...pack,
-        stickers: pack.stickers.map(s =>
-          s.id === stickerId ? { ...s, is_active: !s.is_active } : s
-        )
-      } : pack
-    ));
+    setPacks(
+      packs.map((pack) =>
+        pack.id === packId
+          ? {
+              ...pack,
+              stickers: pack.stickers.map((s) =>
+                s.id === stickerId ? { ...s, is_active: !s.is_active } : s,
+              ),
+            }
+          : pack,
+      ),
+    );
   };
 
   const handleDeletePack = async (packId: string) => {
-    if (!confirm("Are you sure you want to delete this pack? All stickers in it will also be deleted.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to delete this pack? All stickers in it will also be deleted.",
+      )
+    )
+      return;
 
     try {
       const savedPassword = getStoredAdminPassword();
       if (!savedPassword) throw new Error("Not authenticated");
 
       // API call would go here
-      setPacks(packs.filter(p => p.id !== packId));
+      setPacks(packs.filter((p) => p.id !== packId));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to delete pack");
     }
@@ -140,17 +215,25 @@ export default function AdminStickersPage() {
     setPacks(newPacks.map((p, i) => ({ ...p, sort_order: i + 1 })));
   };
 
-  const handleReorderStickers = (packId: string, fromIndex: number, toIndex: number) => {
-    setPacks(packs.map(pack =>
-      pack.id === packId ? {
-        ...pack,
-        stickers: [...pack.stickers].sort((a, b) => {
-          if (a.id === pack.stickers[fromIndex]?.id) return 1;
-          if (b.id === pack.stickers[fromIndex]?.id) return -1;
-          return 0;
-        })
-      } : pack
-    ));
+  const handleReorderStickers = (
+    packId: string,
+    fromIndex: number,
+    toIndex: number,
+  ) => {
+    setPacks(
+      packs.map((pack) =>
+        pack.id === packId
+          ? {
+              ...pack,
+              stickers: [...pack.stickers].sort((a, b) => {
+                if (a.id === pack.stickers[fromIndex]?.id) return 1;
+                if (b.id === pack.stickers[fromIndex]?.id) return -1;
+                return 0;
+              }),
+            }
+          : pack,
+      ),
+    );
   };
 
   const handleCreatePack = async (e: FormEvent) => {
@@ -170,7 +253,13 @@ export default function AdminStickersPage() {
 
       setPacks([...packs, newPack]);
       setShowCreatePackModal(false);
-      setPackForm({ id: "", name: "", emoji: "", description: "", sort_order: packs.length + 1 });
+      setPackForm({
+        id: "",
+        name: "",
+        emoji: "",
+        description: "",
+        sort_order: packs.length + 1,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create pack");
     }
@@ -185,7 +274,7 @@ export default function AdminStickersPage() {
 
       // Simulate upload progress
       const interval = setInterval(() => {
-        setStickerUploadProgress(prev => {
+        setStickerUploadProgress((prev) => {
           const next = prev + 10;
           if (next >= 100) {
             clearInterval(interval);
@@ -201,7 +290,6 @@ export default function AdminStickersPage() {
       // const { data, error } = await supabase.storage
       //   .from('stickers')
       //   .upload(`${selectedPack?.id}/${file.name}`, file);
-
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload sticker");
       setUploading(false);
@@ -239,7 +327,10 @@ export default function AdminStickersPage() {
         </div>
         <div className="flex items-center gap-3">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search packs..."
@@ -275,7 +366,10 @@ export default function AdminStickersPage() {
       {error && (
         <div className="p-4 bg-destructive/10 border border-destructive/30 rounded-xl">
           <p className="text-sm text-destructive font-semibold">{error}</p>
-          <button onClick={() => setError(null)} className="text-xs text-destructive/60 mt-1">
+          <button
+            onClick={() => setError(null)}
+            className="text-xs text-destructive/60 mt-1"
+          >
             Dismiss
           </button>
         </div>
@@ -298,7 +392,9 @@ export default function AdminStickersPage() {
             {filteredPacks.length === 0 ? (
               <div className="p-12 text-center text-muted-foreground">
                 <p>No sticker packs found</p>
-                <p className="text-sm mt-1">Try adjusting your search or create a new pack</p>
+                <p className="text-sm mt-1">
+                  Try adjusting your search or create a new pack
+                </p>
               </div>
             ) : (
               <div className="divide-y divide-border/50">
@@ -317,16 +413,24 @@ export default function AdminStickersPage() {
                               ? "text-foreground bg-muted/50 hover:bg-muted"
                               : "text-muted-foreground hover:bg-muted/50"
                           }`}
-                          title={pack.is_active ? "Disable pack" : "Enable pack"}
+                          title={
+                            pack.is_active ? "Disable pack" : "Enable pack"
+                          }
                         >
-                          {pack.is_active ? <Eye size={18} /> : <EyeOff size={18} />}
+                          {pack.is_active ? (
+                            <Eye size={18} />
+                          ) : (
+                            <EyeOff size={18} />
+                          )}
                         </button>
                         <div>
                           <p className="text-xl font-heading font-bold text-foreground">
                             <span className="mr-2">{pack.emoji}</span>
                             {pack.name}
                           </p>
-                          <p className="text-sm text-muted-foreground">{pack.description}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {pack.description}
+                          </p>
                         </div>
                       </div>
 
@@ -389,11 +493,16 @@ export default function AdminStickersPage() {
                             <div className="absolute inset-2 flex items-center justify-center">
                               {sticker.file.includes("y2k-text") ? (
                                 <div className="bg-gradient-to-br from-pink-400 to-purple-500 p-2 rounded-lg">
-                                  <span className="text-white font-bold text-xs">TEXT</span>
+                                  <span className="text-white font-bold text-xs">
+                                    TEXT
+                                  </span>
                                 </div>
                               ) : (
                                 <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
-                                  <ImageIcon size={24} className="text-primary/60" />
+                                  <ImageIcon
+                                    size={24}
+                                    className="text-primary/60"
+                                  />
                                 </div>
                               )}
                             </div>
@@ -401,11 +510,17 @@ export default function AdminStickersPage() {
                             {/* Overlay actions */}
                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
                               <button
-                                onClick={() => handleToggleStickerActive(pack.id, sticker.id)}
+                                onClick={() =>
+                                  handleToggleStickerActive(pack.id, sticker.id)
+                                }
                                 className="p-1.5 rounded-lg bg-background/80 backdrop-blur-sm text-foreground"
                                 title={sticker.is_active ? "Disable" : "Enable"}
                               >
-                                {sticker.is_active ? <Eye size={14} /> : <EyeOff size={14} />}
+                                {sticker.is_active ? (
+                                  <Eye size={14} />
+                                ) : (
+                                  <EyeOff size={14} />
+                                )}
                               </button>
                               <button
                                 className="p-1.5 rounded-lg bg-background/80 backdrop-blur-sm text-destructive"
@@ -423,7 +538,9 @@ export default function AdminStickersPage() {
                             )}
                           </div>
                           <div className="p-2 text-center">
-                            <p className="text-xs font-semibold truncate">{sticker.name}</p>
+                            <p className="text-xs font-semibold truncate">
+                              {sticker.name}
+                            </p>
                           </div>
                         </div>
                       ))}
@@ -454,7 +571,9 @@ export default function AdminStickersPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-6 border-b border-border flex items-center justify-between">
-              <h2 className="text-lg font-heading font-bold">Create New Pack</h2>
+              <h2 className="text-lg font-heading font-bold">
+                Create New Pack
+              </h2>
               <button
                 onClick={() => setShowCreatePackModal(false)}
                 className="p-1.5 rounded-lg hover:bg-muted/50 transition-colors"
@@ -463,7 +582,10 @@ export default function AdminStickersPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreatePack} className="p-6 flex flex-col gap-4">
+            <form
+              onSubmit={handleCreatePack}
+              className="p-6 flex flex-col gap-4"
+            >
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-semibold text-muted-foreground">
                   Pack ID *
@@ -471,7 +593,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.id}
-                  onChange={(e) => setPackForm({ ...packForm, id: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, id: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g., halloween-2024"
                   pattern="[a-z0-9-]+"
@@ -487,7 +611,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.name}
-                  onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, name: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g., Halloween Pack"
                   required
@@ -501,7 +627,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.emoji}
-                  onChange={(e) => setPackForm({ ...packForm, emoji: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, emoji: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   placeholder="e.g., 🎃"
                   maxLength={2}
@@ -515,7 +643,9 @@ export default function AdminStickersPage() {
                 </span>
                 <textarea
                   value={packForm.description}
-                  onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, description: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
                   placeholder="Describe this sticker pack..."
                 />
@@ -591,7 +721,10 @@ export default function AdminStickersPage() {
                   className="border-2 border-dashed border-border/50 rounded-2xl p-8 text-center cursor-pointer hover:border-primary/30 hover:bg-muted/50 transition-colors"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <Upload size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <Upload
+                    size={48}
+                    className="mx-auto text-muted-foreground mb-4"
+                  />
                   <p className="font-bold text-foreground mb-1">
                     Upload Sticker PNG
                   </p>
@@ -657,7 +790,11 @@ export default function AdminStickersPage() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                setPacks(packs.map(p => p.id === selectedPack.id ? { ...p, ...packForm } : p));
+                setPacks(
+                  packs.map((p) =>
+                    p.id === selectedPack.id ? { ...p, ...packForm } : p,
+                  ),
+                );
                 setShowEditPackModal(false);
                 setSelectedPack(null);
               }}
@@ -670,7 +807,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.id}
-                  onChange={(e) => setPackForm({ ...packForm, id: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, id: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground"
                   readOnly
                 />
@@ -683,7 +822,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.name}
-                  onChange={(e) => setPackForm({ ...packForm, name: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, name: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   required
                 />
@@ -696,7 +837,9 @@ export default function AdminStickersPage() {
                 <input
                   type="text"
                   value={packForm.emoji}
-                  onChange={(e) => setPackForm({ ...packForm, emoji: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, emoji: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                   maxLength={2}
                   required
@@ -709,7 +852,9 @@ export default function AdminStickersPage() {
                 </span>
                 <textarea
                   value={packForm.description}
-                  onChange={(e) => setPackForm({ ...packForm, description: e.target.value })}
+                  onChange={(e) =>
+                    setPackForm({ ...packForm, description: e.target.value })
+                  }
                   className="px-3 py-2.5 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 min-h-[80px] resize-none"
                   placeholder="Describe this sticker pack..."
                 />
