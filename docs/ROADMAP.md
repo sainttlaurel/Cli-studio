@@ -369,9 +369,9 @@ Fixes real production gaps and adds the sharing features that make the app sprea
   (stickers and text) in a single draggable list. Users can now freely drag any layer
   to any position to control stacking order.
 
-- Admin template management UI. The `templates` table introduced in v2.7 is still
-  managed through SQL. Add a lightweight protected `/admin/templates` page for
-  creating, editing, and disabling template packs without redeploying.
+- Done. Added Admin template management UI at `/admin/templates` with password protection.
+  Features: create, edit, disable templates, view all templates (including inactive), and
+  delete templates. Uses service role key for Supabase write operations via API routes.
 
 - Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
   complete. Direct Meta API posting should remain on hold until ClickStudio
@@ -387,6 +387,28 @@ Fixes real production gaps and adds the sharing features that make the app sprea
   limit relies on `session_id` stored in localStorage, making it easy to bypass.
   Consider adding an IP-based secondary limit within the upload edge function to
   better protect storage resources.
+
+---
+
+## v3.1 — Accessibility & Internationalization (Planned)
+
+- Soft dark mode using `prefers-color-scheme` to dim backgrounds for OLED phones while preserving Y2K aesthetic
+- Multi-language support (i18n) for the UI to expand international reach
+
+---
+
+## v3.2 — Event & Monetization Features (Planned)
+
+- Custom event branding with host-defined slugs (e.g., `clickstudio.app/e/emmas-wedding`) so all strips share a look and land on one gallery page
+- Event/kiosk mode with big-screen tablet UI for parties/weddings and physical printer integration
+- Sponsor/partnership banner as a dismissible footer for monetization
+
+---
+
+## v3.3 — Advanced Media Features (Planned)
+
+- Boomerang/GIF mode for short looping clips instead of static frames
+- Advanced layer editor extras with richer transforms including scale handles directly on canvas
 
 ---
 
