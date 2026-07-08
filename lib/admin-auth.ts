@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+export const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || "admin123";
 
 /** Admin client with service role key for full access */
 export function createAdminClient() {
@@ -8,7 +8,7 @@ export function createAdminClient() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY as string;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Supabase configuration missing');
+    throw new Error("Supabase configuration missing");
   }
 
   return createClient(supabaseUrl, supabaseServiceKey);
@@ -20,30 +20,30 @@ export function validateAdminPassword(password: string): boolean {
 }
 
 /** Client-side auth storage key */
-export const ADMIN_AUTH_STORAGE_KEY = 'clickstudio_admin_auth';
+export const ADMIN_AUTH_STORAGE_KEY = "clickstudio_admin_auth";
 
 /** Check if user is authenticated on client side */
 export function isAdminAuthenticated(): boolean {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === "undefined") return false;
   return sessionStorage.getItem(ADMIN_AUTH_STORAGE_KEY) !== null;
 }
 
 /** Store admin auth token */
 export function storeAdminAuth(password: string): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     sessionStorage.setItem(ADMIN_AUTH_STORAGE_KEY, password);
   }
 }
 
 /** Clear admin auth */
 export function clearAdminAuth(): void {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     sessionStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
   }
 }
 
 /** Get stored admin password for API calls */
 export function getStoredAdminPassword(): string | null {
-  if (typeof window === 'undefined') return null;
+  if (typeof window === "undefined") return null;
   return sessionStorage.getItem(ADMIN_AUTH_STORAGE_KEY);
 }
