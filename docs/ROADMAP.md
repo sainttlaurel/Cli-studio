@@ -380,21 +380,47 @@ Fixes real production gaps and adds the sharing features that make the app sprea
 Comprehensive admin features for managing content and monitoring the platform:
 
 - Admin dashboard at `/admin` with overview metrics (total strips, views, downloads, active sessions)
-- Admin layout with navigation sidebar and password protection
-- Sticker pack management UI at `/admin/stickers`: upload, organize, enable/disable custom sticker packs, preview stickers, bulk import from ZIP files
-- Gallery moderation at `/admin/gallery`: view all public/private strips, search and filter, flag inappropriate content, delete entries, feature selected strips, view details
-- User/session management at `/admin/sessions`: view active sessions, strip counts per session, block/unblock sessions, IP tracking
-- Analytics dashboard at `/admin/analytics`: time-series charts for daily activity, popular templates and filters, device breakdown, pie charts
-- System settings at `/admin/settings`: configure rate limits (strips per hour/day per session), toggle maintenance mode, manage feature flags (PWA install prompt, gallery visibility, etc.), set default template
-- Audit log at `/admin/audit`: track all admin actions with timestamps, admin identifier, IP address, user agent, filter by action and resource type
+- Admin layout with navigation sidebar and password protection (single password for all admins)
+- Sticker pack management UI at `/admin/stickers`: enable/disable packs, toggle individual stickers
+- Gallery moderation at `/admin/gallery`: view all strips, moderate content
+- User/session management at `/admin/sessions`: view active sessions, block/unblock (client-side state)
+- Analytics dashboard at `/admin/analytics`: charts and statistics
+- System settings at `/admin/settings`: configure system parameters
+- Audit log at `/admin/audit`: track admin actions
+- Template management at `/admin/templates`: CRUD operations for templates
 
-API routes:
+Initial API routes:
 - `/api/admin` - GET dashboard metrics
-- `/api/admin` - GET audit logs (with filters)
-- `/api/admin` - GET sessions data
-- `/api/admin/templates` - existing CRUD operations for templates
+- `/api/admin/login` - POST authentication
+- `/api/admin/templates` - CRUD for templates
 
 ---
+
+## v3.0.2 — Live Admin Data Integration (Done)
+
+Connected admin pages to live Supabase data, replacing mock data:
+
+- Analytics dashboard now fetches real time-series data from Supabase
+  - Daily activity charts show actual strip creation, views, and downloads
+  - Popular templates and filters reflect real usage statistics
+  - Range selector (7d, 30d, 90d, year, all) filters data accordingly
+
+- Sessions page now fetches real session data from `/api/admin/sessions`
+  - Shows real Supabase user IDs as session identifiers
+  - Displays actual strip counts per session
+  - Shows creation and last active timestamps from real data
+  - Search and pagination work with live data
+  - Note: IP address and user agent show as 'N/A' until database schema is updated
+
+- Sticker visibility toggles in admin now sync to website editor
+  - Uses localStorage with storage event listeners for real-time updates
+  - Changes in admin instantly reflect in editor palette
+  - Works within same browser; cross-device sync requires database persistence
+
+New API routes:
+  - `/api/admin/analytics?range=30d` - Returns time series, popular items, and totals
+  - `/api/admin/sessions?page=1&pageSize=20&search=query` - Returns paginated session data
+
 
 ## v3.0.2 — Platform Hardening (Planned)
 

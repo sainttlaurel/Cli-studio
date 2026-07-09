@@ -17,18 +17,6 @@ import {
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { SessionRow } from "@/lib/admin-types";
 
-function generateMockSessions(count: number): SessionRow[] {
-  return Array.from({ length: count }, (_, i) => ({
-    id: `session-${Math.floor(Math.random() * 1000000)}`,
-    created_at: new Date(Date.now() - i * 1000 * 60 * 60 * 24).toISOString(),
-    last_active_at: new Date(Date.now() - i * 1000 * 60 * 30).toISOString(),
-    strip_count: Math.floor(Math.random() * 20),
-    ip_address: `192.168.${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}`,
-    user_agent: Math.random() > 0.5 ? "Chrome/Mac" : "Safari/iPhone",
-    is_blocked: Math.random() > 0.9,
-    blocked_reason: Math.random() > 0.9 ? "Rate limit exceeded" : null,
-  }));
-}
 
 export default function AdminSessionsPage() {
   const [sessions, setSessions] = useState<SessionRow[]>([]);
@@ -43,24 +31,76 @@ export default function AdminSessionsPage() {
 
   const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
+  const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
+
+  // Fetch from API
   useEffect(() => {
     async function fetchSessions() {
       try {
         setLoading(true);
+        setError(null);
         const savedPassword = getStoredAdminPassword();
         if (!savedPassword) throw new Error("Not authenticated");
-        const mockSessions = generateMockSessions(100);
-        setSessions(mockSessions);
+        
+        const response = await fetch(
+          `/api/admin/sessions?page=${currentPage}&pageSize=${itemsPerPage}`,
+          {
+            headers: {
+              "x-admin-password": savedPassword,
+            },
+          }
+        );
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const apiData = await response.json();
+        setSessions(apiData.data || []);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "Failed to load sessions",
+          err instanceof Error ? err.message : "Failed to load sessions"
         );
       } finally {
         setLoading(false);
       }
     }
     fetchSessions();
-  }, []);
+  }, [currentPage, itemsPerPage]);
+
+  // Search functionality
+  useEffect(() => {
+    if (searchQuery) {
+      const timer = setTimeout(async () => {
+        try {
+          setLoading(true);
+          const savedPassword = getStoredAdminPassword();
+          if (!savedPassword) return;
+          
+          const response = await fetch(
+            `/api/admin/sessions?page=1&pageSize=${itemsPerPage}&search=${encodeURIComponent(searchQuery)}`,
+            {
+              headers: {
+                "x-admin-password": savedPassword,
+              },
+            }
+          );
+          
+          if (response.ok) {
+            const apiData = await response.json();
+            setSessions(apiData.data || []);
+            setCurrentPage(1);
+          }
+        } catch (err) {
+          console.error("Search failed:", err);
+        } finally {
+          setLoading(false);
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [searchQuery, itemsPerPage]);
+
 
   const filteredSessions = sessions.filter((session) => {
     if (!searchQuery) return true;
@@ -104,6 +144,30 @@ export default function AdminSessionsPage() {
     if (!confirm(`Are you sure you want to delete session ${session.id}?`))
       return;
     setSessions(sessions.filter((s) => s.id !== session.id));
+  };
+
+  const handleRefresh = async () => {
+    try {
+      setLoading(true);
+      const savedPassword = getStoredAdminPassword();
+      if (!savedPassword) return;
+      const response = await fetch(
+        `/api/admin/sessions?page=${currentPage}&pageSize=${itemsPerPage}`,
+        {
+          headers: {
+            "x-admin-password": savedPassword,
+          },
+        }
+      );
+      if (response.ok) {
+        const apiData = await response.json();
+        setSessions(apiData.data || []);
+      }
+    } catch (err) {
+      console.error("Refresh failed:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const formatDate = (dateString: string) => {
@@ -434,9 +498,8 @@ export default function AdminSessionsPage() {
         </div>
       )}
 
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-sm text-amber-600">
-        <strong>Note:</strong> Session data will be pulled from Supabase in
-        production. Current view shows mock data.
+      <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-3 text-sm text-blue-600 text-center">
+        <strong>Note:</strong> Showing live session data from Supabase. IP and User Agent will show as &quot;N/A&quot; until database schema is updated.
       </div>
     </div>
   );

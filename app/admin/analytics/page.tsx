@@ -5,56 +5,7 @@ import { BarChart3, LineChart, PieChart, Calendar, Clock, Users, Download, Eye, 
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { AnalyticsTimeSeries, PopularItem } from "@/lib/admin-types";
 
-function generateMockData() {
-  const dates = Array.from({ length: 30 }, (_, i) => {
-    const date = new Date();
-    date.setDate(date.getDate() - (29 - i));
-    return date;
-  });
 
-  const timeSeries: AnalyticsTimeSeries[] = dates.map(date => ({
-    date: date.toISOString().split('T')[0],
-    strips: Math.floor(Math.random() * 50) + 10,
-    views: Math.floor(Math.random() * 200) + 50,
-    downloads: Math.floor(Math.random() * 100) + 20,
-  }));
-
-  const popularTemplates: PopularItem[] = [
-    { id: "pink", name: "Y2K Pink", count: 456, percentage: 28 },
-    { id: "blue", name: "Baby Blue", count: 389, percentage: 24 },
-    { id: "mint", name: "Mint Pop", count: 212, percentage: 13 },
-    { id: "lemon", name: "Lemon Flash", count: 187, percentage: 12 },
-    { id: "coral", name: "Coral Crush", count: 156, percentage: 10 },
-    { id: "lavender", name: "Lavender Dream", count: 123, percentage: 8 },
-    { id: "grape", name: "Grape Beam", count: 98, percentage: 6 },
-    { id: "other", name: "Other", count: 105, percentage: 9 },
-  ];
-
-  const popularFilters: PopularItem[] = [
-    { id: "original", name: "Original", count: 892, percentage: 45 },
-    { id: "pop", name: "Pop", count: 456, percentage: 23 },
-    { id: "faded", name: "Faded", count: 321, percentage: 16 },
-    { id: "bw", name: "Black & White", count: 189, percentage: 9 },
-    { id: "vintage", name: "Vintage", count: 123, percentage: 7 },
-  ];
-
-  const deviceBreakdown = {
-    desktop: 1247,
-    mobile: 2456,
-    tablet: 312,
-    other: 45,
-  };
-
-  const browserBreakdown = {
-    chrome: 1892,
-    safari: 1567,
-    firefox: 456,
-    edge: 312,
-    other: 89,
-  };
-
-  return { timeSeries, popularTemplates, popularFilters, deviceBreakdown, browserBreakdown };
-}
 
 const RANGES = [
   { value: "7d", label: "Last 7 days" },
@@ -214,7 +165,7 @@ function DeviceChart({ data }: { data: { desktop: number; mobile: number; tablet
 }
 
 export default function AdminAnalyticsPage() {
-  const [data, setData] = useState<ReturnType<typeof generateMockData> | null>(null);
+  const [data, setData] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [range, setRange] = useState("30d");
@@ -225,7 +176,19 @@ export default function AdminAnalyticsPage() {
         setLoading(true);
         const savedPassword = getStoredAdminPassword();
         if (!savedPassword) throw new Error("Not authenticated");
-        setData(generateMockData());
+        // Fetch from API with authentication
+        const response = await fetch(`/api/admin/analytics?range=${range}`, {
+          headers: {
+            "x-admin-password": savedPassword,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const apiData = await response.json();
+        setData(apiData);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load analytics");
       } finally {
@@ -253,10 +216,12 @@ export default function AdminAnalyticsPage() {
 
   if (!data) return null;
 
-  const totalStrips = data.timeSeries.reduce((sum, d) => sum + d.strips, 0);
-  const totalViews = data.timeSeries.reduce((sum, d) => sum + d.views, 0);
-  const totalDownloads = data.timeSeries.reduce((sum, d) => sum + d.downloads, 0);
-  const avgStripsPerDay = Math.round(totalStrips / data.timeSeries.length);
+  const totalStrips = data.totals?.strips || 0;
+  const totalViews = data.totals?.views || 0;
+  const totalDownloads = data.totals?.downloads || 0;
+  const avgStripsPerDay = data.timeSeries.length > 0
+    ? Math.round(totalStrips / data.timeSeries.length)
+    : 0;
 
   return (
     <div className="space-y-6">
