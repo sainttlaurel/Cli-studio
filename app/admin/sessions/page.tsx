@@ -31,7 +31,6 @@ export default function AdminSessionsPage() {
 
   const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
-  const ITEMS_PER_PAGE_OPTIONS = [10, 20, 50, 100];
 
   // Fetch from API
   useEffect(() => {
