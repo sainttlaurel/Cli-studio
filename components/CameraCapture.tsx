@@ -124,7 +124,7 @@ export function CameraCapture() {
             playsInline
             muted
             onLoadedMetadata={handleLoadedMetadata}
-            className={`w-full h-full object-cover ${mirror ? '-scale-x-100' : ''}`}
+            className={`w-full h-full object-contain ${mirror ? '-scale-x-100' : ''}`}
           />
         )}
 

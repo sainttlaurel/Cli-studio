@@ -68,7 +68,7 @@ export default async function GalleryPage() {
                 className="bg-background rounded-2xl border border-border/80 shadow-md overflow-hidden block hover:shadow-lg transition-shadow"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={strip.image_url} alt="Shared photo strip" className="w-full aspect-[4/3] object-cover" />
+                <img src={strip.image_url} alt="Shared photo strip" className="w-full aspect-[4/3] object-contain" />
                 {strip.caption && (
                   <p className="text-[11px] font-bold text-foreground p-2 text-center truncate">{strip.caption}</p>
                 )}

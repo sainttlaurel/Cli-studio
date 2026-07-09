@@ -161,7 +161,7 @@ export default function HistoryPage() {
                   <img
                     src={strip.image_url}
                     alt="Photo strip"
-                    className="w-full aspect-[4/3] object-cover"
+                    className="w-full aspect-[4/3] object-contain"
                   />
                 </Link>
                 <div className="p-3 flex flex-col gap-2">

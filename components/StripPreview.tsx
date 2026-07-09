@@ -86,14 +86,14 @@ export function StripPreview() {
 
   return (
     <div
-      className={`w-full min-h-[28rem] lg:min-h-[32rem] bg-background rounded-3xl border border-border/80 shadow-lg overflow-hidden flex flex-col p-5 sm:p-6 lg:p-8`}
+      className={`w-full min-h-[22rem] sm:min-h-[28rem] lg:min-h-[32rem] bg-background rounded-3xl border border-border/80 shadow-lg overflow-hidden flex flex-col p-4 sm:p-5 lg:p-8`}
     >
       <div
-        className={`w-full h-full flex-1 bg-background p-4 sm:p-5 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative flex flex-col justify-center`}
+        className={`w-full h-full flex-1 bg-background p-3 sm:p-4 lg:p-5 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative flex flex-col justify-center`}
       >
         <div
           ref={stripRef}
-          className="relative flex flex-col gap-3 sm:gap-4 bg-background p-3 sm:p-4 rounded-2xl border border-border/40 [container-type:inline-size] h-full"
+          className="relative flex flex-col gap-2 sm:gap-3 lg:gap-4 bg-background p-2 sm:p-3 lg:p-4 rounded-2xl border border-border/40 [container-type:inline-size] h-full"
         >
           {frames.length === 0 && (
             <div className="aspect-[4/3] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -103,13 +103,13 @@ export function StripPreview() {
           {frames.map((src, i) => (
             <div
               key={i}
-              className="relative aspect-[4/3] rounded-xl overflow-hidden border border-primary/10"
+              className="relative aspect-[4/3] rounded-xl overflow-hidden border border-primary/10 flex items-center justify-center"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src}
                 alt={`Shot ${i + 1}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 style={{ filter: filterCss }}
               />
             </div>

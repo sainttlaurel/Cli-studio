@@ -38,7 +38,7 @@ export default function StudioPage() {
                         <img
                           src={frame}
                           alt={`Frame ${i + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain"
                         />
                         <button
                           onClick={() => removeFrame(i)}

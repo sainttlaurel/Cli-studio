@@ -251,7 +251,7 @@ export function EditorPanel() {
                       <img
                         src={thumbnailSrc}
                         alt={f.label}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain"
                         style={{ filter: buildFilterCss(f.key, 0, 0) }}
                       />
                     ) : null}
