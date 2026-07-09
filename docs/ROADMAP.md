@@ -422,9 +422,29 @@ New API routes:
   - `/api/admin/sessions?page=1&pageSize=20&search=query` - Returns paginated session data
 
 
-## v3.0.2 — Platform Hardening (Planned)
+## v3.0.3 — Platform Hardening & Data Completeness (Planned)
 
-Infrastructure improvements for security, reliability, and protection:
+
+### Priority: Data Tracking Completion
+
+- Add `ip_address` and `user_agent` columns to `strips` table
+  - Update `upload-strip` edge function to capture and store IP/user agent
+  - Sessions page will then display real IP addresses and browser info
+
+- Store sticker visibility config in database
+  - Replace localStorage with Supabase table for cross-device sync
+  - Sticker toggles will sync across all devices and browsers
+
+- Store blocked sessions list in database
+  - Make block/unblock persistent across page refreshes and devices
+
+- Store admin settings in database
+  - Rate limits, maintenance mode, feature flags persisted in Supabase
+
+### Priority: Platform Hardening (Original v3.0.2 items)
+
+
+Infrastructure improvements for security, reliability, and complete data tracking:
 
 - Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
   complete. Direct Meta API posting should remain on hold until ClickStudio
