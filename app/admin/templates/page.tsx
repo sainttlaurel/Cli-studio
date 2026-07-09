@@ -2,10 +2,18 @@
 
 import { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Edit2, Trash2, Check, X, Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  Plus,
+  Edit2,
+  Trash2,
+  Check,
+  X,
+  Eye,
+  EyeOff,
+  Loader2,
+} from "lucide-react";
+import { getStoredAdminPassword } from "@/lib/admin-auth";
 import { LOCAL_TEMPLATES } from "@/lib/templates";
-
-// Password is validated via API, not hardcoded on client
 
 interface TemplateRow {
   id: string;
@@ -34,58 +42,43 @@ const DEFAULT_TEMPLATE: Partial<TemplateRow> = {
 
 export default function AdminTemplatesPage() {
   const router = useRouter();
-  const [password, setPassword] = useState("");
-  const [authenticated, setAuthenticated] = useState(false);
+
   const [templates, setTemplates] = useState<TemplateRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // Form state for create/edit
-  const [editingTemplate, setEditingTemplate] = useState<TemplateRow | null>(null);
-  const [formData, setFormData] = useState<Partial<TemplateRow>>(DEFAULT_TEMPLATE);
+  const [editingTemplate, setEditingTemplate] = useState<TemplateRow | null>(
+    null,
+  );
+  const [formData, setFormData] =
+    useState<Partial<TemplateRow>>(DEFAULT_TEMPLATE);
   const [submitting, setSubmitting] = useState(false);
 
-  // Check authentication
+  // Fetch templates on mount
   useEffect(() => {
-    // Check for password in sessionStorage (for page refresh)
-    const savedAuth = sessionStorage.getItem("admin_auth");
-    if (savedAuth) {
-      setAuthenticated(true);
-      fetchTemplates();
-    }
+    fetchTemplates();
   }, []);
 
-  const handlePasswordSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      // Validate password via API
-      const response = await fetch("/api/admin/templates", {
-        headers: {
-          "x-admin-password": password,
-        },
-      });
-
-      if (response.ok) {
-        setAuthenticated(true);
-        sessionStorage.setItem("admin_auth", password);
-        fetchTemplates();
-      } else {
-        setError("Incorrect password");
-      }
-    } catch (err) {
-      setError("Failed to validate password");
+  const getAdminPassword = () => {
+    const password = getStoredAdminPassword();
+    if (!password) {
+      router.push("/admin/login");
+      return null;
     }
+    return password;
   };
 
   const fetchTemplates = async () => {
     setLoading(true);
     setError(null);
     try {
-      const savedPassword = sessionStorage.getItem("admin_auth");
+      const password = getAdminPassword();
+      if (!password) return;
+
       const response = await fetch("/api/admin/templates", {
         headers: {
-          "x-admin-password": savedPassword || "",
+          "x-admin-password": password,
         },
       });
 
@@ -98,7 +91,7 @@ export default function AdminTemplatesPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load templates");
       // Fallback to local templates
-      setTemplates(LOCAL_TEMPLATES.map(t => ({ ...t, is_active: true })));
+      setTemplates(LOCAL_TEMPLATES.map((t) => ({ ...t, is_active: true })));
     } finally {
       setLoading(false);
     }
@@ -108,7 +101,10 @@ export default function AdminTemplatesPage() {
     setEditingTemplate(null);
     setFormData({
       ...DEFAULT_TEMPLATE,
-      sort_order: templates.length > 0 ? Math.max(...templates.map(t => t.sort_order)) + 1 : 10,
+      sort_order:
+        templates.length > 0
+          ? Math.max(...templates.map((t) => t.sort_order)) + 1
+          : 10,
     });
   };
 
@@ -121,12 +117,14 @@ export default function AdminTemplatesPage() {
     if (!confirm("Are you sure you want to delete this template?")) return;
 
     try {
-      const savedPassword = sessionStorage.getItem("admin_auth");
+      const password = getAdminPassword();
+      if (!password) return;
+
       const response = await fetch("/api/admin/templates", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": savedPassword || "",
+          "x-admin-password": password,
         },
         body: JSON.stringify({ id }),
       });
@@ -136,18 +134,22 @@ export default function AdminTemplatesPage() {
       // Refresh the list
       fetchTemplates();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete template");
+      setError(
+        err instanceof Error ? err.message : "Failed to delete template",
+      );
     }
   };
 
   const handleToggleActive = async (template: TemplateRow) => {
     try {
-      const savedPassword = sessionStorage.getItem("admin_auth");
+      const password = getAdminPassword();
+      if (!password) return;
+
       const response = await fetch("/api/admin/templates", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": savedPassword || "",
+          "x-admin-password": password,
         },
         body: JSON.stringify({
           id: template.id,
@@ -160,7 +162,9 @@ export default function AdminTemplatesPage() {
       // Refresh the list
       fetchTemplates();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update template");
+      setError(
+        err instanceof Error ? err.message : "Failed to update template",
+      );
     }
   };
 
@@ -175,15 +179,19 @@ export default function AdminTemplatesPage() {
         id: formData.id || `custom-${Date.now()}`,
       };
 
-      const url = editingTemplate ? `/api/admin/templates` : `/api/admin/templates`;
+      const url = editingTemplate
+        ? `/api/admin/templates`
+        : `/api/admin/templates`;
       const method = editingTemplate ? "PUT" : "POST";
 
-      const savedPassword = sessionStorage.getItem("admin_auth");
+      const password = getAdminPassword();
+      if (!password) return;
+
       const response = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          "x-admin-password": savedPassword || "",
+          "x-admin-password": password,
         },
         body: JSON.stringify(payload),
       });
@@ -204,60 +212,17 @@ export default function AdminTemplatesPage() {
     }
   };
 
-  const handleChange = (field: keyof TemplateRow, value: string | number | boolean) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleChange = (
+    field: keyof TemplateRow,
+    value: string | number | boolean,
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen w-full bg-background flex flex-col items-center justify-center p-6">
-        <div className="bg-background rounded-3xl border border-border/80 shadow-lg p-8 w-full max-w-md">
-          <h1 className="text-2xl font-heading font-bold text-center mb-6">
-            Admin Login
-          </h1>
-          <form onSubmit={handlePasswordSubmit} className="flex flex-col gap-4">
-            <label className="flex flex-col gap-1.5">
-              <span className="text-sm font-semibold text-muted-foreground">Password</span>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  setError(null);
-                }}
-                className="px-4 py-2.5 bg-secondary/50 border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                placeholder="Enter admin password"
-                required
-              />
-            </label>
-            {error && (
-              <p className="text-sm text-destructive font-semibold">{error}</p>
-            )}
-            <button
-              type="submit"
-              className="w-full py-3 bg-primary hover:bg-primary/90 text-primary-foreground font-heading font-bold rounded-xl transition-colors shadow-lg shadow-primary/30"
-            >
-              Sign In
-            </button>
-          </form>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="min-h-screen w-full bg-background p-6">
+    <div className="w-full bg-background p-6">
       <header className="flex items-center justify-between mb-8">
         <h1 className="text-2xl font-heading font-bold">Template Management</h1>
-        <button
-          onClick={() => {
-            sessionStorage.removeItem("admin_auth");
-            setAuthenticated(false);
-          }}
-          className="px-4 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-sm font-bold rounded-xl transition-colors"
-        >
-          Sign Out
-        </button>
       </header>
 
       {error && (
@@ -308,7 +273,8 @@ export default function AdminTemplatesPage() {
                   <div className="min-w-0">
                     <p className="font-bold text-foreground">{template.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      ID: {template.id} | Category: {template.category} | Order: {template.sort_order}
+                      ID: {template.id} | Category: {template.category} | Order:{" "}
+                      {template.sort_order}
                     </p>
                   </div>
                 </div>
@@ -323,7 +289,11 @@ export default function AdminTemplatesPage() {
                     }`}
                     title={template.is_active ? "Disable" : "Enable"}
                   >
-                    {template.is_active ? <Eye size={16} /> : <EyeOff size={16} />}
+                    {template.is_active ? (
+                      <Eye size={16} />
+                    ) : (
+                      <EyeOff size={16} />
+                    )}
                   </button>
                   <button
                     onClick={() => handleEdit(template)}
@@ -378,7 +348,9 @@ export default function AdminTemplatesPage() {
             <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Template ID *</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Template ID *
+                  </span>
                   <input
                     type="text"
                     value={formData.id || ""}
@@ -390,7 +362,9 @@ export default function AdminTemplatesPage() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Name *</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Name *
+                  </span>
                   <input
                     type="text"
                     value={formData.name || ""}
@@ -402,7 +376,9 @@ export default function AdminTemplatesPage() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Hex Color *</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Hex Color *
+                  </span>
                   <input
                     type="color"
                     value={formData.hex_color || "#FF1493"}
@@ -412,7 +388,9 @@ export default function AdminTemplatesPage() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Category</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Category
+                  </span>
                   <input
                     type="text"
                     value={formData.category || ""}
@@ -423,44 +401,60 @@ export default function AdminTemplatesPage() {
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Border Class</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Border Class
+                  </span>
                   <input
                     type="text"
                     value={formData.border_class || ""}
-                    onChange={(e) => handleChange("border_class", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("border_class", e.target.value)
+                    }
                     className="px-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="e.g., border-orange-500"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Accent Class</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Accent Class
+                  </span>
                   <input
                     type="text"
                     value={formData.accent_class || ""}
-                    onChange={(e) => handleChange("accent_class", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("accent_class", e.target.value)
+                    }
                     className="px-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="e.g., bg-orange-500"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Paper Class</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Paper Class
+                  </span>
                   <input
                     type="text"
                     value={formData.paper_class || ""}
-                    onChange={(e) => handleChange("paper_class", e.target.value)}
+                    onChange={(e) =>
+                      handleChange("paper_class", e.target.value)
+                    }
                     className="px-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="e.g., bg-orange-50"
                   />
                 </label>
 
                 <label className="flex flex-col gap-1.5">
-                  <span className="text-sm font-semibold text-muted-foreground">Sort Order</span>
+                  <span className="text-sm font-semibold text-muted-foreground">
+                    Sort Order
+                  </span>
                   <input
                     type="number"
                     value={formData.sort_order || 0}
-                    onChange={(e) => handleChange("sort_order", parseInt(e.target.value) || 0)}
+                    onChange={(e) =>
+                      handleChange("sort_order", parseInt(e.target.value) || 0)
+                    }
                     className="px-3 py-2 bg-secondary/50 border border-border rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                     placeholder="e.g., 10"
                   />
@@ -474,7 +468,9 @@ export default function AdminTemplatesPage() {
                   onChange={(e) => handleChange("is_active", e.target.checked)}
                   className="w-4 h-4 rounded border-border text-primary focus:ring-primary/20"
                 />
-                <span className="text-sm font-semibold text-muted-foreground">Active</span>
+                <span className="text-sm font-semibold text-muted-foreground">
+                  Active
+                </span>
               </label>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-border/50">

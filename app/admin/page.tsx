@@ -15,7 +15,7 @@ import {
   Calendar,
   Plus,
 } from "lucide-react";
-import { createAdminClient } from "@/lib/admin-auth";
+import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { DashboardMetrics, PopularItem } from "@/lib/admin-types";
 
 const STATIC_METRICS: DashboardMetrics = {
@@ -263,16 +263,57 @@ function DateRangeSelector() {
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
+  const [apiError, setApiError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchMetrics() {
       try {
         setLoading(true);
-        // For now, use static metrics
-        // In production, this would fetch from an API
-        setMetrics(STATIC_METRICS);
+        setApiError(null);
+
+        const password = getStoredAdminPassword();
+        if (!password) {
+          throw new Error("Not authenticated");
+        }
+
+        const response = await fetch("/api/admin", {
+          headers: {
+            "x-admin-password": password,
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch metrics");
+        }
+
+        const data = await response.json();
+
+        // Map API response to DashboardMetrics format
+        const mappedMetrics: DashboardMetrics = {
+          totalStrips: data.totalStrips || 0,
+          totalViews: data.totalViews || 0,
+          totalDownloads: data.totalDownloads || 0,
+          activeSessions: data.activeSessions || 0,
+          publicStrips: data.publicStrips || 0,
+          privateStrips: data.privateStrips || 0,
+          recentlyCreated: 0, // Not in API response yet
+          popularTemplates: data.popularTemplates
+            ? data.popularTemplates.map((t: any) => ({
+                name: t.name || t.id,
+                id: t.id || t.name,
+                count: t.count || 0,
+                percentage: t.percentage || 0,
+              }))
+            : [],
+          popularStickers: [], // Not in API response yet
+        };
+
+        setMetrics(mappedMetrics);
       } catch (error) {
         console.error("Failed to fetch metrics:", error);
+        setApiError("Failed to load dashboard data. Please try again.");
+        // Fallback to static metrics for demo
+        setMetrics(STATIC_METRICS);
       } finally {
         setLoading(false);
       }
@@ -298,6 +339,12 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
+      {/* Error banner */}
+      {apiError && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-4 text-amber-600 text-sm">
+          {apiError}
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>

@@ -15,6 +15,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { isAdminAuthenticated, clearAdminAuth } from "@/lib/admin-auth";
 
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -34,20 +35,43 @@ export default function AdminLayout({ children }: AdminLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [authenticated, setAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Authentication bypassed - admin panel is open
-  const authenticated = true;
+  // Check authentication on mount and route changes
+  useEffect(() => {
+    const checkAuth = () => {
+      const isAuth = isAdminAuthenticated();
+      setAuthenticated(isAuth);
+      setLoading(false);
+    };
+    checkAuth();
+  }, [pathname]);
+
+  // Redirect unauthenticated users to login
+  useEffect(() => {
+    if (!loading && !authenticated && pathname !== "/admin/login") {
+      router.push("/admin/login");
+    }
+  }, [loading, authenticated, pathname, router]);
 
   const handleLogout = () => {
-    router.push("/");
+    clearAdminAuth();
+    setAuthenticated(false);
+    router.push("/admin/login");
   };
 
-  // Redirect /admin/login to /admin
-  if (pathname === "/admin/login") {
-    useEffect(() => {
-      router.push("/admin");
-    }, [router]);
-    return null;
+  // Show loading state or redirect to login if not authenticated
+  if (loading) {
+    return (
+      <div className="min-h-screen w-full bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!authenticated && pathname !== "/admin/login") {
+    return null; // Will be redirected by useEffect
   }
 
   return (
