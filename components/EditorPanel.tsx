@@ -23,12 +23,12 @@ import {
 } from "@/lib/store";
 import type { FilterKey, FontFamily, LayerRef } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
+import { getNextStickerPosition, getStickerDefinition } from "@/lib/stickers";
 import {
-  TEXT_STICKERS,
-  IMAGE_PACKS,
-  getNextStickerPosition,
-  getStickerDefinition,
-} from "@/lib/stickers";
+  getAvailableTextStickers,
+  getAvailableImagePacks,
+} from "@/lib/sticker-config";
+import type { TextStickerDefinition, StickerPack } from "@/lib/stickers";
 import Image from "next/image";
 import { fetchTemplates, LOCAL_TEMPLATES } from "@/lib/templates";
 import { DraggableLayerList } from "@/components/DraggableLayerList";
@@ -63,6 +63,30 @@ export function EditorPanel() {
   const [draftColor, setDraftColor] = useState("#BE185D");
   const [draftFont, setDraftFont] = useState<FontFamily>("fredoka");
   const [draftSize, setDraftSize] = useState(8);
+  // Available stickers based on admin configuration
+  const [availableTextStickers, setAvailableTextStickers] = useState<
+    TextStickerDefinition[]
+  >([]);
+  const [availableImagePacks, setAvailableImagePacks] = useState<StickerPack[]>(
+    [],
+  );
+
+  // Load and update available stickers from config
+  useEffect(() => {
+    setAvailableTextStickers(getAvailableTextStickers());
+    setAvailableImagePacks(getAvailableImagePacks());
+
+    // Listen for changes from other tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === "clickstudio-sticker-config") {
+        setAvailableTextStickers(getAvailableTextStickers());
+        setAvailableImagePacks(getAvailableImagePacks());
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
+  }, []);
   const {
     frames,
     filter,
@@ -370,7 +394,7 @@ export function EditorPanel() {
                 >
                   ✨ Y2K Text
                 </button>
-                {IMAGE_PACKS.map((pack) => (
+                {availableImagePacks.map((pack) => (
                   <button
                     key={pack.id}
                     onClick={() => setStickerPack(pack.id)}
@@ -389,7 +413,7 @@ export function EditorPanel() {
             {/* Sticker grid */}
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
               {stickerPack === "text"
-                ? TEXT_STICKERS.map((sticker) => (
+                ? availableTextStickers.map((sticker) => (
                     <button
                       key={sticker.key}
                       onClick={() => {
@@ -422,8 +446,9 @@ export function EditorPanel() {
                       </span>
                     </button>
                   ))
-                : IMAGE_PACKS.find((p) => p.id === stickerPack)?.stickers.map(
-                    (sticker) => (
+                : availableImagePacks
+                    .find((p) => p.id === stickerPack)
+                    ?.stickers.map((sticker) => (
                       <button
                         key={sticker.key}
                         onClick={() => {
@@ -450,8 +475,7 @@ export function EditorPanel() {
                           {sticker.label}
                         </span>
                       </button>
-                    ),
-                  )}
+                    ))}
             </div>
 
             {/* Placed stickers list */}

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { StickerPackRow, StickerRow } from "@/lib/admin-types";
+import { getStickerConfig, savePacksConfig } from "@/lib/sticker-config";
 
 // Local sticker packs for now (will migrate to DB)
 const LOCAL_PACKS = [
@@ -146,7 +147,41 @@ export default function AdminStickersPage() {
           is_active: true,
         })) || [],
     }));
-    setPacks(packsWithStickers);
+
+    // Merge with saved configuration from localStorage
+    const config = getStickerConfig();
+    const packsWithConfig = packsWithStickers.map((pack) => {
+      const packConfig = config.packs[pack.id];
+      return {
+        ...pack,
+        is_active: packConfig?.is_active !== false ? pack.is_active : false,
+        stickers: pack.stickers.map((sticker) => {
+          // Map admin sticker id to sticker key
+          let stickerKey: string | null = null;
+          if (pack.id === "y2k-text") {
+            const textKeys = ["love", "xoxo", "bff", "wow", "cute", "flash"];
+            const index = parseInt(sticker.id.split("-").pop() || "");
+            stickerKey = textKeys[index] || null;
+          } else {
+            const parts = sticker.id.split("-");
+            if (parts.length >= 2) {
+              const idx = parseInt(parts[parts.length - 1]);
+              if (!isNaN(idx)) {
+                stickerKey = `${pack.id}-${idx + 1}`;
+              }
+            }
+          }
+
+          const isActive = packConfig?.stickers[stickerKey || ""];
+          return {
+            ...sticker,
+            is_active: isActive !== undefined ? isActive : true,
+          };
+        }),
+      };
+    });
+
+    setPacks(packsWithConfig);
     setLoading(false);
   }, []);
 
@@ -162,31 +197,30 @@ export default function AdminStickersPage() {
       const savedPassword = getStoredAdminPassword();
       if (!savedPassword) throw new Error("Not authenticated");
 
-      // API call would go here
-      // For now, update locally
-      setPacks(
-        packs.map((p) =>
-          p.id === pack.id ? { ...p, is_active: !p.is_active } : p,
-        ),
+      // Update state and persist to localStorage
+      const updatedPacks = packs.map((p) =>
+        p.id === pack.id ? { ...p, is_active: !p.is_active } : p,
       );
+      setPacks(updatedPacks);
+      savePacksConfig(updatedPacks);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update pack");
     }
   };
 
   const handleToggleStickerActive = (packId: string, stickerId: string) => {
-    setPacks(
-      packs.map((pack) =>
-        pack.id === packId
-          ? {
-              ...pack,
-              stickers: pack.stickers.map((s) =>
-                s.id === stickerId ? { ...s, is_active: !s.is_active } : s,
-              ),
-            }
-          : pack,
-      ),
+    const updatedPacks = packs.map((pack) =>
+      pack.id === packId
+        ? {
+            ...pack,
+            stickers: pack.stickers.map((s) =>
+              s.id === stickerId ? { ...s, is_active: !s.is_active } : s,
+            ),
+          }
+        : pack,
     );
+    setPacks(updatedPacks);
+    savePacksConfig(updatedPacks);
   };
 
   const handleDeletePack = async (packId: string) => {
