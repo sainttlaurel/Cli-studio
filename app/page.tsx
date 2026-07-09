@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Camera, Sparkles, Flame, Zap, Heart, Smartphone, Star, Images, Clock, MessageCircle } from 'lucide-react';
 import { WhatsNewButton } from '@/components/WhatsNewModal';
+import { LanguageDropdown } from '@/components/LanguageSwitcher';
 
 const TESTIMONIALS = [
   {
@@ -56,6 +57,7 @@ export default function LandingPage() {
               <span className="hidden sm:inline">{label}</span>
             </Link>
           ))}
+          <LanguageDropdown />
           <WhatsNewButton />
           <span className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1 bg-secondary text-secondary-foreground text-xs font-semibold rounded-full">
             <Sparkles size={14} /> No App Install Needed
@@ -95,7 +97,7 @@ export default function LandingPage() {
             >
               <Zap className="group-hover:animate-bounce" size={20} />
               <span>Start the Studio</span>
-              <span className="absolute -top-2 -right-2 bg-yellow-300 text-yellow-950 text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-md rotate-12 shadow-sm border border-yellow-400">
+              <span className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-md rotate-12 shadow-sm border border-border">
                 Free
               </span>
             </Link>
@@ -120,7 +122,7 @@ export default function LandingPage() {
         <div className="flex-1 relative w-full max-w-md lg:max-w-none flex justify-center">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/30 rounded-[2.5rem] blur-2xl -z-10 scale-95" />
           <div className="relative bg-background p-4 rounded-3xl shadow-2xl border-4 border-primary/20 rotate-3 hover:rotate-0 transition-transform duration-500 max-w-sm">
-            <Star className="absolute -top-4 -left-4 text-yellow-400" size={28} />
+            <Star className="absolute -top-4 -left-4 text-tertiary" size={28} />
             <Heart className="absolute -bottom-3 -right-3 text-primary" size={28} />
             <div className="flex flex-col gap-3">
               <div className="relative overflow-hidden rounded-xl border-2 border-primary/10 aspect-[4/3] bg-gradient-to-br from-primary/30 to-secondary/40 flex items-center justify-center">

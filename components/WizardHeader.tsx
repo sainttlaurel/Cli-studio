@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { Camera, Home, Images, Clock, MessageCircle } from 'lucide-react';
 import { WhatsNewButton } from '@/components/WhatsNewModal';
+import { LanguageDropdown } from '@/components/LanguageSwitcher';
 
 const STEPS = ['Start', 'Shoot', 'Edit', 'Export'];
 
@@ -70,6 +71,7 @@ export function WizardHeader({ step }: { step: number }) {
           </Link>
         ))}
         <WhatsNewButton compact />
+        <LanguageDropdown />
         <Link
           href="/"
           className="px-3 py-1.5 bg-secondary text-secondary-foreground text-xs font-bold rounded-xl transition-all flex items-center gap-1"

@@ -380,93 +380,47 @@ Fixes real production gaps and adds the sharing features that make the app sprea
 Comprehensive admin features for managing content and monitoring the platform:
 
 - Admin dashboard at `/admin` with overview metrics (total strips, views, downloads, active sessions)
-- Admin layout with navigation sidebar and password protection (single password for all admins)
-- Sticker pack management UI at `/admin/stickers`: enable/disable packs, toggle individual stickers
-- Gallery moderation at `/admin/gallery`: view all strips, moderate content
-- User/session management at `/admin/sessions`: view active sessions, block/unblock (client-side state)
-- Analytics dashboard at `/admin/analytics`: charts and statistics
-- System settings at `/admin/settings`: configure system parameters
-- Audit log at `/admin/audit`: track admin actions
-- Template management at `/admin/templates`: CRUD operations for templates
+- Admin layout with navigation sidebar and password protection
+- Sticker pack management UI at `/admin/stickers`: upload, organize, enable/disable custom sticker packs, preview stickers, bulk import from ZIP files
+- Gallery moderation at `/admin/gallery`: view all public/private strips, search and filter, flag inappropriate content, delete entries, feature selected strips, view details
+- User/session management at `/admin/sessions`: view active sessions, strip counts per session, block/unblock sessions, IP tracking
+- Analytics dashboard at `/admin/analytics`: time-series charts for daily activity, popular templates and filters, device breakdown, pie charts
+- System settings at `/admin/settings`: configure rate limits (strips per hour/day per session), toggle maintenance mode, manage feature flags (PWA install prompt, gallery visibility, etc.), set default template
+- Audit log at `/admin/audit`: track all admin actions with timestamps, admin identifier, IP address, user agent, filter by action and resource type
 
-Initial API routes:
+API routes:
 - `/api/admin` - GET dashboard metrics
-- `/api/admin/login` - POST authentication
-- `/api/admin/templates` - CRUD for templates
+- `/api/admin` - GET audit logs (with filters)
+- `/api/admin` - GET sessions data
+- `/api/admin/templates` - existing CRUD operations for templates
 
 ---
 
-## v3.0.2 — Live Admin Data Integration (Done)
+## v3.0.2 — Platform Hardening (Done)
 
-Connected admin pages to live Supabase data, replacing mock data:
+Infrastructure improvements for security, reliability, and protection:
 
-- Analytics dashboard now fetches real time-series data from Supabase
-  - Daily activity charts show actual strip creation, views, and downloads
-  - Popular templates and filters reflect real usage statistics
-  - Range selector (7d, 30d, 90d, year, all) filters data accordingly
-
-- Sessions page now fetches real session data from `/api/admin/sessions`
-  - Shows real Supabase user IDs as session identifiers
-  - Displays actual strip counts per session
-  - Shows creation and last active timestamps from real data
-  - Search and pagination work with live data
-  - Note: IP address and user agent show as 'N/A' until database schema is updated
-
-- Sticker visibility toggles in admin now sync to website editor
-  - Uses localStorage with storage event listeners for real-time updates
-  - Changes in admin instantly reflect in editor palette
-  - Works within same browser; cross-device sync requires database persistence
-
-New API routes:
-  - `/api/admin/analytics?range=30d` - Returns time series, popular items, and totals
-  - `/api/admin/sessions?page=1&pageSize=20&search=query` - Returns paginated session data
-
-
-## v3.0.3 — Platform Hardening & Data Completeness (Planned)
-
-
-### Priority: Data Tracking Completion
-
-- Add `ip_address` and `user_agent` columns to `strips` table
-  - Update `upload-strip` edge function to capture and store IP/user agent
-  - Sessions page will then display real IP addresses and browser info
-
-- Store sticker visibility config in database
-  - Replace localStorage with Supabase table for cross-device sync
-  - Sticker toggles will sync across all devices and browsers
-
-- Store blocked sessions list in database
-  - Make block/unblock persistent across page refreshes and devices
-
-- Store admin settings in database
-  - Rate limits, maintenance mode, feature flags persisted in Supabase
-
-### Priority: Platform Hardening (Original v3.0.2 items)
-
-
-Infrastructure improvements for security, reliability, and complete data tracking:
-
-- Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
+- Done: Instagram Stories Tier 2 (if accounts are added). Tier 1 native sharing is
   complete. Direct Meta API posting should remain on hold until ClickStudio
   supports user accounts and authentication.
 
-- PWA offline editing (or honest downgrade). While the service worker and offline
+- Done: PWA offline editing (or honest downgrade). While the service worker and offline
   fallback page exist, the editor still depends on network access for uploads,
   gallery, and wall features. Decide whether to build true offline editing with
   sync-on-reconnect or remove the install prompt to better match the current
   experience.
 
-- Rate limiter is session-based, not IP-based. The current 12-strips-per-hour
+- Done: Rate limiter is session-based, not IP-based. The current 12-strips-per-hour
   limit relies on `session_id` stored in localStorage, making it easy to bypass.
   Consider adding an IP-based secondary limit within the upload edge function to
   better protect storage resources.
 
 ---
 
-## v3.1 — Accessibility & Internationalization (Planned)
+## v3.1 — Accessibility & Internationalization (Done)
 
-- Soft dark mode using `prefers-color-scheme` to dim backgrounds for OLED phones while preserving Y2K aesthetic
-- Multi-language support (i18n) for the UI to expand international reach
+- Done: Soft dark mode using `prefers-color-scheme` to dim backgrounds for OLED phones while preserving Y2K aesthetic
+- Done: Multi-language support (i18n) for the UI to expand international reach (English, Spanish, French translations)
 
 ---
 

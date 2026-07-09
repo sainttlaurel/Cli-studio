@@ -23,6 +23,28 @@
   --radius: 1.25rem;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #1a0a12;
+    --foreground: #f5d0dc;
+    --primary: #ff69b4;
+    --primary-foreground: #1a0a12;
+    --secondary: #2d1b26;
+    --secondary-foreground: #d8b4fe;
+    --tertiary: #4d96c4;
+    --muted: #1f1018;
+    --muted-foreground: #ff8fab;
+    --accent: #3a1f2c;
+    --accent-foreground: #f5d0dc;
+    --card: #24141c;
+    --card-foreground: #f5d0dc;
+    --destructive: #ff69b4;
+    --border: #4c2832;
+    --input: #3a1f2c;
+    --ring: #ff8fab;
+  }
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
