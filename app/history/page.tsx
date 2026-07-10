@@ -13,7 +13,6 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSessionId } from "@/lib/session";
-import { LanguageDropdown } from "@/components/LanguageSwitcher";
 import type { Strip } from "@/lib/types";
 
 type Status = "loading" | "ready" | "error";
@@ -103,7 +102,6 @@ export default function HistoryPage() {
           </span>
         </Link>
         <div className="flex items-center gap-2">
-          <LanguageDropdown />
           <Link
             href="/studio"
             className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all"

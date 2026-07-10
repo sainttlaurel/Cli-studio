@@ -1,8 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Fredoka, JetBrains_Mono } from 'next/font/google';
 import { WhatsNewModal } from '@/components/WhatsNewModal';
-import { I18nProvider } from '@/lib/i18n';
-import { getDefaultLocale } from '@/lib/i18n/server';
 import './globals.css';
 
 const inter = Inter({
@@ -49,17 +47,13 @@ export const viewport: Viewport = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const defaultLocale = getDefaultLocale();
-
   return (
-    <html lang={defaultLocale}>
+    <html lang="en">
       <body
         className={`${inter.variable} ${fredoka.variable} ${mono.variable} font-sans bg-background text-foreground antialiased`}
       >
-        <I18nProvider initialLocale={defaultLocale}>
-          {children}
-          <WhatsNewModal />
-        </I18nProvider>
+        {children}
+        <WhatsNewModal />
       </body>
     </html>
   );

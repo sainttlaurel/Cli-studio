@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { Camera, Sparkles, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { LanguageDropdown } from '@/components/LanguageSwitcher';
 import type { Strip } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -37,7 +36,6 @@ export default async function GalleryPage() {
           </span>
         </Link>
         <div className="flex items-center gap-2">
-          <LanguageDropdown />
           <Link
             href="/studio"
             className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all flex items-center gap-1.5"
