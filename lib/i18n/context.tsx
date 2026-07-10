@@ -6,7 +6,7 @@ import { Locale, defaultTranslations, Translations } from './types';
 // Constants
 const LOCALE_STORAGE_KEY = 'clickstudio-locale';
 const DEFAULT_LOCALE: Locale = 'en';
-const SUPPORTED_LOCALES: Locale[] = ['en', 'es', 'fr', 'de', 'it', 'pt', 'ja', 'ko', 'zh'];
+const SUPPORTED_LOCALES: Locale[] = ['en', 'es', 'fr'];
 
 // Context type
 interface I18nContextType {

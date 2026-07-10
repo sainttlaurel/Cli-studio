@@ -8,12 +8,6 @@ const LOCALE_LABELS: Record<string, string> = {
   en: 'English',
   es: 'Español',
   fr: 'Français',
-  de: 'Deutsch',
-  it: 'Italiano',
-  pt: 'Português',
-  ja: '日本語',
-  ko: '한국어',
-  zh: '中文',
 };
 
 // Unified language dropdown component that works on click

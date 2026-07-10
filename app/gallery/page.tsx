@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Camera, Sparkles, Zap } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { LanguageDropdown } from '@/components/LanguageSwitcher';
 import type { Strip } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
@@ -35,13 +36,16 @@ export default async function GalleryPage() {
             Click<span className="text-secondary-foreground">Studio</span>
           </span>
         </Link>
-        <Link
-          href="/studio"
-          className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all flex items-center gap-1.5"
-        >
-          <Zap size={14} />
-          <span>Shoot Your Own</span>
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageDropdown />
+          <Link
+            href="/studio"
+            className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all flex items-center gap-1.5"
+          >
+            <Zap size={14} />
+            <span>Shoot Your Own</span>
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 max-w-6xl mx-auto px-6 py-10 w-full flex flex-col gap-6">

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSessionId } from "@/lib/session";
+import { LanguageDropdown } from "@/components/LanguageSwitcher";
 import type { Strip } from "@/lib/types";
 
 type Status = "loading" | "ready" | "error";
@@ -101,12 +102,15 @@ export default function HistoryPage() {
             Click<span className="text-secondary-foreground">Studio</span>
           </span>
         </Link>
-        <Link
-          href="/studio"
-          className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all"
-        >
-          Shoot a New Strip
-        </Link>
+        <div className="flex items-center gap-2">
+          <LanguageDropdown />
+          <Link
+            href="/studio"
+            className="px-4 py-2 bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-heading font-bold rounded-xl shadow-md shadow-primary/20 transition-all"
+          >
+            Shoot a New Strip
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 max-w-5xl mx-auto px-6 py-10 w-full flex flex-col gap-6">
