@@ -9,7 +9,7 @@ import { useBoothStore } from "@/lib/store";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function StudioPage() {
-  const { frames, removeFrame } = useBoothStore();
+  const { frames, removeFrame, maxFrames } = useBoothStore();
 
   return (
     <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden">
@@ -22,10 +22,10 @@ export default function StudioPage() {
 
           <div className="bg-background p-4 rounded-3xl border border-border/80 shadow-md">
             <h3 className="text-xs font-heading font-bold text-muted-foreground uppercase tracking-wider mb-3">
-              Your Captured Frames ({frames.length} / 4)
+              Your Captured Frames ({frames.length} / {maxFrames})
             </h3>
-            <div className="grid grid-cols-4 gap-3">
-              {Array.from({ length: 4 }).map((_, i) => {
+            <div className={`grid gap-3 ${maxFrames <= 2 ? 'grid-cols-2' : maxFrames === 3 ? 'grid-cols-3' : maxFrames === 6 ? 'grid-cols-6' : 'grid-cols-4'}`}>
+              {Array.from({ length: maxFrames }).map((_, i) => {
                 const frame = frames[i];
                 return (
                   <div

@@ -11,7 +11,14 @@ const TIMER_OPTIONS = [
   { label: 'Off', value: 0 },
 ];
 
-const DEFAULT_ASPECT = 3 / 4;
+const FRAME_OPTIONS = [
+  { label: '2', value: 2 },
+  { label: '3', value: 3 },
+  { label: '4', value: 4 },
+  { label: '6', value: 6 },
+];
+
+const DEFAULT_ASPECT = 4 / 3;
 
 export function CameraCapture() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -23,14 +30,14 @@ export function CameraCapture() {
 
   const [videoAspect, setVideoAspect] = useState<number>(DEFAULT_ASPECT);
 
-  const { frames, addFrame, mirror, toggleMirror, soundEnabled, toggleSound } = useBoothStore();
+  const { frames, addFrame, mirror, toggleMirror, soundEnabled, toggleSound, maxFrames, setMaxFrames } = useBoothStore();
 
   useEffect(() => {
     let stream: MediaStream | null = null;
     async function start() {
       try {
         stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 1280, height: 960, facingMode: 'user' },
+          video: { width: 960, height: 1280, facingMode: 'user' },
           audio: false,
         });
         if (videoRef.current) {
@@ -55,7 +62,7 @@ export function CameraCapture() {
   const capture = useCallback(() => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
-    if (!video || !canvas || frames.length >= 4) return;
+    if (!video || !canvas || frames.length >= maxFrames) return;
     const w = video.videoWidth || 640;
     const h = video.videoHeight || 480;
     canvas.width = w;
@@ -71,17 +78,17 @@ export function CameraCapture() {
     ctx.restore();
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     addFrame(dataUrl);
-  }, [addFrame, frames.length, mirror]);
+  }, [addFrame, frames.length, mirror, maxFrames]);
 
   const triggerCapture = useCallback(() => {
-    if (frames.length >= 4) return;
+    if (frames.length >= maxFrames) return;
     if (timerSeconds === 0) {
       if (soundEnabled) playShutter();
       capture();
       return;
     }
     setCountdown(timerSeconds);
-  }, [capture, frames.length, timerSeconds, soundEnabled]);
+  }, [capture, frames.length, timerSeconds, soundEnabled, maxFrames]);
 
   useEffect(() => {
     if (countdown === null) return;
@@ -96,16 +103,16 @@ export function CameraCapture() {
     return () => clearTimeout(t);
   }, [countdown, capture, soundEnabled]);
 
-  const onUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || frames.length >= 4) return;
+    if (!file || frames.length >= maxFrames) return;
     const reader = new FileReader();
     reader.onload = () => {
       if (typeof reader.result === 'string') addFrame(reader.result);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
-  };
+  }, [addFrame, frames.length, maxFrames]);
 
   return (
     <div className="bg-background p-4 rounded-3xl border-2 border-primary/20 shadow-xl flex flex-col gap-4 relative">
@@ -180,7 +187,7 @@ export function CameraCapture() {
       </div>
 
       <div className="flex flex-col md:flex-row items-center justify-between gap-4 pt-2">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <div className="bg-secondary p-1 rounded-xl flex gap-1">
             {TIMER_OPTIONS.map((opt) => (
               <button
@@ -196,6 +203,21 @@ export function CameraCapture() {
               </button>
             ))}
           </div>
+          <div className="bg-secondary p-1 rounded-xl flex gap-1">
+            {FRAME_OPTIONS.map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setMaxFrames(opt.value)}
+                className={`px-3 py-1.5 text-xs font-bold rounded-lg transition-all ${
+                  maxFrames === opt.value
+                    ? 'bg-background text-primary shadow-sm'
+                    : 'text-secondary-foreground hover:bg-background/50'
+                }`}
+              >
+                Frames: {opt.label}
+              </button>
+            ))}
+          </div>
           <label
             className="p-2.5 bg-secondary text-secondary-foreground hover:bg-primary/10 rounded-xl transition-all cursor-pointer"
             title="Upload Photo instead"
@@ -207,7 +229,7 @@ export function CameraCapture() {
 
         <button
           onClick={triggerCapture}
-          disabled={frames.length >= 4 || countdown !== null}
+          disabled={frames.length >= maxFrames || countdown !== null}
           className="group relative w-16 h-16 bg-primary hover:bg-primary/90 disabled:opacity-40 rounded-full flex items-center justify-center shadow-lg shadow-primary/40 hover:scale-105 transition-all"
         >
           <div className="w-12 h-12 rounded-full border-2 border-border/80 flex items-center justify-center">
@@ -216,7 +238,7 @@ export function CameraCapture() {
         </button>
 
         <div className="w-full md:w-auto text-center md:text-right text-xs text-muted-foreground font-semibold">
-          {frames.length} / 4 frames captured
+          {frames.length} / {maxFrames} frames captured
         </div>
       </div>
 

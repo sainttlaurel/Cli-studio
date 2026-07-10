@@ -96,14 +96,14 @@ export function StripPreview() {
           className="relative flex flex-col gap-1.5 sm:gap-2 md:gap-3 bg-background rounded-2xl border border-border/30 [container-type:inline-size] h-full p-1 sm:p-2"
         >
           {frames.length === 0 && (
-            <div className="aspect-[4/3] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
+            <div className="aspect-[3/4] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
               No frames yet
             </div>
           )}
           {frames.map((src, i) => (
             <div
               key={i}
-              className="relative aspect-[4/3] rounded-lg overflow-hidden bg-white border-2 border-white shadow-md"
+              className="relative aspect-[3/4] rounded-lg overflow-hidden bg-white border-2 border-white shadow-md"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

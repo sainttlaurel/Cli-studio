@@ -93,6 +93,7 @@ interface BoothState {
   layerOrder: LayerRef[];
   mirror: boolean;
   soundEnabled: boolean;
+  maxFrames: number;
   addFrame: (dataUrl: string) => void;
   removeFrame: (index: number) => void;
   resetFrames: () => void;
@@ -126,6 +127,7 @@ interface BoothState {
   reorderLayer: (fromIndex: number, toIndex: number) => void;
   toggleMirror: () => void;
   toggleSound: () => void;
+  setMaxFrames: (max: number) => void;
   toggleStickerVisibility: (id: string) => void;
   toggleTextLayerVisibility: (id: string) => void;
   resetAll: () => void;
@@ -142,6 +144,7 @@ const initial = {
   layerOrder: [] as LayerRef[],
   mirror: true,
   soundEnabled: true,
+  maxFrames: 4,
 };
 
 // Migration helper: ensure all stickers and text layers have visible property
@@ -173,7 +176,7 @@ export const useBoothStore = create<BoothState>()(
         ...initial,
         addFrame: (dataUrl) =>
           set((s) =>
-            s.frames.length >= 4 ? s : { frames: [...s.frames, dataUrl] },
+            s.frames.length >= s.maxFrames ? s : { frames: [...s.frames, dataUrl] },
           ),
         removeFrame: (index) =>
           set((s) => ({ frames: s.frames.filter((_, i) => i !== index) })),
@@ -288,6 +291,7 @@ export const useBoothStore = create<BoothState>()(
           }),
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
+        setMaxFrames: (max) => set({ maxFrames: max }),
         toggleStickerVisibility: (id) =>
           set((s) => ({
             stickers: s.stickers.map((sticker) =>
