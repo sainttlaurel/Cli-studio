@@ -86,14 +86,14 @@ export function StripPreview() {
 
   return (
     <div
-      className={`w-full min-h-[22rem] sm:min-h-[28rem] lg:min-h-[32rem] bg-background rounded-3xl border border-border/80 shadow-lg overflow-hidden flex flex-col p-4 sm:p-5 lg:p-8`}
+      className={`w-full min-h-[22rem] sm:min-h-[28rem] lg:min-h-[32rem] bg-background rounded-3xl border-2 border-border/60 shadow-xl overflow-hidden flex flex-col`}
     >
       <div
-        className={`w-full h-full flex-1 bg-background p-3 sm:p-4 lg:p-5 rounded-[2rem] shadow-2xl border-4 ${themeStyle.border} relative flex flex-col justify-center`}
+        className={`w-full h-full flex-1 bg-background p-2 sm:p-3 md:p-4 rounded-[2rem] shadow-xl border-4 ${themeStyle.border} relative flex flex-col justify-center`}
       >
         <div
           ref={stripRef}
-          className="relative flex flex-col gap-2 sm:gap-3 lg:gap-4 bg-background p-2 sm:p-3 lg:p-4 rounded-2xl border border-border/40 [container-type:inline-size] h-full"
+          className="relative flex flex-col gap-1.5 sm:gap-2 md:gap-3 bg-background rounded-2xl border border-border/30 [container-type:inline-size] h-full p-1 sm:p-2"
         >
           {frames.length === 0 && (
             <div className="aspect-[4/3] rounded-xl bg-muted flex items-center justify-center text-xs text-muted-foreground">
@@ -103,18 +103,18 @@ export function StripPreview() {
           {frames.map((src, i) => (
             <div
               key={i}
-              className="relative aspect-[4/3] rounded-xl overflow-hidden border border-primary/10 flex items-center justify-center"
+              className="relative aspect-[4/3] rounded-lg overflow-hidden bg-white border-2 border-white shadow-md"
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={src}
                 alt={`Shot ${i + 1}`}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
                 style={{ filter: filterCss }}
               />
             </div>
           ))}
-          <div className="flex items-center justify-between pt-2 border-t border-dashed border-border px-1">
+          <div className="flex items-center justify-between pt-1.5 border-t border-dashed border-border/80 px-1">
             <span
               className={`text-[11px] font-heading font-extrabold tracking-widest ${themeStyle.text}`}
             >
@@ -129,7 +129,7 @@ export function StripPreview() {
             </span>
           </div>
           {caption && (
-            <div className="text-center text-xs font-heading font-bold text-foreground pb-1">
+            <div className="text-center text-xs font-heading font-bold text-foreground pb-0.5">
               {caption}
             </div>
           )}

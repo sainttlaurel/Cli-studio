@@ -18,7 +18,7 @@ const LOCALE_LABELS: Record<string, string> = {
 
 // Unified language dropdown component that works on click
 export function LanguageDropdown({ compact = false }: { compact?: boolean }) {
-  const { locale, setLocale, t } = useTranslations();
+  const { locale, setLocale, n } = useTranslations();
   const supportedLocales = getSupportedLocales();
   const [isOpen, setIsOpen] = useState(false);
 
@@ -42,18 +42,18 @@ export function LanguageDropdown({ compact = false }: { compact?: boolean }) {
         `}
       >
         <Globe size={compact ? 14 : 16} />
-        {!compact && <span className="hidden sm:inline">{t('settings').language}</span>}
+        {!compact && <span className="hidden sm:inline">{n('settings.language')}</span>}
       </button>
 
       {isOpen && (
         <>
           <div
-            className="fixed inset-0 z-40"
+            className="fixed inset-0 z-50"
             onClick={() => setIsOpen(false)}
           />
-          <div className="absolute right-0 mt-1 w-40 rounded-xl bg-background shadow-2xl border border-border py-2 z-50">
+          <div className="absolute right-0 mt-1 w-40 rounded-xl bg-background shadow-2xl border border-border py-2 z-60">
             <div className="px-3 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-              {t('settings').language}
+              {n('settings.language')}
             </div>
             <div className="border-t border-border/50 my-1" />
             {supportedLocales.map((loc) => (
