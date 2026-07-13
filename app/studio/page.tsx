@@ -64,6 +64,9 @@ export default function StudioPage() {
   }, [config.aspect]);
 
   useEffect(() => {
+    // Only run on client side to avoid hydration errors
+    if (typeof window === 'undefined' || !navigator.mediaDevices) return;
+    
     let stream: MediaStream | null = null;
     async function start() {
       try {
@@ -402,7 +405,7 @@ export default function StudioPage() {
                   return (
                     <div
                       key={i}
-                      className="aspect-[4/5] min-h-0 border-2 border-dashed border-[#F3B4D2] rounded-xl bg-[#FDF2F7] flex flex-col items-center justify-center gap-1.5 relative group"
+                      className="aspect-square w-full min-h-0 border-2 border-dashed border-[#F3B4D2] rounded-xl bg-[#FDF2F7] flex flex-col items-center justify-center gap-1.5 relative group"
                     >
                       {frame ? (
                         <>
