@@ -236,7 +236,7 @@ export default function StudioPage() {
                     playsInline
                     muted
                     onLoadedMetadata={handleLoadedMetadata}
-                    className={`w-full h-full object-contain ${mirror ? '-scale-x-100' : ''}`}
+                    className={`w-full h-full object-cover ${mirror ? '-scale-x-100' : ''}`}
                   />
                 )}
 
@@ -391,17 +391,17 @@ export default function StudioPage() {
             </div>
 
             {/* Frames Sidebar */}
-            <div className="bg-white border border-[#F0D9E6] rounded-2xl p-5 h-fit">
+            <div className="bg-white border border-[#F0D9E6] rounded-2xl p-5 h-fit max-h-[600px] overflow-y-auto">
               <h3 className="text-sm font-bold text-[#8A7482] uppercase tracking-wider mb-3.5">
                 Frames Preview
               </h3>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className={`grid ${maxFrames === 6 ? 'grid-cols-3' : 'grid-cols-2'} gap-2.5`}>
                 {Array.from({ length: maxFrames }).map((_, i) => {
                   const frame = frames[i];
                   return (
                     <div
                       key={i}
-                      className="aspect-square w-full min-h-0 border-2 border-dashed border-[#F3B4D2] rounded-xl bg-[#FDF2F7] flex flex-col items-center justify-center gap-1.5 relative group"
+                      className="aspect-square w-full min-w-[80px] border-2 border-dashed border-[#F3B4D2] rounded-xl bg-[#FDF2F7] flex flex-col items-center justify-center gap-1.5 relative group"
                     >
                       {frame ? (
                         <>
