@@ -278,20 +278,23 @@ export default function StudioPage() {
                 </div>
               </div>
 
-              {/* Camera Controls */}
-              <div className="p-5 border-t border-[#F0D9E6]">
-                {/* Settings Groups - Organized in a clean grid */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {/* Timer Group */}
-                  <div>
-                    <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Timer</p>
+              {/* Camera Controls - Redesigned with clear hierarchy and grouping */}
+              <div className="p-5 border-t border-[#F0D9E6] space-y-4">
+                
+                {/* Group A: Camera Settings (Timer, Aspect Ratio) - Secondary controls */}
+                <div className="bg-[#FDF2F7] rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-3">Camera Settings</h4>
+                  
+                  {/* Timer */}
+                  <div className="mb-3">
+                    <p className="text-xs font-medium text-[#8A7482] mb-1">Timer</p>
                     <div className="flex gap-2 flex-wrap">
                       {TIMER_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setTimerSeconds(opt.value)}
                           aria-pressed={timerSeconds === opt.value}
-                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
+                          className={`h-8 px-3 text-xs font-medium rounded-full transition-all border-2 ${
                             timerSeconds === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
@@ -303,37 +306,16 @@ export default function StudioPage() {
                     </div>
                   </div>
 
-                  {/* Frames Group */}
+                  {/* Aspect Ratio */}
                   <div>
-                    <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Frames</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {FRAME_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setMaxFrames(opt.value)}
-                          aria-pressed={maxFrames === opt.value}
-                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
-                            maxFrames === opt.value
-                              ? 'bg-[#D4247E] text-white border-[#D4247E]'
-                              : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
-                          }`}
-                        >
-                          {opt.label} Frames
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Aspect Ratio Group */}
-                  <div>
-                    <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Aspect Ratio</p>
+                    <p className="text-xs font-medium text-[#8A7482] mb-1">Aspect Ratio</p>
                     <div className="flex gap-2 flex-wrap">
                       {ASPECT_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setAspectRatio(opt.value)}
                           aria-pressed={aspectRatio === opt.value}
-                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
+                          className={`h-8 px-3 text-xs font-medium rounded-full transition-all border-2 ${
                             aspectRatio === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
@@ -344,49 +326,82 @@ export default function StudioPage() {
                       ))}
                     </div>
                   </div>
+                </div>
 
-                  {/* Frame Shape Group */}
-                  <div>
-                    <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Frame Shape</p>
-                    <div className="flex gap-2 flex-wrap">
-                      {SHAPE_OPTIONS.map((opt) => (
-                        <button
-                          key={opt.value}
-                          onClick={() => setFrameShape(opt.value)}
-                          aria-pressed={frameShape === opt.value}
-                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
-                            frameShape === opt.value
-                              ? 'bg-[#D4247E] text-white border-[#D4247E]'
-                              : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
-                          }`}
-                        >
-                          {opt.label}
-                        </button>
-                      ))}
+                {/* Group B: Composition Settings (Frame Count, Frame Style) - Secondary controls */}
+                <div className="bg-[#FDF2F7] rounded-xl p-4">
+                  <h4 className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-3">Composition</h4>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* Frame Count */}
+                    <div>
+                      <p className="text-xs font-medium text-[#8A7482] mb-1">Frames</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {FRAME_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setMaxFrames(opt.value)}
+                            aria-pressed={maxFrames === opt.value}
+                            className={`h-8 px-2.5 text-xs font-medium rounded-full transition-all border-2 ${
+                              maxFrames === opt.value
+                                ? 'bg-[#D4247E] text-white border-[#D4247E]'
+                                : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Frame Style */}
+                    <div>
+                      <p className="text-xs font-medium text-[#8A7482] mb-1">Frame Style</p>
+                      <div className="flex gap-1.5 flex-wrap">
+                        {SHAPE_OPTIONS.map((opt) => (
+                          <button
+                            key={opt.value}
+                            onClick={() => setFrameShape(opt.value)}
+                            aria-pressed={frameShape === opt.value}
+                            className={`h-8 px-2.5 text-xs font-medium rounded-full transition-all border-2 ${
+                              frameShape === opt.value
+                                ? 'bg-[#D4247E] text-white border-[#D4247E]'
+                                : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
+                            }`}
+                          >
+                            {opt.label}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Action Row - Centered with frames count beside camera */}
-                <div className="flex items-center justify-center gap-3 pt-4 border-t border-[#F0D9E6]">
-                  <label className="h-9 px-3.5 flex items-center justify-center text-sm font-medium rounded-full border-2 border-[#F0D9E6] bg-white text-[#3A2432] hover:border-[#F3B4D2] cursor-pointer transition-all">
-                    <Upload size={14} className="mr-1.5" />
-                    Upload photo
+                {/* Group C: Action Bar - Primary controls (should be most prominent) */}
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+                  
+                  {/* Upload button - now properly styled and labeled */}
+                  <label className="h-10 px-4 flex items-center justify-center text-sm font-medium rounded-full border-2 border-[#F0D9E6] bg-white text-[#3A2432] hover:border-[#F3B4D2] cursor-pointer transition-all">
+                    <Upload size={16} className="mr-2" />
+                    Upload
                     <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                   </label>
 
-                  <span className="text-sm font-medium text-[#8A7482]">
-                    {frames.length} / {maxFrames} frames captured
+                  {/* Frame counter */}
+                  <span className="text-sm font-medium text-[#8A7482] px-3 py-2">
+                    {frames.length} / {maxFrames} captured
                   </span>
 
+                  {/* Capture button - THE MOST PROMINENT ELEMENT */}
                   <button
                     onClick={triggerCapture}
                     disabled={frames.length >= maxFrames || countdown !== null}
-                    className="w-14 h-14 bg-[#D4247E] hover:bg-[#AB1D65] disabled:opacity-40 rounded-full flex items-center justify-center shadow-lg transition-all"
+                    className="w-16 h-16 bg-[#D4247E] hover:bg-[#AB1D65] disabled:opacity-40 rounded-full flex items-center justify-center shadow-lg transition-all ring-4 ring-[#F9DCE9]"
                   >
-                    <Camera className="text-white" size={22} />
+                    <Camera className="text-white" size={28} />
                   </button>
                 </div>
+                
               </div>
             </div>
 
