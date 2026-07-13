@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, X, Camera, Upload, Bolt, Settings, Check, Image, RefreshCw, RectangleVertical, Square, RectangleHorizontal, Crop } from "lucide-react";
+import { ArrowRight, X, Camera, Upload, Bolt, Settings, Check, Image, RefreshCw } from "lucide-react";
 import { useBoothStore, type AspectRatio, type FrameShape } from "@/lib/store";
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { playCountdownTick, playShutter } from '@/lib/sound';
@@ -34,17 +34,17 @@ const NAV_LINKS = [
   { href: '/', label: "What's new" },
 ];
 
-const ASPECT_OPTIONS: { label: string; value: AspectRatio; icon: React.ReactNode }[] = [
-  { label: 'Portrait', value: 'portrait', icon: <RectangleVertical size={12} /> },
-  { label: 'Square', value: 'square', icon: <Square size={12} /> },
-  { label: 'Landscape', value: 'landscape', icon: <RectangleHorizontal size={12} /> },
+const ASPECT_OPTIONS: { label: string; value: AspectRatio }[] = [
+  { label: 'Portrait', value: 'portrait' },
+  { label: 'Square', value: 'square' },
+  { label: 'Landscape', value: 'landscape' },
 ];
 
-const SHAPE_OPTIONS: { label: string; value: FrameShape; icon: React.ReactNode }[] = [
-  { label: 'Classic', value: 'classic', icon: <Crop size={12} /> },
-  { label: 'Rounded', value: 'rounded', icon: <Image size={12} /> },
-  { label: 'Polaroid', value: 'polaroid', icon: <Square size={12} /> },
-  { label: 'Circular', value: 'circular', icon: <div className="w-3 h-3 rounded-full border border-current" /> },
+const SHAPE_OPTIONS: { label: string; value: FrameShape }[] = [
+  { label: 'Classic', value: 'classic' },
+  { label: 'Rounded', value: 'rounded' },
+  { label: 'Polaroid', value: 'polaroid' },
+  { label: 'Circular', value: 'circular' },
 ];
 
 export default function StudioPage() {
@@ -285,19 +285,19 @@ export default function StudioPage() {
                   {/* Timer Group */}
                   <div>
                     <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Timer</p>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                       {TIMER_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setTimerSeconds(opt.value)}
                           aria-pressed={timerSeconds === opt.value}
-                          className={`h-9 px-3 text-sm font-medium rounded-full transition-all border-2 ${
+                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
                             timerSeconds === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
                           }`}
                         >
-                          {opt.value === 0 ? 'Off' : `Timer: ${opt.label}`}
+                          {opt.value === 0 ? 'Off' : opt.label}
                         </button>
                       ))}
                     </div>
@@ -306,13 +306,13 @@ export default function StudioPage() {
                   {/* Frames Group */}
                   <div>
                     <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Frames</p>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                       {FRAME_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setMaxFrames(opt.value)}
                           aria-pressed={maxFrames === opt.value}
-                          className={`h-9 px-3 text-sm font-medium rounded-full transition-all border-2 ${
+                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
                             maxFrames === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
@@ -327,19 +327,18 @@ export default function StudioPage() {
                   {/* Aspect Ratio Group */}
                   <div>
                     <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Aspect Ratio</p>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                       {ASPECT_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setAspectRatio(opt.value)}
                           aria-pressed={aspectRatio === opt.value}
-                          className={`h-9 px-3 text-sm font-medium rounded-full transition-all border-2 flex items-center gap-1.5 ${
+                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
                             aspectRatio === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
                           }`}
                         >
-                          {opt.icon}
                           {opt.label}
                         </button>
                       ))}
@@ -349,19 +348,18 @@ export default function StudioPage() {
                   {/* Frame Shape Group */}
                   <div>
                     <p className="text-xs font-bold text-[#8A7482] uppercase tracking-wider mb-2">Frame Shape</p>
-                    <div className="flex gap-1.5 flex-wrap">
+                    <div className="flex gap-2 flex-wrap">
                       {SHAPE_OPTIONS.map((opt) => (
                         <button
                           key={opt.value}
                           onClick={() => setFrameShape(opt.value)}
                           aria-pressed={frameShape === opt.value}
-                          className={`h-9 px-3 text-sm font-medium rounded-full transition-all border-2 flex items-center gap-1.5 ${
+                          className={`h-9 px-3.5 text-sm font-medium rounded-full transition-all border-2 ${
                             frameShape === opt.value
                               ? 'bg-[#D4247E] text-white border-[#D4247E]'
                               : 'bg-white text-[#3A2432] border-[#F0D9E6] hover:border-[#F3B4D2]'
                           }`}
                         >
-                          {opt.icon}
                           {opt.label}
                         </button>
                       ))}
@@ -371,24 +369,22 @@ export default function StudioPage() {
 
                 {/* Action Row - Centered with frames count beside camera */}
                 <div className="flex items-center justify-center gap-3 pt-4 border-t border-[#F0D9E6]">
-                  <label className="h-9 px-3.5 flex items-center justify-center text-sm font-medium rounded-full border-2 border-[#F0D9E6] bg-white text-[#D4247E] hover:border-[#F3B4D2] cursor-pointer transition-all">
+                  <label className="h-9 px-3.5 flex items-center justify-center text-sm font-medium rounded-full border-2 border-[#F0D9E6] bg-white text-[#3A2432] hover:border-[#F3B4D2] cursor-pointer transition-all">
                     <Upload size={14} className="mr-1.5" />
                     Upload photo
                     <input type="file" accept="image/*" onChange={onUpload} className="hidden" />
                   </label>
 
-                  <span className="text-sm font-semibold text-[#8A7482]">
-                    YOUR CAPTURED FRAMES ({frames.length} / {maxFrames})
+                  <span className="text-sm font-medium text-[#8A7482]">
+                    {frames.length} / {maxFrames} frames captured
                   </span>
 
                   <button
                     onClick={triggerCapture}
                     disabled={frames.length >= maxFrames || countdown !== null}
-                    className="w-13 h-13 bg-[#D4247E] hover:bg-[#AB1D65] disabled:opacity-40 rounded-full flex items-center justify-center shadow-lg transition-all"
+                    className="w-14 h-14 bg-[#D4247E] hover:bg-[#AB1D65] disabled:opacity-40 rounded-full flex items-center justify-center shadow-lg transition-all"
                   >
-                    <div className="w-10 h-10 rounded-full border-2 border-white/20 flex items-center justify-center">
-                      <Camera className="text-white" size={20} />
-                    </div>
+                    <Camera className="text-white" size={22} />
                   </button>
                 </div>
               </div>
