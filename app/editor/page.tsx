@@ -26,15 +26,17 @@ export default function EditorPage() {
       <SparkleOverlay />
       <WizardHeader step={3} />
 
-      <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-2 gap-8 w-full lg:items-start">
+      <main className="relative z-10 flex-1 max-w-7xl mx-auto px-6 py-6 grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-8 w-full lg:items-start">
         <ErrorBoundary page="editor">
-          <section className="flex flex-col gap-4 w-full lg:sticky lg:top-8">
+          {/* Left: strip preview — sticky so it stays in view while right column scrolls */}
+          <section className="flex flex-col gap-3 w-full lg:sticky lg:top-6">
             <StripPreview />
             <p className="text-xs text-muted-foreground font-semibold text-center">
               Pick a filter, fine-tune, and caption your strip.
             </p>
           </section>
 
+          {/* Right: editor controls + action buttons */}
           <section className="flex flex-col gap-6 w-full">
             <EditorPanel />
 

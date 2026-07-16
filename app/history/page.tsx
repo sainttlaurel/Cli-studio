@@ -10,6 +10,7 @@ import {
   GlobeLock,
   Eye,
   Download,
+  Clock,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { getSessionId } from "@/lib/session";
@@ -138,21 +139,28 @@ export default function HistoryPage() {
         )}
 
         {status === "ready" && strips.length === 0 && (
-          <div className="text-center py-16 flex flex-col items-center gap-3">
-            <p className="text-sm text-muted-foreground">
-              No strips yet from this browser.
-            </p>
+          <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Clock className="text-primary/50" size={28} />
+            </div>
+            <div>
+              <p className="text-base font-heading font-bold text-foreground">No strips yet</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                Strips you create from this browser will appear here. They're private by default.
+              </p>
+            </div>
             <Link
               href="/studio"
-              className="px-6 py-3 bg-primary text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md"
+              className="px-6 py-3 bg-primary text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
             >
+              <Camera size={14} />
               Make Your First Strip
             </Link>
           </div>
         )}
 
         {status === "ready" && strips.length > 0 && (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {strips.map((strip) => (
               <div
                 key={strip.id}
@@ -167,11 +175,11 @@ export default function HistoryPage() {
                   />
                 </Link>
                 <div className="p-3 flex flex-col gap-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-[11px] text-muted-foreground truncate">
                       {new Date(strip.created_at).toLocaleDateString()}
                     </span>
-                    <span className="flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1.5 text-[11px] text-muted-foreground shrink-0">
                       <span className="flex items-center gap-0.5">
                         <Eye size={11} />
                         {strip.view_count.toLocaleString()}
@@ -191,20 +199,22 @@ export default function HistoryPage() {
                           ? "Remove from public gallery"
                           : "Add to public gallery"
                       }
-                      className="flex-1 py-1.5 px-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[11px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 disabled:opacity-50"
+                      className="flex-1 py-1.5 px-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground text-[11px] font-bold rounded-lg transition-all flex items-center justify-center gap-1 disabled:opacity-50 min-w-0"
                     >
                       {strip.is_public ? (
                         <Globe size={12} />
                       ) : (
                         <GlobeLock size={12} />
                       )}
-                      <span>{strip.is_public ? "Public" : "Private"}</span>
+                      <span className="truncate">
+                        {strip.is_public ? "Public" : "Private"}
+                      </span>
                     </button>
                     <button
                       onClick={() => remove(strip.id)}
                       disabled={busyId === strip.id}
                       title="Delete"
-                      className="p-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg transition-all disabled:opacity-50"
+                      className="p-1.5 bg-destructive/10 hover:bg-destructive/20 text-destructive rounded-lg transition-all disabled:opacity-50 shrink-0"
                     >
                       <Trash2 size={14} />
                     </button>

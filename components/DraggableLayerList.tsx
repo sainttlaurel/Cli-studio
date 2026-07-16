@@ -2,6 +2,7 @@
 
 import { useRef, useState, type ReactNode } from "react";
 import type { DragEvent } from "react";
+import React from 'react';
 import { GripVertical } from "lucide-react";
 
 interface Props<T extends { id: string }> {

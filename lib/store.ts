@@ -17,6 +17,8 @@ export type StickerKey = TextStickerKey | ImageStickerKey;
 // Kept as a wide string so the store accepts any template id returned from the DB.
 // The 9 classic ids (pink, lavender, blue, etc.) are still valid values.
 export type ThemeKey = string;
+export type AspectRatio = 'portrait' | 'square' | 'landscape';
+export type FrameShape = 'classic' | 'rounded' | 'polaroid' | 'circular';
 
 interface Adjustments {
   brightness: number;
@@ -84,6 +86,7 @@ export function resolveLayerOrder(
 
 interface BoothState {
   frames: string[];
+  frameFilters: FilterKey[];
   theme: ThemeKey;
   filter: FilterKey;
   adjustments: Adjustments;
@@ -94,6 +97,8 @@ interface BoothState {
   mirror: boolean;
   soundEnabled: boolean;
   maxFrames: number;
+  aspectRatio: AspectRatio;
+  frameShape: FrameShape;
   addFrame: (dataUrl: string) => void;
   removeFrame: (index: number) => void;
   resetFrames: () => void;
@@ -128,6 +133,10 @@ interface BoothState {
   toggleMirror: () => void;
   toggleSound: () => void;
   setMaxFrames: (max: number) => void;
+  setAspectRatio: (ratio: AspectRatio) => void;
+  setFrameShape: (shape: FrameShape) => void;
+  setFrameFilter: (index: number, filter: FilterKey) => void;
+  applyFilterToAllFrames: (filter: FilterKey) => void;
   toggleStickerVisibility: (id: string) => void;
   toggleTextLayerVisibility: (id: string) => void;
   resetAll: () => void;
@@ -144,7 +153,10 @@ const initial = {
   layerOrder: [] as LayerRef[],
   mirror: true,
   soundEnabled: true,
-  maxFrames: 4,
+  maxFrames: 2,
+  aspectRatio: 'portrait' as AspectRatio,
+  frameShape: 'classic' as FrameShape,
+  frameFilters: [] as FilterKey[],
 };
 
 // Migration helper: ensure all stickers and text layers have visible property
@@ -176,11 +188,17 @@ export const useBoothStore = create<BoothState>()(
         ...initial,
         addFrame: (dataUrl) =>
           set((s) =>
-            s.frames.length >= s.maxFrames ? s : { frames: [...s.frames, dataUrl] },
+            s.frames.length >= s.maxFrames ? s : { 
+              frames: [...s.frames, dataUrl],
+              frameFilters: [...s.frameFilters, s.filter]
+            },
           ),
         removeFrame: (index) =>
-          set((s) => ({ frames: s.frames.filter((_, i) => i !== index) })),
-        resetFrames: () => set({ frames: [] }),
+          set((s) => ({ 
+            frames: s.frames.filter((_, i) => i !== index),
+            frameFilters: s.frameFilters.filter((_, i) => i !== index)
+          })),
+        resetFrames: () => set({ frames: [], frameFilters: [] }),
         setTheme: (theme) => set({ theme }),
         setFilter: (filter) => set({ filter }),
         setAdjustments: (a) =>
@@ -292,6 +310,16 @@ export const useBoothStore = create<BoothState>()(
         toggleMirror: () => set((s) => ({ mirror: !s.mirror })),
         toggleSound: () => set((s) => ({ soundEnabled: !s.soundEnabled })),
         setMaxFrames: (max) => set({ maxFrames: max }),
+        setAspectRatio: (ratio) => set({ aspectRatio: ratio }),
+        setFrameShape: (shape) => set({ frameShape: shape }),
+        setFrameFilter: (index, filter) =>
+          set((s) => ({
+            frameFilters: s.frameFilters.map((f, i) => (i === index ? filter : f))
+          })),
+        applyFilterToAllFrames: (filter) =>
+          set((s) => ({
+            frameFilters: s.frameFilters.map(() => filter)
+          })),
         toggleStickerVisibility: (id) =>
           set((s) => ({
             stickers: s.stickers.map((sticker) =>

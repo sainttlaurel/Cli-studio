@@ -117,27 +117,50 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/* ── Hero: simulated photo strip ──────────────────────────────── */}
         <div className="flex-1 relative w-full max-w-md lg:max-w-none flex justify-center">
           <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/30 rounded-[2.5rem] blur-2xl -z-10 scale-95" />
-          <div className="relative bg-background p-4 rounded-3xl shadow-2xl border-4 border-primary/20 rotate-3 hover:rotate-0 transition-transform duration-500 max-w-sm">
-            <Star className="absolute -top-4 -left-4 text-tertiary" size={28} />
-            <Heart className="absolute -bottom-3 -right-3 text-primary" size={28} />
-            <div className="flex flex-col gap-3">
-              <div className="relative overflow-hidden rounded-xl border-2 border-primary/10 aspect-[4/3] bg-gradient-to-br from-primary/30 to-secondary/40 flex items-center justify-center">
-                <Camera className="text-primary/60" size={40} />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="bg-secondary/40 aspect-square rounded-lg flex items-center justify-center p-2 text-center border border-primary/5">
-                  <span className="text-xs font-heading font-bold text-secondary-foreground">💄 Glam & Glossy</span>
+          {/* Outer strip card — slight tilt, settles on hover */}
+          <div className="relative bg-background p-3 rounded-3xl shadow-2xl border-4 border-primary/20 rotate-2 hover:rotate-0 transition-transform duration-500 max-w-[260px] w-full">
+            <Star className="absolute -top-4 -left-4 text-tertiary" size={26} />
+            <Heart className="absolute -bottom-3 -right-3 text-primary" size={26} />
+
+            {/* Strip frames */}
+            <div className="flex flex-col gap-2">
+              {/* Frame 1 — warm cherry-blossom tint */}
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-rose-200 via-pink-100 to-fuchsia-200 border border-primary/10">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 opacity-80">
+                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
+                    <Camera className="text-primary" size={18} />
+                  </div>
+                  <span className="text-[10px] font-heading font-bold text-primary/70 tracking-wide">Cherry Blossom</span>
                 </div>
-                <div className="bg-primary/5 aspect-square rounded-lg flex items-center justify-center p-2 text-center border border-primary/5">
-                  <span className="text-xs font-heading font-bold text-primary">⚡ Vintage Film</span>
+                {/* Simulated vignette */}
+                <div className="absolute inset-0 rounded-xl shadow-[inset_0_0_20px_rgba(255,20,147,0.15)]" />
+              </div>
+
+              {/* Frame 2 — noir dark tint */}
+              <div className="relative rounded-xl overflow-hidden aspect-[4/3] bg-gradient-to-br from-gray-800 via-gray-700 to-gray-900 border border-primary/10">
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-1 opacity-80">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center">
+                    <Camera className="text-white/70" size={18} />
+                  </div>
+                  <span className="text-[10px] font-heading font-bold text-white/60 tracking-wide">Noir Classic</span>
                 </div>
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-dashed border-border px-1">
+
+              {/* Strip footer */}
+              <div className="flex items-center justify-between pt-1 border-t border-dashed border-border px-0.5">
                 <span className="text-[10px] font-heading font-bold tracking-widest text-primary">CLICKSTUDIO.APP</span>
-                <span className="text-[10px] text-muted-foreground">✨</span>
+                <span className="text-[10px] text-muted-foreground">
+                  {new Date().toLocaleDateString('en-US', { month: '2-digit', year: '2-digit' })} ✨
+                </span>
               </div>
+            </div>
+
+            {/* Filter badge overlay */}
+            <div className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground text-[9px] font-heading font-extrabold px-2 py-0.5 rounded-full border border-border shadow-sm">
+              5 filters
             </div>
           </div>
         </div>

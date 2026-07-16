@@ -21,8 +21,9 @@ import {
   useBoothTemporal,
   resolveLayerOrder,
 } from "@/lib/store";
-import type { FilterKey, FontFamily, LayerRef } from "@/lib/store";
+import type { FilterKey, FontFamily, LayerRef, AspectRatio, FrameShape } from "@/lib/store";
 import { buildFilterCss } from "@/lib/filters";
+
 import { getNextStickerPosition, getStickerDefinition } from "@/lib/stickers";
 import {
   getAvailableTextStickers,
@@ -91,6 +92,7 @@ export function EditorPanel() {
     frames,
     filter,
     setFilter,
+    applyFilterToAllFrames,
     adjustments,
     setAdjustments,
     theme,
@@ -112,6 +114,11 @@ export function EditorPanel() {
     layerOrder,
     toggleStickerVisibility,
     toggleTextLayerVisibility,
+    frameFilters,
+    aspectRatio,
+    setAspectRatio,
+    frameShape,
+    setFrameShape,
   } = useBoothStore();
   const { undo, redo, canUndo, canRedo } = useBoothTemporal();
   const layerStack = resolveLayerOrder(layerOrder, stickers, textLayers);
@@ -238,7 +245,10 @@ export function EditorPanel() {
               {FILTERS.map((f) => (
                 <button
                   key={f.key}
-                  onClick={() => setFilter(f.key)}
+                  onClick={() => {
+                    setFilter(f.key);
+                    applyFilterToAllFrames(f.key);
+                  }}
                   className={`w-[calc(33.333%-8px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 cursor-pointer text-center transition-all ${
                     filter === f.key
                       ? "bg-primary/5 border-primary"
@@ -263,6 +273,14 @@ export function EditorPanel() {
                   </span>
                 </button>
               ))}
+            </div>
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+              <span className="text-xs text-muted-foreground font-semibold">
+                Applied to all {frames.length} frame{frames.length !== 1 ? 's' : ''}
+              </span>
+              <span className="text-[10px] text-muted-foreground font-semibold">
+                {FILTERS.length} presets
+              </span>
             </div>
           </div>
         )}
@@ -316,59 +334,114 @@ export function EditorPanel() {
         )}
 
         {tab === "frame" && (
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-heading font-bold text-foreground">
-                Choose Your Template
-              </h3>
-              <span className="text-xs text-muted-foreground">
-                {templatesLoading
-                  ? "loading…"
-                  : `${templates.length} frame vibes`}
-              </span>
+          <div className="flex flex-col gap-6">
+            {/* Aspect Ratio */}
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                Aspect Ratio
+              </p>
+              <div className="flex gap-1.5 flex-wrap">
+                {(
+                  [
+                    { label: 'Portrait', value: 'portrait' as AspectRatio },
+                    { label: 'Square', value: 'square' as AspectRatio },
+                    { label: 'Landscape', value: 'landscape' as AspectRatio },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setAspectRatio(opt.value)}
+                    aria-pressed={aspectRatio === opt.value}
+                    className={`h-9 px-4 text-xs font-bold rounded-full transition-all border-2 ${
+                      aspectRatio === opt.value
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-foreground border-border hover:border-primary/50'
+                    } focus:outline-none focus:ring-2 focus:ring-primary/50`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
-            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
+
+            {/* Frame Style */}
+            <div>
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-2">
+                Frame Style
+              </p>
+              <div className="flex gap-1.5 flex-wrap">
+                {(
+                  [
+                    { label: 'Classic', value: 'classic' as FrameShape },
+                    { label: 'Rounded', value: 'rounded' as FrameShape },
+                    { label: 'Polaroid', value: 'polaroid' as FrameShape },
+                    { label: 'Circular', value: 'circular' as FrameShape },
+                  ] as const
+                ).map((opt) => (
+                  <button
+                    key={opt.value}
+                    onClick={() => setFrameShape(opt.value)}
+                    aria-pressed={frameShape === opt.value}
+                    className={`h-9 px-4 text-xs font-bold rounded-full transition-all border-2 ${
+                      frameShape === opt.value
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-foreground border-border hover:border-primary/50'
+                    } focus:outline-none focus:ring-2 focus:ring-primary/50`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Templates */}
+            <div>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-sm font-heading font-bold text-foreground">
+                  Choose Your Template
+                </h3>
+                <span className="text-xs text-muted-foreground">
+                  {templatesLoading
+                    ? "loading…"
+                    : `${templates.length} frame vibes`}
+                </span>
+              </div>
+            <div className="grid grid-cols-5 gap-1.5">
               {templatesLoading
-                ? Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className="w-[calc(33.333%-6px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 border-border animate-pulse"
-                    >
-                      <div className="w-full aspect-[4/3] rounded-lg mb-1.5 bg-muted" />
-                      <div className="h-2.5 rounded bg-muted w-3/4 mx-auto" />
+                ? Array.from({ length: 9 }).map((_, i) => (
+                    <div key={i} className="animate-pulse">
+                      <div className="w-full h-10 rounded-md bg-muted mb-1" />
+                      <div className="h-2 rounded bg-muted w-3/4 mx-auto" />
                     </div>
                   ))
                 : templates.map((t) => (
                     <button
                       key={t.id}
                       onClick={() => setTheme(t.id)}
-                      className={`w-[calc(33.333%-6px)] md:w-[calc(25%-9px)] p-1.5 rounded-xl border-2 text-center transition-all ${
+                      title={t.name}
+                      className={`flex flex-col items-center gap-1 p-1 rounded-lg border-2 transition-all ${
                         theme === t.id
                           ? "border-primary bg-primary/5"
-                          : "border-border hover:border-primary/50"
+                          : "border-border hover:border-primary/40"
                       }`}
                     >
+                      {/* Swatch — fixed small height, landscape shape */}
                       <div
-                        className={`w-full aspect-[4/3] rounded-lg mb-1.5 ${t.paper_class} border-2 ${t.border_class} shadow-sm p-1 flex flex-col gap-0.5`}
+                        className={`w-full h-10 rounded-sm ${t.paper_class} border ${t.border_class} flex flex-col justify-end p-0.5`}
                       >
-                        <div className="flex-1 rounded-sm bg-muted" />
-                        <div className="flex-1 rounded-sm bg-muted" />
-                        <div className="flex items-center justify-between pt-0.5">
-                          <span
-                            className={`h-1 w-8 rounded-full ${t.accent_class}`}
-                          />
-                          <span
-                            className={`h-1 w-1 rounded-full ${t.accent_class}`}
-                          />
+                        <div className="flex items-center justify-between">
+                          <span className={`h-px w-3 rounded-full ${t.accent_class}`} />
+                          <span className={`h-px w-px rounded-full ${t.accent_class}`} />
                         </div>
                       </div>
-                      <span className="text-[11px] font-bold text-foreground/80 leading-tight">
+                      <span className="text-[9px] font-semibold text-foreground/60 leading-none truncate w-full text-center">
                         {t.name}
                       </span>
                     </button>
                   ))}
             </div>
           </div>
+        </div>
         )}
 
         {tab === "stickers" && (

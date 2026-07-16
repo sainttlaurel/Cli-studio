@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import QRCode from "qrcode";
 import {
   Download,
   FileText,
@@ -35,6 +34,7 @@ export function ExportPanel() {
   const {
     frames,
     filter,
+    frameFilters,
     adjustments,
     theme,
     caption,
@@ -94,6 +94,7 @@ export function ExportPanel() {
       const renderedBlob = await compositeStrip({
         frames,
         filter,
+        frameFilters,
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
         themeColor,
@@ -201,6 +202,7 @@ export function ExportPanel() {
       const pageBlob = await compositePrintPage({
         frames,
         filter,
+        frameFilters,
         brightness: adjustments.brightness,
         contrast: adjustments.contrast,
         themeColor,
@@ -229,7 +231,13 @@ export function ExportPanel() {
 
   useEffect(() => {
     if (!shareUrl || !qrCanvasRef.current) return;
-    QRCode.toCanvas(qrCanvasRef.current, shareUrl, { width: 200, margin: 1 });
+    // Lazy-load qrcode only when a share URL is ready — keeps it out of the
+    // initial JS bundle for the export page.
+    import("qrcode").then(({ default: QRCode }) => {
+      if (qrCanvasRef.current) {
+        QRCode.toCanvas(qrCanvasRef.current, shareUrl, { width: 200, margin: 1 });
+      }
+    });
   }, [shareUrl]);
 
   return (

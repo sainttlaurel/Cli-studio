@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Camera, Sparkles, Zap } from 'lucide-react';
+import { Camera, Sparkles, Zap, Images } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import type { Strip } from '@/lib/types';
 
@@ -60,9 +60,27 @@ export default async function GalleryPage() {
         </p>
 
         {strips.length === 0 ? (
-          <p className="text-sm text-muted-foreground py-16 text-center">No public strips yet — be the first!</p>
+          <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
+            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
+              <Images className="text-primary/50" size={28} />
+            </div>
+            <div>
+              <p className="text-base font-heading font-bold text-foreground">No public strips yet</p>
+              <p className="text-sm text-muted-foreground mt-1 max-w-xs">
+                Be the first! Capture your strip, then flip it to Public from{' '}
+                <Link href="/history" className="underline hover:text-primary transition-colors">My Strips</Link>.
+              </p>
+            </div>
+            <Link
+              href="/studio"
+              className="px-6 py-3 bg-primary text-primary-foreground font-heading font-bold text-sm rounded-xl shadow-md shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
+            >
+              <Zap size={14} />
+              Start the Studio
+            </Link>
+          </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {strips.map((strip) => (
               <Link
                 key={strip.id}
