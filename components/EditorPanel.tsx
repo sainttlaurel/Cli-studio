@@ -59,25 +59,17 @@ export function EditorPanel() {
   const [templates, setTemplates] = useState<TemplateRow[]>(LOCAL_TEMPLATES);
   const [templatesLoading, setTemplatesLoading] = useState(true);
   const [stickerPack, setStickerPack] = useState<string>("text");
-  // Text layer draft state
   const [draftText, setDraftText] = useState("");
   const [draftColor, setDraftColor] = useState("#BE185D");
   const [draftFont, setDraftFont] = useState<FontFamily>("fredoka");
   const [draftSize, setDraftSize] = useState(8);
-  // Available stickers based on admin configuration
-  const [availableTextStickers, setAvailableTextStickers] = useState<
-    TextStickerDefinition[]
-  >([]);
-  const [availableImagePacks, setAvailableImagePacks] = useState<StickerPack[]>(
-    [],
-  );
+  const [availableTextStickers, setAvailableTextStickers] = useState<TextStickerDefinition[]>([]);
+  const [availableImagePacks, setAvailableImagePacks] = useState<StickerPack[]>([]);
 
-  // Load and update available stickers from config
   useEffect(() => {
     setAvailableTextStickers(getAvailableTextStickers());
     setAvailableImagePacks(getAvailableImagePacks());
 
-    // Listen for changes from other tabs
     const handleStorageChange = (event: StorageEvent) => {
       if (event.key === "clickstudio-sticker-config") {
         setAvailableTextStickers(getAvailableTextStickers());

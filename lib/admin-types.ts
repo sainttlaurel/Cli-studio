@@ -1,15 +1,9 @@
-// Admin Types for ClickStudio Management Suite
-
-// ── Navigation ──────────────────────────────────────────────────────────────
-
 export interface AdminNavItem {
   label: string;
   href: string;
   icon: React.ComponentType<{ size?: number | string; className?: string }>;
   badge?: number | string;
 }
-
-// ── Dashboard Metrics ────────────────────────────────────────────────────────
 
 export interface DashboardMetrics {
   totalStrips: number;
@@ -18,7 +12,7 @@ export interface DashboardMetrics {
   activeSessions: number;
   publicStrips: number;
   privateStrips: number;
-  recentlyCreated: number; // Last 24h
+  recentlyCreated: number; // last 24h
   popularTemplates: PopularItem[];
   popularStickers: PopularItem[];
 }
@@ -30,8 +24,6 @@ export interface StatCardProps {
   icon: React.ComponentType<{ size?: number | string; className?: string }>;
   color?: string;
 }
-
-// ── Strips / Gallery ─────────────────────────────────────────────────────────
 
 export interface StripRow {
   id: string;
@@ -54,8 +46,6 @@ export interface GalleryModerationItem extends StripRow {
   flagged_at: string | null;
   flagged_by: string | null;
 }
-
-// ── Sticker Packs ───────────────────────────────────────────────────────────
 
 export interface StickerPackRow {
   id: string;
@@ -86,8 +76,6 @@ export interface UploadedStickerFile {
   status: "idle" | "uploading" | "complete" | "error";
 }
 
-// ── Sessions ───────────────────────────────────────────────────────────────
-
 export interface SessionRow {
   id: string;
   created_at: string;
@@ -98,8 +86,6 @@ export interface SessionRow {
   is_blocked: boolean;
   blocked_reason: string | null;
 }
-
-// ── Audit Log ──────────────────────────────────────────────────────────────
 
 export interface AuditLogEntry {
   id: string;
@@ -137,8 +123,6 @@ export type AuditResourceType =
   | "gallery"
   | "message";
 
-// ── Settings ───────────────────────────────────────────────────────────────
-
 export interface AdminSettings {
   id: string;
   key: string;
@@ -159,8 +143,6 @@ export interface SystemSettings {
   defaultTemplate: string;
   [key: string]: number | boolean | string | null;
 }
-
-// ── Analytics ──────────────────────────────────────────────────────────────
 
 export interface AnalyticsTimeSeries {
   date: string;
@@ -196,8 +178,6 @@ export interface AnalyticsFilters {
   endDate: string;
   range: "day" | "week" | "month" | "year" | "custom";
 }
-
-// ── Common ─────────────────────────────────────────────────────────────────
 
 export interface ApiResponse<T> {
   success: boolean;

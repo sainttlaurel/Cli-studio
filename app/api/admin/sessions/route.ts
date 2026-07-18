@@ -30,14 +30,11 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(url.searchParams.get("pageSize") || "20");
     const search = url.searchParams.get("search");
 
-    // Note: In current schema, we need to query strips and aggregate by session_id
-    // This is a simplified implementation
     const { data: strips } = await supabase
       .from("strips")
       .select("session_id, created_at, is_public")
       .order("created_at", { ascending: false });
 
-    // Aggregate session data
     const sessionMap: Record<
       string,
       {

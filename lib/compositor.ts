@@ -232,7 +232,6 @@ export async function renderStripCanvas(
   ctx.fillStyle = "#ffffff";
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw each frame with its own per-frame filter (falls back to global filter)
   images.forEach((img, i) => {
     const perFrameFilter = frameFilters[i] ?? filter;
     const filterCss = buildFilterCss(perFrameFilter, brightness, contrast);
@@ -275,8 +274,6 @@ export async function renderStripCanvas(
     ctx.fillText(caption, canvas.width / 2, footerY + 40 * scale);
   }
 
-  // framesArea defines the coordinate space for stickers/text — matches the
-  // preview's stripRef which covers only the frames, not padding or footer.
   const framesAreaTop    = PADDING;
   const framesAreaHeight = images.length * FRAME_H + Math.max(images.length - 1, 0) * GAP;
 

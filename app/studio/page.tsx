@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowRight, X, Camera, Upload, Image } from 'lucide-react';
 import { useBoothStore, type AspectRatio, type FrameShape } from '@/lib/store';
@@ -8,8 +8,6 @@ import { playCountdownTick, playShutter } from '@/lib/sound';
 import { WizardHeader } from '@/components/WizardHeader';
 import { SparkleOverlay } from '@/components/SparkleOverlay';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
 
 const TIMER_OPTIONS = [
   { label: '3s', value: 3 },
@@ -43,8 +41,6 @@ const SHAPE_OPTIONS: { label: string; value: FrameShape }[] = [
   { label: 'Circular', value: 'circular' },
 ];
 
-// ─── Pill button (shared style for all toggle options) ───────────────────────
-
 function Pill({
   active,
   onClick,
@@ -69,8 +65,6 @@ function Pill({
   );
 }
 
-// ─── Page ────────────────────────────────────────────────────────────────────
-
 export default function StudioPage() {
   const videoRef  = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -90,7 +84,6 @@ export default function StudioPage() {
 
   const config = ASPECT_RATIO_CONFIGS[aspectRatio];
 
-  // ── Camera stream ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (typeof window === 'undefined' || !navigator.mediaDevices) return;
     let stream: MediaStream | null = null;
@@ -111,7 +104,6 @@ export default function StudioPage() {
     return () => { stream?.getTracks().forEach((t) => t.stop()); };
   }, [config.width, config.height]);
 
-  // ── Capture ────────────────────────────────────────────────────────────────
   const capture = useCallback(() => {
     const video  = videoRef.current;
     const canvas = canvasRef.current;
@@ -152,7 +144,7 @@ export default function StudioPage() {
     return () => clearTimeout(t);
   }, [countdown, capture, soundEnabled]);
 
-  // ── Upload fallback ────────────────────────────────────────────────────────
+  // ── Upload fallback
   const onUpload = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || frames.length >= maxFrames) return;
@@ -164,7 +156,6 @@ export default function StudioPage() {
     e.target.value = '';
   }, [addFrame, frames.length, maxFrames]);
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden">
       <SparkleOverlay />
@@ -172,16 +163,9 @@ export default function StudioPage() {
 
       <main className="relative z-10 flex-1 max-w-[1160px] mx-auto w-full px-6 py-8">
         <ErrorBoundary page="studio">
-          {/*
-            Two-column grid on desktop:
-              Left  = live camera preview (fills height of right column)
-              Right = Frames Preview → Camera Settings → Composition → Action row
-            Single column on mobile.
-            items-stretch: left column grows to match right column height.
-          */}
           <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_0.9fr] gap-6 lg:items-stretch">
 
-            {/* ── LEFT: Camera preview ──────────────────────────────────── */}
+            {/* Left: camera preview */}
             <div className="bg-card border border-border rounded-2xl overflow-hidden h-full">
               <div className="relative w-full h-full min-h-[280px] bg-foreground/10">
 
@@ -253,7 +237,7 @@ export default function StudioPage() {
               </div>
             </div>
 
-            {/* ── RIGHT: Controls + frames ──────────────────────────────── */}
+            {/* Right: controls + frames */}
             <div className="flex flex-col gap-3">
 
               {/* Frames Preview */}

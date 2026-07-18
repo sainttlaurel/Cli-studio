@@ -1,7 +1,6 @@
 "use client";
 
 import { Component, type ReactNode } from "react";
-import React from 'react';
 import Link from "next/link";
 import { RotateCcw, Home } from "lucide-react";
 

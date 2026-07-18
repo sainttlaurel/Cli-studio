@@ -319,11 +319,6 @@ export default function AdminStickersPage() {
         });
       }, 200);
 
-      // In production, upload to Supabase Storage
-      // const supabase = createAdminClient();
-      // const { data, error } = await supabase.storage
-      //   .from('stickers')
-      //   .upload(`${selectedPack?.id}/${file.name}`, file);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to upload sticker");
       setUploading(false);

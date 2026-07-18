@@ -1,6 +1,6 @@
 "use client";
 
-import React, { PointerEvent, useRef } from "react";
+import { PointerEvent, useRef } from "react";
 import {
   useBoothStore,
   resolveLayerOrder,
@@ -11,15 +11,12 @@ import { buildFilterCss } from "@/lib/filters";
 import { getStickerDefinition } from "@/lib/stickers";
 import Image from "next/image";
 
-// ─── Per-frame aspect ratio ────────────────────────────────────────────────────
-// These drive the actual shape of each frame via CSS aspect-ratio.
 const ASPECT_RATIO_STYLES: Record<AspectRatio, React.CSSProperties> = {
   portrait:  { aspectRatio: "3 / 4"  },
   square:    { aspectRatio: "1 / 1"  },
   landscape: { aspectRatio: "4 / 3"  },
 };
 
-// ─── Frame corner / style ─────────────────────────────────────────────────────
 const SHAPE_CLASSES: Record<FrameShape, string> = {
   classic:  "rounded-md",
   rounded:  "rounded-2xl",
@@ -27,7 +24,6 @@ const SHAPE_CLASSES: Record<FrameShape, string> = {
   circular: "rounded-full",
 };
 
-// ─── Theme border + label color ───────────────────────────────────────────────
 const THEME_STYLES: Record<string, { border: string; text: string }> = {
   pink:     { border: "border-primary/20",              text: "text-primary"              },
   lavender: { border: "border-secondary-foreground/20", text: "text-secondary-foreground" },
@@ -45,8 +41,6 @@ const FONT_MAP: Record<string, string> = {
   inter:   "var(--font-sans)",
   mono:    "monospace",
 };
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export function StripPreview() {
   const {
@@ -71,7 +65,6 @@ export function StripPreview() {
   const stack       = resolveLayerOrder(layerOrder, stickers, textLayers);
   const stripRef    = useRef<HTMLDivElement>(null);
 
-  // ── Drag helpers ─────────────────────────────────────────────────────────────
   const dragSticker = (id: string, e: PointerEvent<HTMLButtonElement>) => {
     const rect = stripRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -90,14 +83,7 @@ export function StripPreview() {
     });
   };
 
-  // ── Render ────────────────────────────────────────────────────────────────────
   return (
-    /*
-      The strip is intentionally narrow and tall — like a real film strip.
-      Width is capped at 320px so portrait frames look portrait, circular
-      frames look circular, etc.  The column is sticky so it stays visible
-      while the user scrolls through editor controls on the right.
-    */
     <div className="w-full flex justify-center">
       <div
         className={`
@@ -106,7 +92,6 @@ export function StripPreview() {
           shadow-2xl p-3 flex flex-col gap-2
         `}
       >
-        {/* ── Strip frames ──────────────────────────────────────────────── */}
         <div
           ref={stripRef}
           className="relative flex flex-col gap-2 bg-background rounded-2xl [container-type:inline-size]"
@@ -140,9 +125,7 @@ export function StripPreview() {
             );
           })}
 
-          {/* ── Sticker / text layers (positioned relative to the strip) ── */}
           {stack.map((ref) => {
-            // ── Stickers ──
             if (ref.kind === "sticker") {
               const sticker = stickers.find((s) => s.id === ref.id);
               if (!sticker || !sticker.visible) return null;
@@ -210,7 +193,6 @@ export function StripPreview() {
               );
             }
 
-            // ── Text layers ──
             const layer = textLayers.find((t) => t.id === ref.id);
             if (!layer || !layer.visible) return null;
 
@@ -240,7 +222,6 @@ export function StripPreview() {
           })}
         </div>
 
-        {/* ── Strip footer ──────────────────────────────────────────────── */}
         <div className="flex items-center justify-between border-t border-dashed border-border/80 pt-1.5 px-1">
           <span className={`text-[10px] font-heading font-extrabold tracking-widest ${themeStyle.text}`}>
             CLICKSTUDIO.APP

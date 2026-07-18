@@ -1,7 +1,6 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
-import React from 'react';
 import Link from 'next/link';
 import { Camera, Loader2, Send, Trash2, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
