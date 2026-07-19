@@ -59,6 +59,12 @@ export async function GET(request: NextRequest) {
     const publicStrips = publicData?.length || 0;
     const privateStrips = (totalStrips || 0) - publicStrips;
 
+    // Recently created (last 24h)
+    const { count: recentlyCreated } = await supabase
+      .from("strips")
+      .select("*", { count: "exact", head: true })
+      .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
     // Get popular templates
     const { data: templateData } = await supabase
       .from("strips")
@@ -83,6 +89,7 @@ export async function GET(request: NextRequest) {
       activeSessions: activeSessions || 0,
       publicStrips,
       privateStrips,
+      recentlyCreated: recentlyCreated || 0,
       popularTemplates,
     });
   } catch (error) {

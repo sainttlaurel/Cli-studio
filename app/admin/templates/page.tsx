@@ -48,6 +48,7 @@ export default function AdminTemplatesPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Form state for create/edit
+  const [showModal, setShowModal] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState<TemplateRow | null>(
     null,
   );
@@ -106,11 +107,13 @@ export default function AdminTemplatesPage() {
           ? Math.max(...templates.map((t) => t.sort_order)) + 1
           : 10,
     });
+    setShowModal(true);
   };
 
   const handleEdit = (template: TemplateRow) => {
     setEditingTemplate(template);
     setFormData({ ...template });
+    setShowModal(true);
   };
 
   const handleDelete = async (id: string) => {
@@ -205,6 +208,7 @@ export default function AdminTemplatesPage() {
       fetchTemplates();
       setEditingTemplate(null);
       setFormData(DEFAULT_TEMPLATE);
+      setShowModal(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save template");
     } finally {
@@ -317,13 +321,12 @@ export default function AdminTemplatesPage() {
       </div>
 
       {/* Create/Edit Modal */}
-      {(editingTemplate || !editingTemplate) && (
+      {showModal && (
         <div
-          className={`fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ${
-            editingTemplate === null && formData.id === "" ? "hidden" : ""
-          }`}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
+              setShowModal(false);
               setEditingTemplate(null);
               setFormData(DEFAULT_TEMPLATE);
             }
@@ -336,6 +339,7 @@ export default function AdminTemplatesPage() {
               </h2>
               <button
                 onClick={() => {
+                  setShowModal(false);
                   setEditingTemplate(null);
                   setFormData(DEFAULT_TEMPLATE);
                 }}
@@ -477,6 +481,7 @@ export default function AdminTemplatesPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    setShowModal(false);
                     setEditingTemplate(null);
                     setFormData(DEFAULT_TEMPLATE);
                   }}

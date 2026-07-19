@@ -6,6 +6,7 @@ import { Camera, Loader2, Send, Trash2, MessageCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { getSessionId } from '@/lib/session';
 import { containsProfanity } from '@/lib/moderation';
+import { MessageReactions } from '@/components/MessageReactions';
 import type { Message } from '@/lib/types';
 
 const MESSAGE_MAX = 300;
@@ -212,6 +213,7 @@ export default function WallPage() {
                   </div>
                 </div>
                 <p className="text-sm text-foreground/90 whitespace-pre-wrap break-words">{msg.message}</p>
+                <MessageReactions messageId={msg.id} />
               </div>
             ))}
           </div>

@@ -255,16 +255,11 @@ export default function AdminAnalyticsPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <TimeSeriesChart data={data.timeSeries} />
-        <DeviceChart data={data.deviceBreakdown} />
+        <BarChart title="Popular Templates" data={data.popularTemplates ?? []} color="bg-blue-500" />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <BarChart title="Popular Templates" data={data.popularTemplates} color="bg-blue-500" />
-        <BarChart title="Popular Filters" data={data.popularFilters} color="bg-emerald-500" />
-      </div>
-
-      <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-3 text-sm text-amber-600">
-        <strong>Note:</strong> Analytics data will be pulled from Supabase in production. Current view shows mock data.
+        <BarChart title="Popular Filters" data={data.popularFilters ?? []} color="bg-emerald-500" />
       </div>
     </div>
   );

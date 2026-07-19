@@ -15,6 +15,7 @@ export interface Strip {
 export interface Message {
   id: string;
   session_id: string;
+  strip_id: string | null;
   name: string | null;
   message: string;
   created_at: string;

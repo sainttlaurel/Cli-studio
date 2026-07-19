@@ -18,30 +18,6 @@ import {
 import { getStoredAdminPassword } from "@/lib/admin-auth";
 import type { DashboardMetrics, PopularItem } from "@/lib/admin-types";
 
-const STATIC_METRICS: DashboardMetrics = {
-  totalStrips: 1247,
-  totalViews: 8923,
-  totalDownloads: 3456,
-  activeSessions: 23,
-  publicStrips: 456,
-  privateStrips: 791,
-  recentlyCreated: 42,
-  popularTemplates: [
-    { name: "Y2K Pink", id: "y2k-pink", count: 345, percentage: 27.6 },
-    { name: "Baby Blue", id: "baby-blue", count: 289, percentage: 23.2 },
-    { name: "Mint Pop", id: "mint-pop", count: 212, percentage: 17.0 },
-    { name: "Lemon Flash", id: "lemon-flash", count: 187, percentage: 15.0 },
-    { name: "Coral Crush", id: "coral-crush", count: 156, percentage: 12.5 },
-  ],
-  popularStickers: [
-    { name: "Love", id: "love", count: 456, percentage: 27.8 },
-    { name: "XOXO", id: "xoxo", count: 389, percentage: 23.7 },
-    { name: "BFF", id: "bff", count: 312, percentage: 19.0 },
-    { name: "Wow", id: "wow", count: 278, percentage: 17.0 },
-    { name: "Cute", id: "cute", count: 245, percentage: 15.0 },
-  ],
-};
-
 interface QuickAction {
   title: string;
   description: string;
@@ -178,54 +154,48 @@ function QuickActionCard({ action }: { action: QuickAction }) {
 }
 
 function RecentActivity() {
-  const activities = [
-    { action: "Template created", name: "Halloween Theme", time: "2 mins ago" },
-    {
-      action: "Sticker uploaded",
-      name: "Pumpkin Sticker",
-      time: "15 mins ago",
-    },
-    { action: "Strip flagged", name: "Strip #abc123", time: "1 hour ago" },
-    {
-      action: "Settings updated",
-      name: "Rate limit changed",
-      time: "2 hours ago",
-    },
-    { action: "New session", name: "Anonymous user", time: "3 hours ago" },
-  ];
+  const [items, setItems] = useState<{ action: string; resource: string; detail: string | null; created_at: string }[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const pwd = getStoredAdminPassword();
+        if (!pwd) return;
+        const res = await fetch("/api/admin/audit?pageSize=5", { headers: { "x-admin-password": pwd } });
+        if (!res.ok) return;
+        const data = await res.json();
+        setItems(data.data ?? []);
+      } catch { /* silent */ }
+    }
+    load();
+  }, []);
 
   return (
     <div className="bg-background rounded-2xl border border-border/80 shadow-sm p-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-heading font-bold text-foreground">
-          Recent Activity
-        </h3>
-        <Link
-          href="/admin/audit"
-          className="text-sm text-primary font-semibold hover:underline"
-        >
-          View all
-        </Link>
+        <h3 className="text-lg font-heading font-bold text-foreground">Recent Activity</h3>
+        <Link href="/admin/audit" className="text-sm text-primary font-semibold hover:underline">View all</Link>
       </div>
-      <div className="space-y-3">
-        {activities.map((activity, index) => (
-          <div
-            key={index}
-            className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors"
-          >
-            <div className="w-2 h-2 rounded-full bg-primary/60" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-semibold text-foreground">
-                {activity.action}
-                <span className="font-normal text-muted-foreground">
-                  {activity.name && " - " + activity.name}
-                </span>
-              </p>
-              <p className="text-xs text-muted-foreground">{activity.time}</p>
+      {items.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-4 text-center">No admin actions logged yet</p>
+      ) : (
+        <div className="space-y-3">
+          {items.map((item, i) => (
+            <div key={i} className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-colors">
+              <div className="w-2 h-2 rounded-full bg-primary/60 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-foreground">
+                  {item.action} — {item.resource}
+                  {item.detail && <span className="font-normal text-muted-foreground"> · {item.detail}</span>}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {new Date(item.created_at).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                </p>
+              </div>
             </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -272,48 +242,41 @@ export default function AdminDashboardPage() {
         setApiError(null);
 
         const password = getStoredAdminPassword();
-        if (!password) {
-          throw new Error("Not authenticated");
-        }
+        if (!password) throw new Error("Not authenticated");
 
         const response = await fetch("/api/admin", {
-          headers: {
-            "x-admin-password": password,
-          },
+          headers: { "x-admin-password": password },
         });
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch metrics");
-        }
+        if (!response.ok) throw new Error("Failed to fetch metrics");
 
         const data = await response.json();
 
-        // Map API response to DashboardMetrics format
-        const mappedMetrics: DashboardMetrics = {
-          totalStrips: data.totalStrips || 0,
-          totalViews: data.totalViews || 0,
-          totalDownloads: data.totalDownloads || 0,
-          activeSessions: data.activeSessions || 0,
-          publicStrips: data.publicStrips || 0,
-          privateStrips: data.privateStrips || 0,
-          recentlyCreated: 0, // Not in API response yet
-          popularTemplates: data.popularTemplates
-            ? data.popularTemplates.map((t: any) => ({
-                name: t.name || t.id,
-                id: t.id || t.name,
-                count: t.count || 0,
-                percentage: t.percentage || 0,
-              }))
-            : [],
-          popularStickers: [], // Not in API response yet
-        };
-
-        setMetrics(mappedMetrics);
+        setMetrics({
+          totalStrips:      data.totalStrips      ?? 0,
+          totalViews:       data.totalViews        ?? 0,
+          totalDownloads:   data.totalDownloads    ?? 0,
+          activeSessions:   data.activeSessions    ?? 0,
+          publicStrips:     data.publicStrips      ?? 0,
+          privateStrips:    data.privateStrips     ?? 0,
+          recentlyCreated:  data.recentlyCreated   ?? 0,
+          popularTemplates: (data.popularTemplates ?? []).map((t: Record<string, unknown>) => ({
+            name:       (t.name || t.id) as string,
+            id:         (t.id   || t.name) as string,
+            count:      (t.count       ?? 0) as number,
+            percentage: (t.percentage  ?? 0) as number,
+          })),
+          popularStickers: [],
+        });
       } catch (error) {
+        // eslint-disable-next-line no-console
         console.error("Failed to fetch metrics:", error);
-        setApiError("Failed to load dashboard data. Please try again.");
-        // Fallback to static metrics for demo
-        setMetrics(STATIC_METRICS);
+        setApiError("Could not load dashboard data. Check your connection and try again.");
+        setMetrics({
+          totalStrips: 0, totalViews: 0, totalDownloads: 0,
+          activeSessions: 0, publicStrips: 0, privateStrips: 0,
+          recentlyCreated: 0, popularTemplates: [], popularStickers: [],
+        });
       } finally {
         setLoading(false);
       }

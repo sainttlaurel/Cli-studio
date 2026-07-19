@@ -125,11 +125,26 @@ export default function AdminSettingsPage() {
         setLoading(true);
         const savedPassword = getStoredAdminPassword();
         if (!savedPassword) throw new Error("Not authenticated");
-        setSettings(DEFAULT_SETTINGS);
+
+        const res = await fetch("/api/admin/settings", {
+          headers: { "x-admin-password": savedPassword },
+        });
+        if (!res.ok) throw new Error("Failed to fetch settings");
+
+        const data: Record<string, string> = await res.json();
+
+        setSettings({
+          rateLimitStripsPerHour: parseInt(data.rateLimitStripsPerHour ?? "12"),
+          rateLimitStripsPerDay:  parseInt(data.rateLimitStripsPerDay  ?? "50"),
+          isMaintenanceMode:      data.isMaintenanceMode  === "true",
+          maintenanceMessage:     data.maintenanceMessage ?? null,
+          showPWAInstallPrompt:   data.showPWAInstallPrompt !== "false",
+          showGallery:            data.showGallery          !== "false",
+          showFeedbackWall:       data.showFeedbackWall     !== "false",
+          defaultTemplate:        data.defaultTemplate      ?? "pink",
+        });
       } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "Failed to load settings",
-        );
+        setError(err instanceof Error ? err.message : "Failed to load settings");
       } finally {
         setLoading(false);
       }
@@ -151,6 +166,29 @@ export default function AdminSettingsPage() {
       setError(null);
       const savedPassword = getStoredAdminPassword();
       if (!savedPassword) throw new Error("Not authenticated");
+
+      // Serialize all settings as string values for the key-value store
+      const payload: Record<string, string> = {
+        rateLimitStripsPerHour: String(settings.rateLimitStripsPerHour),
+        rateLimitStripsPerDay:  String(settings.rateLimitStripsPerDay),
+        isMaintenanceMode:      String(settings.isMaintenanceMode),
+        maintenanceMessage:     settings.maintenanceMessage ?? "",
+        showPWAInstallPrompt:   String(settings.showPWAInstallPrompt),
+        showGallery:            String(settings.showGallery),
+        showFeedbackWall:       String(settings.showFeedbackWall),
+        defaultTemplate:        String(settings.defaultTemplate),
+      };
+
+      const res = await fetch("/api/admin/settings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-admin-password": savedPassword,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) throw new Error("Failed to save settings");
       setSuccess("Settings saved successfully!");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save settings");

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Camera, Zap, Eye, Download, Clock } from "lucide-react";
 import { supabase } from "@/lib/supabase";
 import { ShareActions } from "@/components/ShareActions";
+import { YearbookSignatures } from "@/components/YearbookSignatures";
 import type { Strip } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -154,6 +155,11 @@ export default async function SharePage({
                 <Zap size={15} />
                 Start the Studio
               </Link>
+            </div>
+
+            {/* Yearbook signatures */}
+            <div className="bg-background border border-border rounded-2xl p-5">
+              <YearbookSignatures stripId={strip.id} />
             </div>
           </div>
 
