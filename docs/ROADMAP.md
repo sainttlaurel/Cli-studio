@@ -1,21 +1,19 @@
 # ClickStudio Roadmap
 
 This tracks what's shipped, what's planned, and open ideas for ClickStudio.
-Update it as priorities shift — it's meant to be a living doc, not a locked
-spec.
+Update it as priorities shift — it's meant to be a living doc, not a locked spec.
 
-**Scope note (updated):** ClickStudio is a web-only photo booth — no native
-app, no PWA install push. PWA/offline/kiosk features are deprioritized
-accordingly. Focus stays on the core shoot → edit → export → share web flow.
+**Scope:** ClickStudio is a web-only photo booth. No native app, no PWA install push.
+Focus stays on the core shoot → edit → export → share web flow.
 
-Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not committed)
+Status legend: ✅ Done | 📋 Planned | 💡 Idea (not committed)
 
 ---
 
 ## v1 — Core Booth ✅ Done
 
 - Landing page
-- Camera capture (timer, mirror, grid, upload fallback, up to 4 frames)
+- Camera capture (timer, mirror, upload fallback, up to 4 frames)
 - Editor (5 filter presets, brightness/contrast, 3 frame-color themes, text caption)
 - Export (canvas compositing to PNG, upload to Supabase Storage, DB row insert)
 - Public share page with QR code and copy link
@@ -26,8 +24,7 @@ Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not commi
 ## v1.1 — Polish & Hardening ✅ Done
 
 - 30-day auto-delete via `cleanup-expired-strips` edge function (pg_cron + pg_net)
-- Uploads routed through `upload-strip` edge function — 12 strips/hour/session
-  rate limit, anonymous-auth JWT required, service role key does the write
+- Uploads routed through `upload-strip` edge function — 12 strips/hour/session rate limit, anonymous-auth JWT required, service role key does the write
 - Native share sheet (`navigator.share()`) on Export + Share page, clipboard fallback
 - Retry handling on export — "Try Again" button replaces dead-end error
 
@@ -71,16 +68,14 @@ Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not commi
 
 - `navigator.share()` URL-only sharing on Export + Share pages
 - Clipboard fallback
-- Instagram deep-linking removed (unreliable on mobile web)
 - Tier 2 (Meta/TikTok API posting) on hold — requires user accounts
 
 ---
 
-## v2.1 — PWA Support ✅ Done (deprioritized going forward)
+## v2.1 — PWA Support ✅ Done (deprioritized)
 
 - Web app manifest, app icons, standalone display mode
-- Service worker / offline shell shipped but not a focus area —
-  ClickStudio is web-only, no install push
+- Service worker / offline shell shipped but not a focus area — web-only scope
 
 ---
 
@@ -110,7 +105,6 @@ Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not commi
 
 - `serwist` + `@serwist/next`, precaching, stale-while-revalidate for CDN images
 - Offline fallback page at `/offline`
-- Not a focus going forward — web-only scope
 
 ---
 
@@ -176,13 +170,14 @@ Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not commi
 
 ## v3.0.1 — Admin Management Suite ✅ Done
 
-- `/admin` dashboard: total strips, views, downloads, active sessions
-- `/admin/stickers`: upload, organize, enable/disable sticker packs
-- `/admin/gallery`: moderation, flag, delete, feature strips
-- `/admin/sessions`: session view/count, block/unblock, IP tracking
-- `/admin/analytics`: time-series charts, popular templates/filters, device breakdown
-- `/admin/settings`: rate limits, maintenance mode, feature flags, default template
-- `/admin/audit`: action log with timestamps, admin id, IP, user agent
+- `/admin` dashboard: real metrics from Supabase (total strips, views, downloads, active sessions, recently created)
+- `/admin/gallery`: real strip images from Supabase, search/filter/sort, flag/feature/delete
+- `/admin/stickers`: enable/disable sticker packs and individual stickers, persisted to localStorage
+- `/admin/sessions`: session view/count aggregated from strips table
+- `/admin/analytics`: time-series charts, popular templates/filters, real data from Supabase
+- `/admin/settings`: load from and save to `admin_settings` key-value table in DB
+- `/admin/audit`: action log from `admin_actions` table (real data, no mock)
+- `/admin/templates`: full CRUD wired to Supabase `templates` table; modal always-visible bug fixed
 
 ---
 
@@ -190,160 +185,95 @@ Status legend: ✅ Done | 🔄 In progress | 📋 Planned | 💡 Idea (not commi
 
 - Upload edge function in place (rate limiting, JWT, service role key)
 - PWA offline scope acknowledged and intentionally limited
-- Session-based rate limiting documented (IP-based is a future upgrade)
+- Session-based rate limiting documented
 
 ---
 
 ## v3.1 — Accessibility & Dark Mode ✅ Done
 
 - Soft dark mode via `prefers-color-scheme` across all CSS tokens
-- Dark mode works automatically on all pages including studio (post-refactor)
+- Dark mode works automatically on all pages
 
 ---
 
-## v3.1 — Studio Page Design System Refactor ✅ Done (July 2026)
+## v3.1 — Studio Page Design System Refactor ✅ Done
 
-The `/studio` page was rebuilt to be consistent with the rest of the app:
-
-- Replaced hand-rolled header + stepper with shared `<WizardHeader step={2} />`
-- Added `<SparkleOverlay />` (dot-grid texture used on all other pages)
-- Wrapped content in `<ErrorBoundary page="studio" />`
-- All hardcoded hex colors (`#D4247E`, `#FFF6FA`, etc.) replaced with CSS
-  design tokens (`bg-primary`, `bg-card`, `bg-muted`, `border-border`,
-  `text-muted-foreground`, etc.)
-- Typography aligned to `font-heading` (Fredoka) and `font-sans` (Inter)
-- Dark mode now works on the studio page automatically
-- Extracted local `Pill` component for all toggle buttons (Timer / Aspect
-  Ratio / Frames / Frame Style) — DRY, consistent border/active states
+- Replaced hand-rolled header with shared `<WizardHeader step={2} />`
+- Added `<SparkleOverlay />` and `<ErrorBoundary page="studio" />`
+- All hardcoded hex colors replaced with CSS design tokens
 - Default frame count changed to 2
-- All camera functionality preserved (timer, aspect ratio, mirror/flip,
-  countdown, upload fallback, frame preview, remove frame, continue to editor)
 
 ---
 
-## v3.2 — i18n / Multi-language ⬜ Skipped
+## v3.2 — UI & Flow Quality Pass ✅ Done
 
-Dropped — web-only photo booth targeting English speakers. Not worth the
-maintenance overhead at this stage.
-
----
-
-## Next Up — UI & Flow Quality Pass ✅ Done (July 2026)
-
-### 1. Landing page hero ✅
-Replaced the static camera-icon placeholder with a styled simulated photo
-strip showing two frames (Cherry Blossom and Noir Classic tints) with a
-real strip footer (date + CLICKSTUDIO.APP branding) and a "5 filters" badge.
-The strip tilts slightly and settles on hover, matching the card's existing
-rotation animation.
-
-### 2. End-to-end flow smoke test ✅
-Reviewed all four flow pages (Studio → Editor → Export → Share). All pages
-are fully wired:
-- Supabase upload goes through the `upload-strip` edge function
-- Share page loads from `get_strip_by_id` RPC and increments view count
-- QR code renders via local `qrcode` library (no external API)
-- Print dialog opens via `window.print()` with `lib/print.ts`
-- History page queries strips by `session_id`
-Remaining: `.env` values must be filled in before upload/share work in production.
-
-### 3. Mobile layout review ✅
-- Studio: removed stale `order-*` classes from right-column flex children
-  (DOM order was already correct; the classes added noise without effect)
-- Gallery: changed grid from `grid-cols-2 sm:grid-cols-3` to
-  `grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4` — single
-  column at 375px gives cards ~343px wide, much more comfortable
-- History: same grid fix; also added `truncate` and `shrink-0` to card
-  metadata row so date + stats don't overflow on narrow cards; `min-w-0`
-  on the public toggle button prevents label overflow
-
-### 4. Empty-state and error-state polish ✅
-- Gallery empty: icon (`Images`), heading, descriptive copy, CTA button
-  linking to `/studio`
-- History empty: icon (`Clock`), heading, descriptive copy, CTA button
-  — consistent visual treatment with gallery
-- Studio camera denied: replaced plain muted text with a styled card
-  (icon + heading + copy + prominent "Upload a Photo" pink button surfaced
-  directly in the camera area, not buried in the action row below)
-
-### 5. Bundle check ✅
-- Dependencies are lean: no `jspdf`, no `react-query`, no charting lib
-- `qrcode` (~50KB) was the only third-party import worth lazy-loading —
-  it was imported statically at the top of `ExportPanel.tsx` but only
-  ever used after a successful upload. Switched to `import("qrcode")`
-  inside the `useEffect` that fires when `shareUrl` is set, so it's
-  excluded from the initial export page bundle
-- All other imports (`supabase`, `zustand`, `zundo`, `serwist`,
-  `lucide-react`) are appropriate for their usage patterns
+- Landing hero: replaced camera-icon placeholder with styled simulated strip
+- Gallery/History: single-column mobile grid, proper empty states with icons + CTAs
+- Studio camera denied: styled error card with Upload button surfaced in camera area
+- Template swatches: compacted to `grid-cols-5`, fixed `h-10` height
+- `qrcode` lazy-loaded in `ExportPanel`
+- All `eslint-disable` and redundant `import React` cleaned up across codebase
 
 ---
 
-## v3.3 — Export & Share Polish ✅ Done (July 2026)
+## v3.3 — Export & Share Polish ✅ Done
 
-### Export PNG — per-frame filters wired through ✅
-`frameFilters` was missing from `CompositeOptions` entirely — the compositor
-was using a single global `filter` for every frame regardless of per-frame
-selections made in the editor. Fixed:
-- Added `frameFilters?: FilterKey[]` to `CompositeOptions`
-- `renderStripCanvas` now draws each frame with its own `frameFilters[i] ?? filter`
-  CSS filter, applied per-`drawImage` call rather than once for the whole canvas
-- `ExportPanel` now pulls `frameFilters` from the store and passes it to both
-  `compositeStrip` and `compositePrintPage`
-- Print compositor inherits the fix automatically via `renderStripCanvas`
-
-### Sticker coordinate system — verified correct ✅
-The `framesAreaTop` / `framesAreaHeight` constants were being re-computed
-inside the layer render loop (once per sticker). Moved outside the loop —
-single computation, same result, cleaner code. Coordinate space confirmed
-correct: sticker `x/y` percentages map to the frames area only (matching
-`StripPreview`'s `stripRef`), not the full canvas including footer/padding.
-
-### Print compositor — verified clean ✅
-`lib/print.ts` calls `renderStripCanvas` directly — all fixes (per-frame
-filters, correct coordinate space) apply automatically. No separate changes
-needed. `compositePrintPage` now also receives `frameFilters` from
-`ExportPanel`.
-
-### Share page — redesigned ✅
-Replaced the centered single-column layout with a two-column desktop layout:
-- **Left**: strip image in a card (max-w-[320px]) with caption below it and
-  engagement stats (views + saves) underneath
-- **Right**: heading, `ShareActions` buttons, a 30-day expiry notice
-  (Clock icon + plain-language copy), and a "Love this vibe?" CTA card with
-  a full-width "Start the Studio" button
-- Not-found state improved: icon + clearer expired copy + CTA button
-- Mobile: columns stack, strip first then actions
-- Caption now shown directly beneath the strip image in the card, not buried
-
---- (HOLD)
-
-Deprioritized given web-only scope. If ClickStudio ever adds event hosting:
-
-- Custom event slug (`/e/emmas-wedding`) with shared theme + gallery
-- Sponsor/partnership dismissible footer banner
+- `frameFilters` wired through compositor — per-frame filter choices now export correctly in PNG and print
+- Sticker/text coordinate system verified correct (x/y maps to frames area only, not full canvas)
+- Share page redesigned: two-column desktop layout, caption in card, 30-day expiry notice, stronger CTA
+- Not-found state improved with icon and expiry copy
 
 ---
 
-## v3.3 — Advanced Media Features 💡 Idea (not committed)
+## v3.4 — Reactions & Yearbook Signing ✅ Done (July 2026)
 
-- Boomerang/GIF mode — `MediaRecorder` canvas capture, significant
-  cross-browser complexity, changes the whole export/storage pipeline
+Community features that make strips social:
+
+- **Emoji reactions on wall messages** — ❤️ ✨ 😂 🔥 reaction buttons on each `/wall` message card; optimistic UI with DB fallback; one reaction per session per emoji; backed by `message_reactions` table with RLS
+- **Yearbook signing on share page** — "Sign this strip ✍️" section below the CTA on every `/s/[id]` share page; name + message (max 80 chars); stored in `messages` table using the existing `strip_id` column; profanity filtered; signatures listed oldest-first
+- Migrations: `0007_v3_4_reactions_and_yearbook.sql` (strip_id on messages, message_reactions table + RLS)
+
+---
+
+## v3.5 — Admin Tables ✅ Done (July 2026)
+
+- `admin_actions` table — lightweight action log backing the audit page (replaces mock data)
+- `admin_settings` table — key-value store backing the settings page save/load
+- Migration: `0008_v3_5_admin_tables.sql`
+
+---
+
+## 🚀 Shipped to Production (July 2026)
+
+ClickStudio is live. Core flow verified end-to-end:
+- Camera capture → editor → export → share link ✅
+- Sticker positions match between editor preview and exported PNG ✅
+- Reactions and yearbook signing tested and working ✅
+- Admin panel wired to real Supabase data ✅
+- Both DB migrations applied ✅
+
+---
+
+## What's Next — Post-Launch
+
+These are things to do based on how real users actually use the app.
+Nothing is committed until real usage data points at a gap.
+
+**Low-effort, high-value if users ask:**
+- More sticker packs — drop PNGs into `public/stickers/{pack}/`, register in `IMAGE_PACKS`, done
+- Reactions on yearbook signatures (currently only on wall messages)
+- Rate limiting on wall/yearbook inserts (same shape as upload-strip edge function)
+
+**Medium lift:**
+- GIF/Boomerang mode — `MediaRecorder` canvas capture; cross-browser rough edges; changes the export pipeline
 - Scale handles directly on canvas for sticker/text layers
 
----
-
-## Ideas Parking Lot 💡 Not committed
-
-- More sticker packs — just drop PNGs into `public/stickers/{pack}/` and
-  register in `IMAGE_PACKS`, no code change required
-- Reactions on the feedback wall (instead of just text messages)
-- "Sign a strip like a yearbook" — let visitors leave a name on someone's
-  share page
+**Bigger product decisions (not committed):**
+- Custom event branding with host slugs (`/e/emmas-wedding`)
+- Sponsor/partnership banner
 
 ---
 
 ## How to use this doc
 
-When picking up a feature: move it from Planned to In progress, sketch
-the data model change (if any) here, then build it. Move to Done once
-shipped and the flow works end-to-end.
+When picking up a feature: move it to In progress, sketch the data model change (if any), build it. Move to Done once shipped and the flow works end-to-end.
