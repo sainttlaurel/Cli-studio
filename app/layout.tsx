@@ -22,11 +22,45 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ClickStudio - Own Your Shot',
+  title: 'ClickStudio — Free Y2K Photo Booth Online',
   description:
-    'The ultimate browser-based Y2K photo booth. No app, no signup, just vibes.',
+    'Take photo strips, add filters and stickers, download high-res PNGs and share instantly. No app, no signup — just pure Y2K fun in your browser.',
   applicationName: 'ClickStudio',
   manifest: '/manifest.webmanifest',
+  keywords: [
+    'photo booth', 'online photo booth', 'y2k photo booth', 'photo strip',
+    'free photo booth', 'browser photo booth', 'photo filters', 'photo stickers',
+    'make photo strip', 'share photo strip',
+  ],
+  authors: [{ name: 'ClickStudio' }],
+  creator: 'ClickStudio',
+  metadataBase: new URL('https://cli-studio.vercel.app'),
+  alternates: {
+    canonical: '/',
+  },
+  openGraph: {
+    type: 'website',
+    url: 'https://cli-studio.vercel.app',
+    siteName: 'ClickStudio',
+    title: 'ClickStudio — Free Y2K Photo Booth Online',
+    description:
+      'Take photo strips, add filters and stickers, download high-res PNGs and share instantly. No app, no signup.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ClickStudio — Free Y2K Photo Booth',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ClickStudio — Free Y2K Photo Booth Online',
+    description:
+      'Take photo strips, add filters and stickers, download and share instantly. No app, no signup.',
+    images: ['/og-image.png'],
+  },
   appleWebApp: {
     capable: true,
     title: 'ClickStudio',
