@@ -34,6 +34,9 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'ClickStudio' }],
   creator: 'ClickStudio',
+  verification: {
+    google: 'khDPsQHhkJtdcn2JA4QnkfeGWztSC3Jq_naiutan1hQ',
+  },
   metadataBase: new URL('https://cli-studiodev.vercel.app'),
   alternates: {
     canonical: '/',
