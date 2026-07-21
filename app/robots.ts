@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ['/admin', '/admin/', '/api/'],
       },
     ],
-    sitemap: 'https://cli-studio.vercel.app/sitemap.xml',
+    sitemap: 'https://cli-studiodev.vercel.app/sitemap.xml',
   };
 }

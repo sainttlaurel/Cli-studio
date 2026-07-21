@@ -1,7 +1,7 @@
 import type { MetadataRoute } from 'next';
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const base = 'https://cli-studio.vercel.app';
+  const base = 'https://cli-studiodev.vercel.app';
   const now = new Date();
 
   return [

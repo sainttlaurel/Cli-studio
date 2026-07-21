@@ -8,7 +8,7 @@ import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
-const BASE_URL = "https://cli-studio.vercel.app";
+const BASE_URL = "https://cli-studiodev.vercel.app";
 
 export async function generateMetadata({
   params,

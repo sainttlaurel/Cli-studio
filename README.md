@@ -4,7 +4,7 @@ A browser-based Y2K photo booth: shoot a strip, edit it with filters and sticker
 
 Flow: **Landing → Studio (shoot) → Editor (filters/stickers/text) → Export (upload + share) → Share Page (public reveal)**.
 
-Live: [clickstudio.vercel.app](https://clickstudio.vercel.app) *(update with your URL)*
+Live: [cli-studiodev.vercel.app](https://cli-studiodev.vercel.app)
 
 ---
 

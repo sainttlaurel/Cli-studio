@@ -34,13 +34,13 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'ClickStudio' }],
   creator: 'ClickStudio',
-  metadataBase: new URL('https://cli-studio.vercel.app'),
+  metadataBase: new URL('https://cli-studiodev.vercel.app'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
     type: 'website',
-    url: 'https://cli-studio.vercel.app',
+    url: 'https://cli-studiodev.vercel.app',
     siteName: 'ClickStudio',
     title: 'ClickStudio — Free Y2K Photo Booth Online',
     description:
