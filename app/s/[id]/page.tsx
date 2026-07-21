@@ -4,8 +4,58 @@ import { supabase } from "@/lib/supabase";
 import { ShareActions } from "@/components/ShareActions";
 import { YearbookSignatures } from "@/components/YearbookSignatures";
 import type { Strip } from "@/lib/types";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
+
+const BASE_URL = "https://cli-studio.vercel.app";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: { id: string };
+}): Promise<Metadata> {
+  const strip = await getStrip(params.id);
+
+  if (!strip) {
+    return {
+      title: "Strip not found — ClickStudio",
+      description: "This photo strip may have expired or the link is incorrect.",
+    };
+  }
+
+  const title = strip.caption
+    ? `"${strip.caption}" — ClickStudio`
+    : "A Y2K photo strip — ClickStudio";
+  const description = `Check out this photo strip made with ClickStudio. Make your own — no signup needed!`;
+  const url = `${BASE_URL}/s/${strip.id}`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: url },
+    openGraph: {
+      type: "website",
+      url,
+      siteName: "ClickStudio",
+      title,
+      description,
+      images: [
+        {
+          url: strip.image_url,
+          width: 800,
+          alt: strip.caption ?? "ClickStudio photo strip",
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [strip.image_url],
+    },
+  };
+}
 
 async function getStrip(id: string): Promise<Strip | null> {
   const { data, error } = await supabase.rpc("get_strip_by_id", { p_id: id });

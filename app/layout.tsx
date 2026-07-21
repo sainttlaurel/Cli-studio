@@ -47,7 +47,7 @@ export const metadata: Metadata = {
       'Take photo strips, add filters and stickers, download high-res PNGs and share instantly. No app, no signup.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/opengraph-image',
         width: 1200,
         height: 630,
         alt: 'ClickStudio — Free Y2K Photo Booth',
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     title: 'ClickStudio — Free Y2K Photo Booth Online',
     description:
       'Take photo strips, add filters and stickers, download and share instantly. No app, no signup.',
-    images: ['/og-image.png'],
+    images: ['/opengraph-image'],
   },
   appleWebApp: {
     capable: true,
@@ -68,8 +68,11 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-      { url: '/icon-512x512.png', sizes: '512x512', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-96x96.png', sizes: '96x96', type: 'image/png' },
+      { url: '/web-app-manifest-192x192.png', sizes: '192x192', type: 'image/png' },
+      { url: '/web-app-manifest-512x512.png', sizes: '512x512', type: 'image/png' },
     ],
     apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
   },
